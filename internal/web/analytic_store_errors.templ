@@ -1,0 +1,42 @@
+package web
+
+import "github.com/vk-rv/warnly/internal/warnly"
+
+templ AnalyticStoreErrors(errors []warnly.AnalyticsStoreErr, user *warnly.User) {
+	@Layout(AnalyticsErrorTitle, ErrorsHtmx(errors), sidebarSystem, user)
+}
+
+templ ErrorsHtmx(errors []warnly.AnalyticsStoreErr) {
+	<title>{ AnalyticsErrorTitle } - { AppName }</title>
+	<div class="flex min-h-screen text-sm" id="content">
+		<div class="flex-1 overflow-x-auto">
+			<div class="bg-white shadow">
+				@systemNavigation(systemNavigationErrors)
+				<div class="p-6" id="content-section">
+					<div class="overflow-x-auto">
+						<table class="w-full bg-white shadow-lg rounded-lg">
+							<thead class="font-semibold">
+								<tr class="text-left text-[13px]">
+									<th scope="col" class="py-2 px-4 font-semibold">ERRORS</th>
+									<th scope="col" class="py-3 px-4 font-semibold text-right">MOST RECENT (UTC)</th>
+									<th scope="col" class="py-3 px-4 font-semibold text-right">COUNT</th>
+								</tr>
+							</thead>
+							<tbody class="bg-white text-[13px] divide-y divide-gray-200">
+								for i := range errors {
+									<tr class="border-t border-gray-200 hover:bg-gray-50 transition duration-150 ease-in-out">
+										<td class="py-3 px-4">
+											<a href="#" class="hover:underline">{ errors[i].Name }</a>
+										</td>
+										<td class="py-3 px-4 text-right">{ errors[i].MaxLastErrorTime.Format("January 2, 2006 3:04 PM") }</td>
+										<td class="py-3 px-4 text-right">{ warnly.NumFormatted(errors[i].Count) }</td>
+									</tr>
+								}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+}

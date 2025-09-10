@@ -1,0 +1,217 @@
+package web
+
+import (
+	"fmt"
+	"github.com/vk-rv/warnly/internal/warnly"
+	"time"
+)
+
+templ ProjectContents(user *warnly.User, res *warnly.ListProjectsResult) {
+	@Layout(ProjectOverviewTitle, ProjectContentHtmx(user, res), sidebarProjects, user)
+}
+
+templ ProjectContentHtmx(user *warnly.User, res *warnly.ListProjectsResult) {
+	if len(res.Projects) == 0 && res.Criteria.IsEmpty() {
+		<title>{ ProjectOverviewTitle } - { AppName }</title>
+		<div id="content" class="flex-grow p-8 overflow-y-auto h-screen">
+			<header class="flex justify-between items-center mb-6">
+				<h1 class="text-2xl font-semibold">Projects</h1>
+			</header>
+			<p class="text-gray-600">You need at least one project to use this page</p>
+			<a href="" hx-swap="outerHTML settle:0" hx-target="#content" hx-get="/projects/new" hx-push-url="true">
+				<button class="px-4 py-2 mt-4 bg-black text-white rounded text-sm transition hover:bg-gray-800 cursor-pointer">Create Project</button>
+			</a>
+		</div>
+	} else {
+		<title>{ ProjectOverviewTitle } - { AppName }</title>
+		<div id="content" class=" flex-grow p-8 overflow-y-auto h-screen">
+			<header class="flex justify-between items-center mb-8">
+				<h1 class="text-2xl font-semibold">Projects</h1>
+				<div class="flex gap-2">
+					<button hx-target="#content" hx-get="/projects/1/getting-started" class="px-4 cursor-pointer py-2 border border-black rounded text-sm transition hover:bg-black hover:text-white flex items-center">
+						Join a team
+					</button>
+					<a href="" hx-target="#content" hx-swap="outerHTML settle:0" hx-get="/projects/new" hx-push-url="true">
+						<button class="px-4 cursor-pointer py-2 bg-black text-white rounded text-sm transition hover:bg-gray-800 cursor-pointer">Create Project</button>
+					</a>
+				</div>
+			</header>
+			<div class="flex mb-8">
+				<div class="flex">
+					<div x-data={ teamSelect(res) }>
+						<button
+							@click="open = !open"
+							class="inline-flex items-center p-2.5 mr-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 cursor-pointer"
+						>
+							<span x-text="selected"></span>
+							<svg class="ml-2 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+							</svg>
+						</button>
+						<div x-show="open" @click.away="open = false" class="absolute mt-2 w-48 rounded-md bg-white shadow-lg z-10">
+							<ul class="py-1 text-sm text-gray-700">
+								<li>
+									<a
+										href="#"
+										@click.prevent={ clickPrevent("All Teams", 0) }
+										class="block px-4 py-2 hover:bg-gray-100"
+									>
+										All Teams
+									</a>
+								</li>
+								for _, team := range res.Teams {
+									<li>
+										<a
+											href="#"
+											@click.prevent={ clickPrevent(team.Name, team.ID) }
+											class="block px-4 py-2 hover:bg-gray-100"
+										>
+											{ team.Name }
+										</a>
+									</li>
+								}
+							</ul>
+						</div>
+					</div>
+				</div>
+				if res.Criteria.Name != "" {
+					<input name="name" hx-get="/projects" hx-target="#projectGrid" hx-swap="outerHTML" hx-trigger="input changed delay:500ms, search" value={ res.Criteria.Name } type="text" placeholder="Search for services" class="flex-grow p-2.5 border border-gray-200 rounded text-sm focus:outline-none focus:border-black" autofocus onfocus="this.setSelectionRange(this.value.length, this.value.length)"/>
+				} else {
+					<input name="name" hx-get="/projects" hx-target="#projectGrid" hx-swap="outerHTML" hx-trigger="input changed delay:500ms, search" value={ res.Criteria.Name } type="text" placeholder="Search for services" class="flex-grow p-2.5 border border-gray-200 rounded text-sm focus:outline-none focus:border-black"/>
+				}
+			</div>
+			@ProjectGrid(res)
+		</div>
+	}
+}
+
+func clickPrevent(teamName string, teamID int) string {
+	return fmt.Sprintf("selected = '%s'; teamID = %d; open = false; htmx.ajax('GET', '/projects', { target: '#content', swap: 'outerHTML settle:0', values: { team: %d } })", teamName, teamID, teamID)
+}
+
+func teamSelect(res *warnly.ListProjectsResult) string {
+	if res.Criteria.TeamID == 0 {
+		return fmt.Sprintf("{ open: false, selected: 'All Teams', teamID: 0 }")
+	}
+	teamName := "All Teams"
+	for _, team := range res.Teams {
+		if team.ID == res.Criteria.TeamID {
+			teamName = team.Name
+			break
+		}
+	}
+	return fmt.Sprintf("{ open: false, selected: '%s', teamID: %d }", teamName, res.Criteria.TeamID)
+}
+
+templ ProjectGrid(res *warnly.ListProjectsResult) {
+	<div id="projectGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+		for _, project := range res.Projects {
+			<div data-chart={ project.Events.DashboardData(time.Now) } class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+				<div class="border-b border-gray-300 p-4 flex justify-between items-center">
+					<div class="flex items-center gap-3">
+						<div class="w-8 h-8 bg-gray-100 rounded flex items-center justify-center">{ string(project.Name[0]) }</div>
+						<a hx-get={ fmt.Sprintf("/projects/%d?issues=all&period=1h", project.ID) } hx-target="#content" hx-swap="outerHTML settle:0" hx-push-url="true" class="cursor-pointer">
+							<h3 class="font-medium">{ project.Name }</h3>
+							<p class="text-xs text-gray-600">Errors: { project.Events.TotalErrors() } | Last 24 hours</p>
+						</a>
+					</div>
+					<div class="flex gap-1">
+						<a hx-get={ fmt.Sprintf("/settings/projects/%d", project.ID) } hx-target="#content" hx-swap="outerHTML settle:0" hx-push-url="true" class="p-2 cursor-pointer hover:bg-gray-100 rounded-full">
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+								<circle cx="12" cy="12" r="3"></circle>
+								<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+							</svg>
+						</a>
+					</div>
+				</div>
+				<div class="bg-gray-50"></div>
+				<div class="warnly-project warnly-preview h-[200px]" data-chart={ project.Events.DashboardData(time.Now) }></div>
+				<div class="border-t border-gray-300 mt-10 p-4 grid grid-cols-2"></div>
+			</div>
+		}
+		@chartInitialization()
+	</div>
+}
+
+templ chartInitialization() {
+	<script>
+	function initializeCharts() {
+		var projects = document.querySelectorAll('.warnly-project');
+		if (projects.length === 0) {
+			return;
+		}
+		projects.forEach(project => {
+			let chartData = JSON.parse(project.getAttribute('data-chart'));
+
+			// Ensure chartData is an array of numbers
+			if (!Array.isArray(chartData) || chartData.some(isNaN)) {
+				console.error("Invalid chart data:", chartData);
+				return;
+			}
+			
+			const now = new Date();
+			const startOfCurrentHour = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), 0, 0, 0);
+			const oneHour = 60 * 60 * 1000; // Milliseconds in one hour
+			const timestamps = [];
+
+			// Generate 24 timestamps from the previous day to the current hour
+			for (let i = 0; i <= 24; i++) {
+				timestamps.push(Math.floor((startOfCurrentHour - (23 - i) * oneHour) / 1000));
+			}
+
+			const data = [timestamps, chartData];
+
+
+			const opts = {
+				width: project.offsetWidth,
+				height: project.offsetHeight,
+				scales: {
+					x: {
+						
+					},
+				},
+				axes: [
+					{
+						 ticks: { show: false }, // Hides vertical tick lines
+      grid: { show: false }, // disable vertical grid lines (x-axis)
+    },
+    {
+      grid: { show: false }, // disable horizontal grid lines (y-axis)
+    },
+					
+				],
+				series: [
+					{},
+					{
+						label: "Errors",
+						paths: uPlot.paths.bars({size: [0.8, 100]}), // Control bar width
+						stroke: "black",
+						fill: "rgba(0,0,0,0.5)",
+						width: 1,
+						points: {
+							show: false
+						},
+						value: (u, v) => v == null ? "-" : v.toFixed(0),
+					},
+				],
+			};
+
+			let u = new uPlot(opts, data, project);
+
+			const resizeObserver = new ResizeObserver(() => {
+				u.setSize({
+					width: project.offsetWidth,
+					height: project.offsetHeight,
+				});
+			});
+			resizeObserver.observe(project);
+
+			project._uPlot = u;
+			project._resizeObserver = resizeObserver;
+		});
+	}
+
+initializeCharts();
+
+</script>
+}

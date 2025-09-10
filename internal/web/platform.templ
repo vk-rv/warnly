@@ -1,0 +1,141 @@
+package web
+
+import (
+	"fmt"
+	"github.com/vk-rv/warnly/internal/warnly"
+)
+
+templ Platform(teams []warnly.Team, user *warnly.User) {
+	@Layout(NewProjectTitle, PlatformHtmx(teams), sidebarProjects, user)
+}
+
+templ PlatformHtmx(teams []warnly.Team) {
+	<title>{ NewProjectTitle } - { AppName }</title>
+	<div id="content" x-data="projectForm()" class="max-w-6xl p-8 space-y-12 bg-white">
+		@Toast()
+		<section>
+			<h2 class="text-xl font-semibold flex items-center gap-2">
+				<span class="flex items-center rounded justify-center w-6 h-6  bg-black text-white text-sm">1</span>
+				Platforms
+			</h2>
+			<div class="mt-6">
+				<nav class="flex gap-6 border-b">
+					<button class="pb-2 px-1 border-b-2 border-black text-black">Supported</button>
+				</nav>
+				<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 mt-6">
+					<button :class="{ 'bg-gray-200': selectedPlatform === 'go' }" @click="selectPlatform('go')" class="flex cursor-pointer flex-col items-center p-4 rounded-lg">
+						<div class="w-12 h-12 flex items-center justify-center text-2xl bg-gray-100 rounded-lg mb-2">Go</div>
+						<span class="text-xs text-gray-600">Go</span>
+					</button>
+					<button :class="{ 'bg-gray-200': selectedPlatform === 'asp' }" @click="selectPlatform('asp')" class="flex cursor-pointer flex-col items-center p-4 rounded-lg">
+						<div class="w-12 h-12 flex items-center justify-center text-2xl bg-gray-100 rounded-lg mb-2">.NET</div>
+						<span class="text-xs text-gray-600">ASP.NET CORE</span>
+					</button>
+				</div>
+			</div>
+		</section>
+		<section>
+			<h2 class="text-xl font-semibold flex items-center gap-2">
+				<span class="flex rounded items-center justify-center w-6 h-6 bg-black text-white text-sm">2</span>
+				Alerts
+			</h2>
+			<div class="mt-6 space-y-6">
+				<div class="flex items-center space-x-2">
+					<input @click="alerts.highPriority = !alerts.highPriority" type="checkbox" id="high-priority" name="priority" class="text-white bg-black focus:ring-black"/>
+					<label for="high-priority">Alert me on issues</label>
+				</div>
+				<div class="flex items-center gap-4">
+					<span class="text-gray-600">When there are more than</span>
+					<input x-model.number="alerts.threshold" type="number" value="10" class="w-20 p-2 bg-white border border-gray-300 rounded-md"/>
+					<select x-model.number="alerts.condition" class="w-40 p-2 border border-gray-300 rounded-md bg-white">
+						<option value="1">occurrences of</option>
+						<option value="2">users affected by</option>
+					</select>
+					<span class="text-gray-600">a unique error in</span>
+					<select x-model.number="alerts.timeframe" class="w-40 p-2 border-gray-300 border bg-white rounded-md">
+						<option value="1">one minute</option>
+						<option value="2">5 minutes</option>
+						<option value="3">15 minutes</option>
+						<option value="4">one hour</option>
+						<option value="5">one day</option>
+						<option value="6">one week</option>
+						<option value="7">30 days</option>
+					</select>
+				</div>
+			</div>
+		</section>
+		<section>
+			<h2 class="text-xl font-semibold flex items-center gap-2">
+				<span class="flex rounded items-center justify-center w-6 h-6 bg-black text-white text-sm">3</span>
+				Name your project and assign it a team
+			</h2>
+			<div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+				<div>
+					<label for="project-name" class="block text-sm font-medium text-gray-700">Project name</label>
+					<div class="flex items-center mt-1">
+						<input x-model="projectName" type="text" id="project-name" placeholder="go" class="w-full p-3 border border-gray-300 rounded-md"/>
+					</div>
+				</div>
+				<div>
+					<label for="team" class="block text-sm font-medium text-gray-700">Team</label>
+					<select x-model.number="team" id="team" class="mt-1 w-full border border-gray-300 rounded-md bg-white p-3">
+						for _, team := range teams {
+							<option value={ fmt.Sprintf("%d", team.ID) }>{ team.Name }</option>
+						}
+					</select>
+				</div>
+			</div>
+			<button @click={ "htmxPost()" } :class="isFormValid ? 'bg-black text-white hover:bg-gray-800' : 'bg-gray-300 text-gray-500 cursor-not-allowed'" :disabled="!isFormValid" class="px-4 py-2 mt-8 rounded text-sm transition cursor-pointer">Create Project</button>
+		</section>
+	</div>
+	<script>
+    function projectForm() {
+        return {
+            selectedPlatform: null,
+            alerts: {
+                highPriority: false,
+                threshold: 10,
+                condition: 1,
+                timeframe: 1
+            },
+            projectName: '',
+            team: document.getElementById('team').value,
+            selectPlatform(platform) {
+                this.selectedPlatform = platform;
+            },
+            get isFormValid() {
+                return this.selectedPlatform && this.projectName.trim() !== '' && this.team.trim() !== '';
+            },
+			async htmxPost() {
+				const resp = await fetch(`/projects/q?projectName=${encodeURIComponent(this.projectName)}`, {
+					method: 'GET',
+				});
+				if (resp.status === 204) {
+					htmx.ajax('POST', '/projects', { 
+						target: '#content',
+						values: {
+							platform: this.selectedPlatform,
+							highPriority: this.alerts.highPriority,
+							threshold: this.alerts.threshold,
+							condition: this.alerts.condition,
+							timeframe: this.alerts.timeframe,
+							projectName: this.projectName,
+							team: this.team
+						}
+					});
+				} else if (resp.status === 200) {
+					showToast('Project already exists', 1500);
+				}
+			},
+            serialize() {
+                return JSON.stringify({
+                    platform: this.selectedPlatform,
+                    alerts: this.alerts,
+                    projectName: this.projectName,
+                    team: this.team
+                });
+            }
+        };
+    }
+</script>
+}

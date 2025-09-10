@@ -1,0 +1,324 @@
+package web
+
+import (
+	"fmt"
+	"github.com/vk-rv/warnly/internal/warnly"
+	"strconv"
+	"time"
+)
+
+templ GetIssue(issue *warnly.IssueDetails, user *warnly.User, source string) {
+	<!DOCTYPE html>
+	<html lang="en">
+		@htmlHeader(IssueDetailsTitle)
+		<body>
+			@sidebar(sidebarProjects, user)
+			@Toast()
+			@GetIssueHtmx(issue, user, source)
+		</body>
+	</html>
+}
+
+templ GetIssueHtmx(issue *warnly.IssueDetails, user *warnly.User, source string) {
+	<title>{ IssueDetailsTitle } - { AppName }</title>
+	if source != "" {
+		@GetIssueContent(issue, user)
+	} else {
+		<div id="main-content" class="main-content">
+			<div id="content" class="flex-grow bg-white p-4">
+				<header class="border-b border-gray-200">
+					<div class="px-4 py-2">
+						<div class="flex items-center space-x-4">
+							<nav class="flex items-center space-x-2">
+								<span hx-target="#content" hx-swap="outerHTML settle:0" hx-push-url="true" hx-get={ fmt.Sprintf("/projects/%d?issues=all&period=14d", issue.ProjectID) } class="text-gray-600 text-sm cursor-pointer">Issues</span>
+								<span class="flex items-center space-x-2">
+									<svg data-testid="geist-icon" height="10" stroke-linejoin="round" style="color: currentcolor;" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" clip-rule="evenodd" d="M5.50001 1.93933L6.03034 2.46966L10.8536 7.29288C11.2441 7.68341 11.2441 8.31657 10.8536 8.7071L6.03034 13.5303L5.50001 14.0607L4.43935 13L4.96968 12.4697L9.43935 7.99999L4.96968 3.53032L4.43935 2.99999L5.50001 1.93933Z" fill="currentColor"></path></svg>
+									<span class="font-medium text-sm">{ issue.ProjectName }</span>
+								</span>
+							</nav>
+						</div>
+					</div>
+					<div class="px-4 py-2 mt-2 flex items-center justify-between">
+						<div class="flex items-center space-x-4">
+							<h1 class="text-lg font-semibold">{ issue.ErrorType }</h1>
+							<span class="text-gray-600 truncate max-w-xs" title={ issue.View }>{ issue.View }</span>
+							if issue.IsNew {
+								<span class="px-2 py-1 bg-yellow-100 rounded text-sm">New</span>
+							} else {
+								<span class="px-2 py-1 bg-gray-100 rounded text-sm">Ongoing</span>
+							}
+						</div>
+						<div class="flex items-center space-x-2 text-sm">
+							<span class="text-gray-600">Errors</span>
+							<a class="text-black-500 text-lg" href="#">{ warnly.NumFormatted(issue.TimesSeen) }</a>
+						</div>
+						<div class="flex items-center space-x-2 text-sm">
+							<span class="text-gray-600">Users</span>
+							<a class="text-black-500 text-lg" href="#">{ warnly.NumFormatted(issue.UserCount) }</a>
+						</div>
+						<div class="flex items-center space-x-2 text-sm">
+						</div>
+						<div class="flex items-center space-x-2"></div>
+					</div>
+					<div class="px-4 flex items-center space-x-2">
+						<svg data-testid="geist-icon" height="16" stroke-linejoin="round" viewBox="0 0 16 16" width="16" style="color: currentcolor;"><path fill-rule="evenodd" clip-rule="evenodd" d="M14.5 8C14.5 11.5899 11.5899 14.5 8 14.5C4.41015 14.5 1.5 11.5899 1.5 8C1.5 4.41015 4.41015 1.5 8 1.5C11.5899 1.5 14.5 4.41015 14.5 8ZM16 8C16 12.4183 12.4183 16 8 16C3.58172 16 0 12.4183 0 8C0 3.58172 3.58172 0 8 0C12.4183 0 16 3.58172 16 8ZM10.5 5.5H5.5V10.5H10.5V5.5Z" fill="currentColor"></path></svg>
+						<span>{ issue.ErrorValue }</span>
+					</div>
+					<div x-data="{ activeTab: 'details' }" class="px-4 mt-4">
+						<nav class="flex space-x-6 text-sm">
+							<a hx-swap="outerHTML" hx-target="#issue_content" hx-get={ fmt.Sprintf("/projects/%d/issues/%d?period=14d&source=issue", issue.ProjectID, issue.IssueID) } :class="{ 'border-black text-black': activeTab === 'details', 'border-transparent text-gray-500 cursor-pointer': activeTab !== 'details' }" @click="activeTab = 'details'" class="px-3 py-2 border-b-2">Info</a>
+							<a hx-target="#issue_content" hx-get={ fmt.Sprintf("/projects/%d/issues/%d/discussions", issue.ProjectID, issue.IssueID) } :class="{ 'border-black text-black': activeTab === 'activity', 'border-transparent text-gray-500 cursor-pointer': activeTab !== 'activity' }" @click="activeTab = 'activity'" class="px-3 py-2 text-gray-600 border-b-2">Discuss <span id="message_cnt" class="text-gray-400">{ fmt.Sprintf("%d", issue.MessagesCount) }</span></a>
+							<a hx-target="#issue_content" hx-get={ fmt.Sprintf("/projects/%d/issues/%d/fields", issue.ProjectID, issue.IssueID) } :class="{ 'border-black text-black': activeTab === 'tags', 'border-transparent text-gray-500 cursor-pointer': activeTab !== 'tags' }" @click="activeTab = 'tags'" class="px-3 py-2 text-gray-600 border-b-2">Fields</a>
+							<a hx-target="#issue_content" hx-get={ fmt.Sprintf("/projects/%d/issues/%d/events", issue.ProjectID, issue.IssueID) } :class="{ 'border-black text-black': activeTab === 'all', 'border-transparent text-gray-500 cursor-pointer': activeTab !== 'all' }" @click="activeTab = 'all'" class="px-3 py-2 text-gray-600 border-b-2">All Errors</a>
+						</nav>
+					</div>
+				</header>
+				@GetIssueContent(issue, user)
+			</div>
+		</div>
+	}
+}
+
+templ GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) {
+	<div id="issue_content" class="flex" x-data={ "{ copyToClipboard(text) { navigator.clipboard.writeText(text); showToast('Copied to clipboard'); } }" }>
+		<main class="flex-1 p-6">
+			<div class="flex items-center justify-between mb-6">
+				<div class="flex items-center space-x-1">
+					<span class="font-semibold">ID:</span>
+					<span class="text-gray-600 cursor-pointer" title={ issue.EventID() } @click={ fmt.Sprintf("copyToClipboard('%s')", issue.EventID()) }>{ issue.EventID()[:6] }</span>
+					<svg data-testid="geist-icon" height="16" stroke-linejoin="round" viewBox="0 0 24 24" width="16" style="color: currentcolor;" class="cursor-pointer" @click={ fmt.Sprintf("copyToClipboard('%s')", issue.EventID()) }>
+						<path fill-rule="evenodd" clip-rule="evenodd" d="M8 2H16C17.1 2 18 2.9 18 4V6H16V4H8V6H6V4C6 2.9 6.9 2 8 2ZM6 8H18C19.1 8 20 8.9 20 10V20C20 21.1 19.1 22 18 22H6C4.9 22 4 21.1 4 20V10C4 8.9 4.9 8 6 8ZM6 10V20H18V10H6Z" fill="currentColor"></path>
+					</svg>
+				</div>
+			</div>
+			<div class="bg-white rounded-lg mb-6">
+				<div class="">
+					<div class="flex items-center justify-between">
+						<h2 class="text-sm font-medium text-gray-700">Message</h2>
+					</div>
+				</div>
+				<div class="pt-4">
+					<span>{ issue.Message }</span>
+				</div>
+			</div>
+			<div class="space-y-2 mt-6">
+				<div class="flex items-center gap-2">
+					<h2 class="text-sm font-medium text-gray-700 mb-2">Fields</h2>
+				</div>
+			</div>
+			<div class="max-w-4xl mx-auto mb-6">
+				<div class="grid grid-cols-2 text-xs">
+					for i, kv := range issue.TagKeyValue() {
+						if i % 2 == 0 {
+							<div class="text-gray-500 p-3 bg-gray-100">{ kv.Key }</div>
+							<div x-data="{ open: false }" class="relative font-mono p-3 bg-gray-100 cursor-pointer" @click="open = !open">
+								<span class="border-b border-dotted border-black">{ kv.Value }</span>
+								<div x-show="open" @click.away="open = false" class="absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded shadow-lg z-50">
+									<a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Search errors</a>
+									<a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Search issues</a>
+									<a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Copy to clipboard</a>
+								</div>
+							</div>
+						} else {
+							<div class="text-gray-500 p-3">
+								{ kv.Key }
+							</div>
+							<div x-data="{ open: false }" class="relative font-mono p-3 cursor-pointer" @click="open = !open">
+								<span class="border-b border-dotted border-black">{ kv.Value }</span>
+								<div x-show="open" @click.away="open = false" class="absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded shadow-lg z-50">
+									<a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Search errors</a>
+									<a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Search issues</a>
+									<a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Copy to clipboard</a>
+								</div>
+							</div>
+						}
+					}
+				</div>
+			</div>
+			if issue.HasStackDetails() {
+				<div x-data="{ showAll: false }" class="bg-white rounded-lg">
+					<div class="max-w-5xl mx-auto bg-white rounded-lg shadow-sm border border-gray-200">
+						<div class="p-1 border-b border-gray-100 flex items-center gap-4">
+							<div class="bg-black text-white rounded p-2 shrink-0">
+								<span class="font-mono">{ issue.GetPlatform() }</span>
+							</div>
+							<div class="flex-1 text-gray-600">
+								<div class="text-xs">
+									Noticed in<span class="font-mono">: { issue.StackDetails[0].Filepath }</span> in <span class="font-mono">{ issue.StackDetails[0].FunctionName }</span>
+								</div>
+							</div>
+						</div>
+						<div class="divide-y divide-gray-100">
+							for _, f := range issue.StackVisible() {
+								<div class="p-4 hover:bg-gray-50 flex items-center justify-between">
+									<div class="flex-1">
+										<div class="text-xs">
+											<span class="font-mono text-gray-700">{ f.Filepath }</span>
+											<span class="text-gray-500">in</span>
+											<span class="text-gray-600">{ f.FunctionName }</span>
+											<span class="text-gray-500">at line</span>
+											<span class="text-gray-700">{ strconv.Itoa(f.LineNo) }</span>
+										</div>
+									</div>
+									<span class="px-2 py-1 rounded text-xs bg-blue-50 text-blue-600">{ f.InAppStr() }</span>
+								</div>
+							}
+							<div x-show="showAll">
+								for _, f := range issue.StackHidden() {
+									<div class="p-4 hover:bg-gray-50 flex items-center justify-between">
+										<div class="flex-1">
+											<div class="text-xs">
+												<span class="font-mono text-gray-700">{ f.Filepath }</span>
+												<span class="text-gray-500">in</span>
+												<span class="text-gray-600">{ f.FunctionName }</span>
+												<span class="text-gray-500">at line</span>
+												<span class="text-gray-700">{ strconv.Itoa(f.LineNo) }</span>
+											</div>
+										</div>
+										<span class="px-2 py-1 rounded text-xs bg-blue-50 text-blue-600">{ f.InAppStr() }</span>
+									</div>
+								}
+							</div>
+							<div class="p-4 text-center">
+								<button @click="showAll = !showAll" class="text-sm cursor-pointer text-blue-600 hover:text-blue-700">
+									<span x-show="!showAll">Show more</span>
+									<span x-show="showAll">Show less</span>
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			}
+		</main>
+		<aside class="w-80 border-l border-gray-200 p-6">
+			<div class="space-y-6">
+				<div>
+					<h3 class="text-sm font-medium text-gray-600 mb-2">Assigned To</h3>
+					<div x-data={ teammateSelect(issue) }>
+						<button
+							@click="open = !open"
+							class="inline-flex items-center p-2.5 mr-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 cursor-pointer"
+						>
+							<span x-text="selected"></span>
+							<svg class="ml-2 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+							</svg>
+						</button>
+						<div x-show="open" @click.away="open = false" class="absolute mt-2 w-48 rounded-md bg-white shadow-lg z-10">
+							<ul class="py-1 text-sm text-gray-700">
+								<li x-show="selected !== 'Unassigned'">
+									<a
+										href="#"
+										@click.prevent={ unassignClickPrevent(issue.ProjectID, issue.IssueID) }
+										class="block px-4 py-2 hover:bg-gray-100 text-red-600"
+									>
+										Unassign
+									</a>
+								</li>
+								for _, teammate := range issue.Teammates {
+									if assigned, ok := issue.Assignments.AssignedUser(issue.IssueID); ok && assigned.ID == teammate.ID {
+										<li>
+											<a
+												href="#"
+												@click.prevent={ teammateClickPrevent(teammate.Username, teammate.ID, issue.ProjectID, issue.IssueID) }
+												class="block px-4 py-2 hover:bg-gray-100 flex items-center justify-between"
+											>
+												<span>{ teammate.Name }</span>
+											</a>
+										</li>
+									} else {
+										<li>
+											<a
+												href="#"
+												@click.prevent={ teammateClickPrevent(teammate.Username, teammate.ID, issue.ProjectID, issue.IssueID) }
+												class="block px-4 py-2 hover:bg-gray-100"
+											>
+												{ teammate.Name }
+											</a>
+										</li>
+									}
+								}
+							</ul>
+						</div>
+					</div>
+				</div>
+				<div>
+					<h3 class="text-sm font-medium text-gray-600 mb-2">Last 24 Hours</h3>
+					<div class="text-2xl font-semibold">{ warnly.NumFormatted(issue.Total24Hours) }</div>
+				</div>
+				<div>
+					<h3 class="text-sm font-medium text-gray-600 mb-2">Last 30 Days</h3>
+					<div class="text-2xl font-semibold">{ warnly.NumFormatted(issue.Total30Days) }</div>
+				</div>
+				<div>
+					<h3 class="text-sm font-medium text-gray-600 mb-2">Last Noticed</h3>
+					<div class="">{ warnly.TimeAgo(time.Now, issue.LastSeen, /* narrow */ false) } ago</div>
+				</div>
+				<div>
+					<h3 class="text-sm font-medium text-gray-600 mb-2">First Noticed</h3>
+					<div class="">{ warnly.TimeAgo(time.Now, issue.FirstSeen, /* narrow */ false) } ago</div>
+				</div>
+				<div class="">
+					<div class="flex items-center justify-between mb-6">
+						<div class="flex items-center gap-2">
+							<h2 class="text-lg font-semibold text-gray-900">Fields</h2>
+						</div>
+					</div>
+					for _, tc := range issue.TagCount {
+						<div x-data="{ open: false }" class="mb-6">
+							<div class="flex items-center justify-between mb-2">
+								<h3 class="text-sm font-medium text-gray-700">{ tc.Tag }</h3>
+								<div class="flex items-center gap-2 cursor-pointer" @click="open = !open">
+									<span class="text-sm text-gray-500 truncate max-w-xs" title={ issue.Tag(tc.Tag) }>{ warnly.Cut(issue.Tag(tc.Tag), 13) }</span>
+									<svg :class="{ 'rotate-180': open }" class="w-4 h-4 text-gray-400 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-width="2" d="M19 9l-7 7-7-7"></path>
+									</svg>
+								</div>
+							</div>
+							<div x-show="open" class="bg-gray-100 rounded-full h-2 mb-2">
+								<div class={ fmt.Sprintf("bg-gray-300 h-2 rounded-full %s", issue.ProgressLen(issue.Tag(tc.Tag))) }></div>
+							</div>
+							for _, t := range issue.ListTagValues(tc.Tag) {
+								<div x-show="open" class="flex items-center gap-2 pl-1">
+									<span class="w-2 h-2 bg-blue-600 rounded-full"></span>
+									<span class="text-sm truncate text-gray-600">{ t.Value }</span>
+									<span class="text-sm text-gray-400 ml-auto">{ t.PercentsFormatted() }%</span>
+								</div>
+							}
+						</div>
+					}
+				</div>
+			</div>
+		</aside>
+	</div>
+}
+
+func teammateSelect(issue *warnly.IssueDetails) string {
+	username := "Unassigned"
+	userID := int64(0)
+	for _, teammate := range issue.Teammates {
+		if assigned, ok := issue.Assignments.AssignedUser(issue.IssueID); ok && assigned.ID == teammate.ID {
+			username = teammate.Username
+			userID = teammate.ID
+			break
+		}
+	}
+	return fmt.Sprintf("{ open: false, selected: '%s', user_id: %d }", username, userID)
+}
+
+func teammateClickPrevent(username string, userID int64, projectID int, issueID int64) string {
+	return fmt.Sprintf(
+		"selected = '%s'; user_id = %d; open = false; htmx.ajax('POST', '/projects/%d/issues/%d/assignments', { values: { user_id: %d } })",
+		username,
+		userID,
+		projectID,
+		issueID,
+		userID)
+}
+
+func unassignClickPrevent(projectID int, issueID int64) string {
+	return fmt.Sprintf(
+		"selected = 'Unassigned'; open = false; htmx.ajax('DELETE', '/projects/%d/issues/%d/assignments', { headers: { } })",
+		projectID,
+		issueID)
+}

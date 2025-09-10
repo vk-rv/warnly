@@ -1,0 +1,14 @@
+package web
+
+import "github.com/vk-rv/warnly/internal/warnly"
+
+templ Index(res *warnly.ListIssuesResult, user *warnly.User) {
+	@Layout(IssuesTitle, IssuesHtmx(res), sidebarDashboard, user)
+}
+
+templ IssuesHtmx(res *warnly.ListIssuesResult) {
+	<title>{ IssuesTitle } - { AppName } </title>
+	<div id="content" class="flex-grow overflow-y-auto h-screen">
+		@Issues(res)
+	</div>
+}

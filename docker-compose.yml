@@ -1,0 +1,79 @@
+services:
+  mysql:
+    image: mysql:${MYSQL_TAG}
+    restart: always
+    labels:
+      - dev.orbstack.domains=mysql-warnly.local
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3326:3306"
+    volumes:
+      - mysql_d:/var/lib/mysql
+    healthcheck:
+            start_period: 5s
+            test: "/usr/bin/mysql --user=${MYSQL_USER} --password=${MYSQL_PASSWORD} --execute \"SHOW DATABASES;\""
+            interval: 5s
+            timeout: 30s
+            retries: 55
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:${CLICKHOUSE_TAG}
+    restart: always
+    labels:
+      - dev.orbstack.domains=clickhouse-warnly.local
+    environment:
+      - CLICKHOUSE_USER=${CLICKHOUSE_USER}
+      - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD}
+      - CLICKHOUSE_DB=${CLICKHOUSE_DB}
+    ports:
+      - "8133:8123"
+      - "9030:9000"
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8123/ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  warnly:
+    labels:
+      - dev.orbstack.domains=warnly.local
+    build:
+      context: .
+      dockerfile: Dockerfile.air
+    environment:
+      - DB_DSN=${DB_DSN}
+      - CLICKHOUSE_DSN=${CLICKHOUSE_DSN}
+      - SCHEME=${SCHEME}
+      - CERT_FILE=${CERT_FILE}
+      - CERT_KEY=${CERT_KEY}
+      - METRICS_PORT=${METRICS_PORT}
+      - METRICS_PATH=${METRICS_PATH}
+      - METRICS_ENABLED=${METRICS_ENABLED}
+      - USER_EMAIL=${USER_EMAIL}
+      - USER_PASSWORD=${USER_PASSWORD}
+      - FORCE_MIGRATE=${FORCE_MIGRATE}
+      - REMEMBER_SESSION_DAYS=${REMEMBER_SESSION_DAYS}
+      - SESSION_KEY=${SESSION_KEY}
+      - SERVER_PORT=${SERVER_PORT}
+      - SERVER_HOST=${SERVER_HOST}
+    depends_on:
+      - mysql
+      - clickhouse
+    ports:
+      - 8030:8030
+    volumes:
+      - ./:/app
+
+volumes:
+  mysql_d:
+  clickhouse_data:

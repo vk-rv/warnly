@@ -1,0 +1,46 @@
+<h1>
+<p align="center">
+<br>Warnly
+</h1>
+  <p align="center">
+    Exception monitoring system, designed specifically for self-hosting
+    <br />
+    <a href="#about">About</a>
+    ·
+    <a href="#download">Download</a>
+    ·
+    <a href="#documentation">Documentation</a>
+    ·
+    <a href="internal#project-structure">Developing</a>
+  </p>
+</p>
+
+## About
+
+Logs should be categorized into issues, with each issue assigned to the appropriate team member. In an ideal scenario, a well-functioning application should operate silently. Warnly, in line with Sentry's best practices, address this effectively.
+
+<b>Warnly vs Sentry:</b> Sentry is an incredible project. Warnly doesn’t compete with Sentry, because it’s tough to compete with a product developed by a team of talented engineers since 2008. 
+
+Enterprise-focused solutions tend to prioritize complex features that create unnecessary overhead for self-hosting scenarios. There's an opportunity to take the core monitoring functionality and package it into a single binary that eliminates operational complexity while maintaining essential features. That's how Warnly was born: an open-source project designed specifically for self-hosting.
+
+For more details, see [About Warnly](https://warnly.io/docs/about).
+
+## Download
+
+See the [download page](https://warnly.io/download) on the Warnly website.
+
+## Documentation
+
+See the [documentation](https://warnly.io/docs) on the Warnly website.
+
+## Roadmap and Status
+
+The high-level plan for `warnly`, in order:
+
+|  #  | Step                                                      | Status |
+| :-: | --------------------------------------------------------- | :----: |
+|  1  | Backend exception monitoring                              |   ⚠️   |
+|  2  | Mobile and frontend exception monitoring                  |   ❌   |
+|  3  | Swappable storage                                         |   ❌   |
+|  4  | SLO and flexible alerting rules                           |   ❌   |
+|  N  | Fancy features (to be expanded upon later)                |   ❌   |

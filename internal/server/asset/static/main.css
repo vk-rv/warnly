@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+@theme {
+    --color-primary: #3b82f6;
+    --color-primary-foreground: #ffffff;
+    --color-secondary: #f3f4f6;
+    --color-secondary-foreground: #1f2937;
+    --color-destructive: #ef4444;
+    --color-destructive-foreground: #ffffff;
+    --color-muted: #f3f4f6;
+    --color-muted-foreground: #6b7280;
+    --color-accent: #f3f4f6;
+    --color-accent-foreground: #1f2937;
+    --color-border: #e5e7eb;
+    --color-creme: #e2dcd0;
+    --color-creme-dark-light: #d9d2c9;
+    --color-creme-light: #f2eae0;
+}
+
+@layer base {
+  body {
+    @apply bg-white text-gray-900;
+  }
+}
+
+.sidebar {
+  @apply fixed top-0 left-0 h-full w-64 bg-gray-50 border-r border-gray-200 z-40 transition-all duration-300 ease-in-out;
+}
+
+.sidebar-collapsed {
+  @apply -translate-x-full md:translate-x-0 md:w-20;
+}
+
+.main-content {
+  @apply ml-0 md:ml-64 transition-all duration-300 ease-in-out;
+}
+
+.main-content-expanded {
+  @apply md:ml-20;
+}
+
+.card {
+  @apply bg-white border border-gray-200 rounded-lg shadow-sm;
+}
+
+.badge {
+  @apply px-2 py-1 text-xs font-medium rounded-full;
+}
+
+.badge-primary {
+  @apply bg-blue-100 text-blue-800;
+}
+
+.badge-secondary {
+  @apply bg-gray-100 text-gray-800;
+}
+
+.badge-destructive {
+  @apply bg-red-100 text-red-800;
+}
+
+.btn {
+  @apply px-4 py-2 rounded-md font-medium text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors;
+}
+
+.btn-primary {
+  @apply bg-blue-500 text-white hover:bg-blue-600 focus:ring-blue-500;
+}
+
+.btn-secondary {
+  @apply bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-blue-500;
+}
+
+.btn-icon {
+  @apply p-2 rounded-md;
+}
+
+.tab {
+  @apply px-4 py-2 text-sm font-medium rounded-md;
+}
+
+.tab-active {
+  @apply bg-white text-blue-600 shadow-sm;
+}
+
+.tab-inactive {
+  @apply text-gray-600 hover:text-gray-900 hover:bg-gray-100;
+}
+
+.progress {
+  @apply h-2 bg-gray-200 rounded-full overflow-hidden;
+}
+
+.progress-bar {
+  @apply h-full bg-blue-500 rounded-full;
+}
+
+.dropdown {
+  @apply absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200;
+}
+
+.dropdown-item {
+  @apply block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100;
+}

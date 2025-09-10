@@ -1,0 +1,104 @@
+version: "2"
+linters:
+  default: all
+  disable:
+    - contextcheck
+    - depguard
+    - wsl_v5
+    - noinlineerr
+    - dupl
+    - err113
+    - exhaustruct 
+    - funlen
+    - gochecknoglobals
+    - gocognit
+    - gosec
+    - maintidx 
+    - mnd 
+    - nestif
+    - nlreturn
+    - nonamedreturns
+    - varnamelen
+    - wrapcheck
+    - wsl
+    - ireturn
+  settings:
+    cyclop:
+      max-complexity: 20
+    gocyclo:
+      min-complexity: 20
+    tagliatelle:
+    # Checks the struct tag name case.
+      case:
+      # Defines the association between tag name and case.
+      # Any struct tag name can be used.
+      # Supported string cases:
+      # - `camel`
+      # - `pascal`
+      # - `kebab`
+      # - `snake`
+      # - `upperSnake`
+      # - `goCamel`
+      # - `goPascal`
+      # - `goKebab`
+      # - `goSnake`
+      # - `upper`
+      # - `lower`
+      # - `header`
+        rules:
+          json: snake
+    gocritic:
+      disabled-checks:
+        - sloppyReassign
+        - unnamedResult
+      enabled-tags:
+        - diagnostic
+        - experimental
+        - opinionated
+        - performance
+        - style
+    govet:
+      disable:
+        - shadow
+      enable-all: true
+    lll:
+      line-length: 130
+    revive:
+      rules:
+        - name: indent-error-flow
+        - name: use-any
+    staticcheck:
+      checks:
+        - -ST1000
+        - all
+  exclusions:
+    generated: lax
+    presets:
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - lll
+        path: _test\.go
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+      - internal/web$
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+formatters:
+  enable:
+    - gofmt
+    - gofumpt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+      - internal/web$
+

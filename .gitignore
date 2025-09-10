@@ -1,0 +1,9 @@
+*.pem
+node_modules
+tmp
+.DS_Store
+.env
+*.log
+*.env
+*.db
+.trunk

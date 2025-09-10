@@ -1,0 +1,75 @@
+package web
+
+import "github.com/vk-rv/warnly/internal/warnly"
+
+const (
+	systemNavigationQueries = "queries"
+	systemNavigationSchema  = "schema"
+	systemNavigationErrors  = "errors"
+)
+
+templ Schema(schemas []warnly.Schema, user *warnly.User) {
+	@Layout(SchemaTitle, SchemaHtmx(schemas), sidebarSystem, user)
+}
+
+templ SchemaHtmx(schemas []warnly.Schema) {
+	<title>{ SchemaTitle } - { AppName } </title>
+	<div class="flex min-h-screen text-sm" id="content">
+		<div class="flex-1 overflow-x-auto">
+			<div class="bg-white shadow">
+				@systemNavigation(systemNavigationSchema)
+				<div class="p-6" id="content-section">
+					<div class="overflow-x-auto">
+						<table class="w-full bg-white border-collapse shadow-lg rounded-lg">
+							<thead class="font-semibold">
+								<tr class="text-left text-sm">
+									<th scope="col" class="py-2 px-4 font-semibold">NAME</th>
+									<th scope="col" class="py-3 px-4 font-semibold text-right">SIZE</th>
+									<th scope="col" class="py-3 px-4 font-semibold text-right">ROWS</th>
+									<th scope="col" class="py-3 px-4 font-semibold text-right">ENGINE</th>
+									<th scope="col" class="py-3 px-4 font-semibold text-right">PARTITION KEY</th>
+								</tr>
+							</thead>
+							<tbody class="bg-white divide-y divide-gray-200">
+								for _, schema := range schemas {
+									<tr class="border-t border-gray-200 hover:bg-gray-50 transition duration-150 ease-in-out">
+										<td class="py-3 px-4">
+											<a href="#" class="hover:underline">{ schema.Name }</a>
+										</td>
+										<td class="py-3 px-4 text-right">{ schema.ReadableBytes }</td>
+										<td class="py-3 px-4 text-right">{ warnly.NumFormatted(schema.TotalRows) }</td>
+										<td class="py-3 px-4 text-right">{ schema.Engine }</td>
+										<td class="py-3 px-4 text-right">{ schema.PartitionKey }</td>
+									</tr>
+								}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+
+templ systemNavigation(activePage string) {
+	<nav class="pl-5 pt-5">
+		<ul class="flex gap-6">
+			<li hx-get="/system" hx-target="#content" hx-swap="outerHTML settle:0" hx-push-url="true" class={ getSystemNavClass(systemNavigationQueries, activePage) }>
+				<a class="text-[13px] font-medium">Queries</a>
+			</li>
+			<li hx-get="/system/schema" hx-target="#content" hx-swap="outerHTML settle:0" hx-push-url="true" class={ getSystemNavClass(systemNavigationSchema, activePage) }>
+				<a class="text-[13px] font-medium">Schema</a>
+			</li>
+			<li hx-get="/system/errors" hx-target="#content" hx-swap="outerHTML settle:0" hx-push-url="true" class={ getSystemNavClass(systemNavigationErrors, activePage) }>
+				<a class="text-[13px] font-medium">Errors</a>
+			</li>
+		</ul>
+	</nav>
+}
+
+func getSystemNavClass(page, activePage string) string {
+	if page == activePage {
+		return "border-black cursor-pointer border-b-2 pb-2"
+	}
+	return "border-b-2 cursor-pointer pb-2 border-gray-100"
+}

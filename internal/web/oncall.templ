@@ -1,0 +1,17 @@
+package web
+
+import "github.com/vk-rv/warnly/internal/warnly"
+
+templ OnCall(user *warnly.User) {
+	@Layout(OnCallTitle, OnCallHtmx(), sidebarOnCall, user)
+}
+
+templ OnCallHtmx() {
+	<title>{ OnCallTitle } - { AppName }</title>
+	<div id="content" class="flex-grow p-8 overflow-y-auto h-screen">
+		<header class="flex justify-between items-center mb-6">
+			<h1 class="text-2xl font-semibold">Nothing to do here</h1>
+		</header>
+		<p class="text-gray-600">This feature is in development</p>
+	</div>
+}
