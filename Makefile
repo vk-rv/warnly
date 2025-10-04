@@ -31,3 +31,7 @@ fmt:
 .PHONY: tailwindcss
 tailwindcss:
 	npx @tailwindcss/cli -i internal/server/asset/static/main.css -o internal/server/asset/static/tailwind.css --minify
+
+.PHONY: test
+test:
+	INTEGRATION=1 go test -count=1 ./... -v

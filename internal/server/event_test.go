@@ -10,11 +10,13 @@ import (
 
 	"github.com/patrickmn/go-cache"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/vk-rv/warnly/internal/ch"
 	"github.com/vk-rv/warnly/internal/mysql"
 	"github.com/vk-rv/warnly/internal/server"
 	"github.com/vk-rv/warnly/internal/svc/event"
 	"github.com/vk-rv/warnly/internal/svcotel"
+	"github.com/vk-rv/warnly/internal/warnly"
 )
 
 const ingestEventPath = "/ingest/api/{project_id}/envelope/"
@@ -41,6 +43,16 @@ func TestServer_HandleEventIngestion(t *testing.T) {
 		issueStore := mysql.NewIssueStore(testDB)
 		memoryCache := cache.New(5*time.Minute, 10*time.Minute)
 		olap := ch.NewClickhouseStore(testOlapDB, svcotel.NewNoopProvider())
+
+		err := projectStore.CreateProject(t.Context(), &warnly.Project{
+			CreatedAt: nowTime(),
+			Name:      "go-test",
+			Key:       "urzovxt",
+			UserID:    1,
+			TeamID:    1,
+			Platform:  warnly.PlatformGolang,
+		})
+		require.NoError(t, err)
 
 		svc := event.NewEventService(
 			projectStore,

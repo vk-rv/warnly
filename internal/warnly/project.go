@@ -104,10 +104,13 @@ type ProjectStore interface {
 	// GetProject returns a project by identifier.
 	GetProject(ctx context.Context, projectID int) (*Project, error)
 	// GetOptions returns the project options.
-	GetOptions(ctx context.Context, projectID int) (*ProjectOptions, error)
+	GetOptions(ctx context.Context, projectID int, projectKey string) (*ProjectOptions, error)
 }
 
 type ProjectOptions struct {
+	Name          string
+	ID            int
+	Platform      Platform
 	RetentionDays uint8
 }
 

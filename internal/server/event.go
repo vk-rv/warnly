@@ -202,6 +202,9 @@ func (h *EventHandler) handleIngestEvent(r *http.Request) (warnly.IngestEventRes
 
 	res, err = h.svc.IngestEvent(ctx, req)
 	if err != nil {
+		if errors.Is(err, warnly.ErrProjectNotFound) {
+			return res, NewBadRequestError("project not found", err, "invalid project identifier or key")
+		}
 		return res, fmt.Errorf("ingest event: %w", err)
 	}
 

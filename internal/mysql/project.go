@@ -84,8 +84,19 @@ func (s *ProjectStore) GetProject(ctx context.Context, projectID int) (*warnly.P
 }
 
 // GetOptions returns project options by project ID.
-func (s *ProjectStore) GetOptions(ctx context.Context, projectID int) (*warnly.ProjectOptions, error) {
-	return &warnly.ProjectOptions{}, nil
+func (s *ProjectStore) GetOptions(ctx context.Context, projectID int, projectKey string) (*warnly.ProjectOptions, error) {
+	const query = `SELECT id, name, platform FROM project WHERE id = ? AND project_key = ?`
+
+	opts := &warnly.ProjectOptions{}
+	err := s.db.QueryRowContext(ctx, query, projectID, projectKey).Scan(&opts.ID, &opts.Name, &opts.Platform)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, fmt.Errorf("mysql project store: get project options with id %d: %w", projectID, warnly.ErrProjectNotFound)
+		}
+		return nil, fmt.Errorf("mysql project store: get project options: %w", err)
+	}
+
+	return opts, nil
 }
 
 // ListProjects returns a list of projects by team unique identifiers.
