@@ -62,6 +62,7 @@ func TestServer_HandleEventIngestion(t *testing.T) {
 			bytes.NewReader(body))
 		r.SetPathValue("project_id", "1")
 		r.Header.Set("Content-Type", "application/json")
+		r.Header.Set("X-Sentry-Auth", "Sentry sentry_version=7, sentry_client=sentry.go/0.30.0, sentry_key=urzovxt")
 
 		w := httptest.NewRecorder()
 

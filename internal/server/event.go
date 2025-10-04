@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -29,6 +30,70 @@ type ingestResponseSuccess struct {
 	ID string `json:"id"`
 }
 
+// ClientError represents an error that should result in a specific HTTP
+// status code and a structured JSON response body for the client.
+type ClientError interface {
+	Error() string
+	HTTPStatus() int
+	Response() ingestResponseError
+}
+
+type IngestError struct {
+	Detail       string
+	WrappedError error
+	Causes       []string
+	Status       int
+}
+
+// NewBadRequestError creates a 400 Bad Request error, saving the optional original error.
+func NewBadRequestError(detail string, originalErr error, causes ...string) *IngestError {
+	return &IngestError{
+		Status:       http.StatusBadRequest,
+		Detail:       detail,
+		Causes:       causes,
+		WrappedError: originalErr,
+	}
+}
+
+// NewSizeLimitError creates a 400 error for size limit exceeded.
+func NewSizeLimitError(detail string) *IngestError {
+	return NewBadRequestError("envelope exceeded size limits", nil, detail)
+}
+
+// NewInvalidDSNError creates a 400 error specifically for bad DSN/key.
+func NewInvalidDSNError() *IngestError {
+	return NewBadRequestError("invalid DSN or project key.", nil)
+}
+
+// Error implements the error interface.
+func (e *IngestError) Error() string {
+	if e.WrappedError != nil {
+		return fmt.Sprintf("%s (wrapped: %v)", e.Detail, e.WrappedError)
+	}
+	if len(e.Causes) > 0 {
+		return fmt.Sprintf("%s: %s", e.Detail, strings.Join(e.Causes, "; "))
+	}
+	return e.Detail
+}
+
+// Unwrap allows errors.Unwrap to retrieve the original error.
+func (e *IngestError) Unwrap() error {
+	return e.WrappedError
+}
+
+// HTTPStatus returns the HTTP status code for the response.
+func (e *IngestError) HTTPStatus() int {
+	return e.Status
+}
+
+// Response returns the structured error response body.
+func (e *IngestError) Response() ingestResponseError {
+	return ingestResponseError{
+		Detail: e.Detail,
+		Causes: e.Causes,
+	}
+}
+
 // EventHandler ingests events via API.
 type EventHandler struct {
 	svc    warnly.EventService
@@ -44,6 +109,18 @@ func NewEventAPIHandler(svc warnly.EventService, logger *slog.Logger) *EventHand
 func (h *EventHandler) IngestEvent(w http.ResponseWriter, r *http.Request) {
 	res, err := h.handleIngestEvent(r)
 	if err != nil {
+		var clientErr ClientError
+		if errors.As(err, &clientErr) {
+			h.logger.Error("ingest client error", slog.Any("error", clientErr), slog.Int("status", clientErr.HTTPStatus()))
+
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(clientErr.HTTPStatus())
+
+			if err := json.NewEncoder(w).Encode(clientErr.Response()); err != nil {
+				h.logger.Error("encode client error response", slog.Any("error", err), slog.Int("status", clientErr.HTTPStatus()))
+			}
+			return
+		}
 		id := warnly.MustNanoID()
 		h.logger.Error("ingest new event", slog.Any("error", err), slog.String("errorId", id))
 		w.WriteHeader(http.StatusInternalServerError)
@@ -73,24 +150,43 @@ func (h *EventHandler) handleIngestEvent(r *http.Request) (warnly.IngestEventRes
 
 	projectID, err := strconv.Atoi(r.PathValue("project_id"))
 	if err != nil {
-		return res, fmt.Errorf("parse project id: %w", err)
+		return res, NewBadRequestError("invalid project identifier", err, "project_id must be an integer")
 	}
 
+	projectKey, err := projectKey(r.Header.Get("X-Sentry-Auth"))
+	if err != nil {
+		return res, err
+	}
+
+	defer func() {
+		if err := r.Body.Close(); err != nil {
+			h.logger.Error("failed to close request body", slog.Any("error", err))
+		}
+	}()
+
+	const maxEnvelopeSize int64 = 1 * 1024 * 1024 // 1MB
+	r.Body = http.MaxBytesReader(nil, r.Body, maxEnvelopeSize)
 	b, err := io.ReadAll(r.Body)
 	if err != nil {
-		return res, fmt.Errorf("read body: %w", err)
+		if errors.Is(err, io.EOF) {
+			return res, NewBadRequestError("empty request body", err, "no payload provided")
+		}
+		if errors.Is(err, http.ErrBodyReadAfterClose) || strings.Contains(err.Error(), "http: request body too large") {
+			return res, NewSizeLimitError(fmt.Sprintf("max %d bytes", maxEnvelopeSize))
+		}
+		return res, NewBadRequestError("failed to read request body", err, "failed to decode payload")
 	}
 
 	lines := strings.Split(string(b), "\n")
 	if len(lines) < 3 {
-		return res, fmt.Errorf("split body: %w", err)
+		return res, NewBadRequestError("invalid event envelope", nil, "premature end of input: too few lines")
 	}
 
 	content := lines[2]
 
 	event := warnly.EventBody{}
 	if err := json.Unmarshal([]byte(content), &event); err != nil {
-		return res, fmt.Errorf("unmarshal body: %w", err)
+		return res, NewBadRequestError("invalid event body", err, "failed to unmarshal JSON payload")
 	}
 	if event.EventID == "" {
 		id := uuid.New()
@@ -98,9 +194,10 @@ func (h *EventHandler) handleIngestEvent(r *http.Request) (warnly.IngestEventRes
 	}
 
 	req := warnly.IngestRequest{
-		Event:     &event,
-		ProjectID: projectID,
-		IP:        r.RemoteAddr,
+		Event:      &event,
+		ProjectKey: projectKey,
+		ProjectID:  projectID,
+		IP:         r.RemoteAddr,
 	}
 
 	res, err = h.svc.IngestEvent(ctx, req)
@@ -109,4 +206,24 @@ func (h *EventHandler) handleIngestEvent(r *http.Request) (warnly.IngestEventRes
 	}
 
 	return res, nil
+}
+
+func projectKey(xHeaderAuth string) (string, error) {
+	var projectKey string
+
+	parts := strings.Split(xHeaderAuth, ",")
+
+	for i := range parts {
+		parts[i] = strings.TrimSpace(parts[i])
+		if strings.HasPrefix(parts[i], "sentry_key=") {
+			projectKey = strings.TrimPrefix(parts[i], "sentry_key=")
+			break
+		}
+	}
+
+	if projectKey == "" {
+		return "", NewInvalidDSNError()
+	}
+
+	return projectKey, nil
 }

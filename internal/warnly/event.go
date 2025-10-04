@@ -20,7 +20,8 @@ type IngestEventResult struct {
 
 // IngestRequest is a request to ingest a new event.
 type IngestRequest struct {
-	Event     *EventBody
-	IP        string
-	ProjectID int
+	Event      *EventBody
+	IP         string
+	ProjectKey string
+	ProjectID  int
 }
