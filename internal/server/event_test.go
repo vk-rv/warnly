@@ -133,3 +133,50 @@ func TestServer_HandleEventIngestion(t *testing.T) {
 		assert.JSONEq(t, `{"detail":"project not found","causes":["invalid project identifier or key"]}`, w.Body.String())
 	})
 }
+
+func TestIngestErrors(t *testing.T) {
+	t.Parallel()
+
+	t.Run("NewBadRequestError with wrapped error and causes", func(t *testing.T) {
+		t.Parallel()
+		origErr := assert.AnError
+		err := server.NewBadRequestError("bad request", origErr, "cause1", "cause2")
+		assert.Equal(t, http.StatusBadRequest, err.Status)
+		assert.Equal(t, "bad request", err.Detail)
+		assert.Equal(t, []string{"cause1", "cause2"}, err.Causes)
+		assert.Equal(t, origErr, err.WrappedError)
+		assert.Contains(t, err.Error(), "bad request (wrapped: assert.AnError general error for testing)")
+	})
+
+	t.Run("NewBadRequestError without wrapped error", func(t *testing.T) {
+		t.Parallel()
+		err := server.NewBadRequestError("bad request", nil, "cause1")
+		assert.Equal(t, "bad request: cause1", err.Error())
+	})
+
+	t.Run("NewBadRequestError without causes", func(t *testing.T) {
+		t.Parallel()
+		err := server.NewBadRequestError("bad request", nil)
+		assert.Equal(t, "bad request", err.Error())
+	})
+
+	t.Run("NewSizeLimitError", func(t *testing.T) {
+		t.Parallel()
+		err := server.NewSizeLimitError("too large")
+		assert.Equal(t, http.StatusBadRequest, err.Status)
+		assert.Equal(t, "envelope exceeded size limits", err.Detail)
+		assert.Equal(t, []string{"too large"}, err.Causes)
+		require.NoError(t, err.WrappedError)
+		assert.Equal(t, "envelope exceeded size limits: too large", err.Error())
+	})
+
+	t.Run("NewInvalidDSNError", func(t *testing.T) {
+		t.Parallel()
+		err := server.NewInvalidDSNError()
+		assert.Equal(t, http.StatusBadRequest, err.Status)
+		assert.Equal(t, "invalid DSN or project key.", err.Detail)
+		assert.Empty(t, err.Causes)
+		require.NoError(t, err.WrappedError)
+		assert.Equal(t, "invalid DSN or project key.", err.Error())
+	})
+}
