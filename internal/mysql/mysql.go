@@ -47,7 +47,9 @@ func ConnectLoop(ctx context.Context, cfg DBConfig, logger *slog.Logger) (db *sq
 	cfg.PoolConfig.maxOpenConnections = 20
 	cfg.PoolConfig.maxIdleConnections = 20
 	cfg.PoolConfig.maxLifetime = 5 * time.Minute
-	cfg.Timeout = time.Second * 3
+	if cfg.Timeout == 0 {
+		cfg.Timeout = time.Second * 3
+	}
 
 	dsn := cfg.DSN
 	const driverName = "mysql"

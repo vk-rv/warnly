@@ -106,7 +106,7 @@ func run(cfg *config, logger *slog.Logger) error {
 		}
 	}()
 
-	clickConn, clickClose, err := ch.ConnectLoop(termCtx, cfg.ClickHouse.DSN, logger)
+	clickConn, clickClose, err := ch.ConnectLoop(termCtx, cfg.ClickHouse.DSN, ch.DefaultTimeout, logger)
 	if err != nil {
 		return err
 	}

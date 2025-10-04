@@ -87,7 +87,7 @@ func NewHandler(b *Backend) (*Handler, error) {
 			slog.String("handler", "session"),
 		))
 
-	eventAPIHandler := newEventAPIHandler(b.EventService, b.Logger.With(
+	eventAPIHandler := NewEventAPIHandler(b.EventService, b.Logger.With(
 		slog.String("handler", "event"),
 	))
 
@@ -170,9 +170,7 @@ func NewHandler(b *Backend) (*Handler, error) {
 	mux.HandleFunc("GET /", chain(sessionHandler.index))
 	mux.HandleFunc("DELETE /session", chain(sessionHandler.destroy))
 
-	mux.HandleFunc("POST /api/v1/events", chain(eventAPIHandler.ingestEvent))
-
-	mux.HandleFunc("POST /ingest/api/{project_id}/envelope/", eventAPIHandler.ingestEvent)
+	mux.HandleFunc("POST /ingest/api/{project_id}/envelope/", eventAPIHandler.IngestEvent)
 
 	mux.HandleFunc("GET /login", chainWithoutAuth(sessionHandler.login))
 	mux.HandleFunc("POST /login", chainWithoutAuth(sessionHandler.create))

@@ -10,7 +10,12 @@ const DefaultMessage = "(No error message)"
 // EventService defines the interface for event-related operations.
 type EventService interface {
 	// IngestEvent ingests and stores a new event in both OLTP and OLAP databases.
-	IngestEvent(ctx context.Context, req *IngestRequest) error
+	IngestEvent(ctx context.Context, req IngestRequest) (IngestEventResult, error)
+}
+
+type IngestEventResult struct {
+	// EventID is the ID of the ingested event.
+	EventID string
 }
 
 // IngestRequest is a request to ingest a new event.

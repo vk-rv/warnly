@@ -59,7 +59,7 @@ jobs:
           check-latest: true
           cache: true
       - name: Run tests with coverage
-        run: go test -race -coverprofile=coverage.txt ./...
+        run: INTEGRATION=1 go test -race -coverprofile=coverage.txt ./...
       - name: Upload Coverage
         uses: codecov/codecov-action@v5.4.3
         with:

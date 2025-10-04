@@ -46,22 +46,24 @@ func NewEventService(
 }
 
 // IngestEvent ingests a new event into the system.
-func (s *EventService) IngestEvent(ctx context.Context, req *warnly.IngestRequest) error {
+func (s *EventService) IngestEvent(ctx context.Context, req warnly.IngestRequest) (warnly.IngestEventResult, error) {
+	res := warnly.IngestEventResult{}
+
 	opts, err := s.getProjectOptions(ctx, req.ProjectID)
 	if err != nil {
-		return err
+		return res, err
 	}
 
 	ipv4, ipv6, err := s.extractIP(req.IP)
 	if err != nil {
-		return err
+		return res, err
 	}
 
 	event := req.Event
 
 	eventHash, err := warnly.GetNormalizedHash(event)
 	if err != nil {
-		return err
+		return res, err
 	}
 
 	cacheKey := fmt.Sprintf("%d:%s", req.ProjectID, eventHash)
@@ -75,11 +77,11 @@ func (s *EventService) IngestEvent(ctx context.Context, req *warnly.IngestReques
 	if found {
 		issueInfo, ok = iss.(warnly.IssueInfo)
 		if !ok {
-			return errors.New("event service ingest: cache issue info type assertion")
+			return res, errors.New("event service ingest: cache issue info type assertion")
 		}
 		_, err, _ := s.sf.Do(cacheKey, s.updateLastSeen(ctx, issueInfo.ID, s.now().UTC()))
 		if err != nil {
-			return fmt.Errorf("event service ingest: update last seen %w", err)
+			return res, fmt.Errorf("event service ingest: update last seen %w", err)
 		}
 	} else {
 		issue, err := s.issueStore.GetIssue(ctx, warnly.GetIssueCriteria{
@@ -88,7 +90,7 @@ func (s *EventService) IngestEvent(ctx context.Context, req *warnly.IngestReques
 		})
 		if err != nil {
 			if !errors.Is(err, warnly.ErrNotFound) {
-				return fmt.Errorf("event service ingest: get issue from store %w", err)
+				return res, fmt.Errorf("event service ingest: get issue from store %w", err)
 			}
 			now := s.now().UTC()
 			issue = &warnly.Issue{
@@ -105,11 +107,11 @@ func (s *EventService) IngestEvent(ctx context.Context, req *warnly.IngestReques
 				Priority:    warnly.PriorityHigh,
 			}
 			if _, err, _ := s.sf.Do(cacheKey, s.storeIssue(ctx, issue)); err != nil {
-				return fmt.Errorf("event service ingest: store issue %w", err)
+				return res, fmt.Errorf("event service ingest: store issue %w", err)
 			}
 		} else {
 			if _, err, _ := s.sf.Do(cacheKey, s.updateLastSeen(ctx, issueInfo.ID, s.now().UTC())); err != nil {
-				return fmt.Errorf("event service ingest: update last seen %w", err)
+				return res, fmt.Errorf("event service ingest: update last seen %w", err)
 			}
 		}
 		issueInfo = warnly.IssueInfo{ID: issue.ID, UUID: issue.UUID.String(), Hash: issue.Hash}
@@ -177,10 +179,12 @@ func (s *EventService) IngestEvent(ctx context.Context, req *warnly.IngestReques
 	}
 
 	if err := s.olap.StoreEvent(ctx, ev); err != nil {
-		return fmt.Errorf("event service ingest: store event in olap %w", err)
+		return res, fmt.Errorf("event service ingest: store event in olap %w", err)
 	}
 
-	return nil
+	res.EventID = ev.EventID
+
+	return res, nil
 }
 
 // updateLastSeen updates the last seen time of an issue in oltp database.
