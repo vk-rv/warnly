@@ -15,6 +15,8 @@ import (
 	"github.com/vk-rv/warnly/internal/warnly"
 )
 
+const internalErrorDetail = "Internal Error"
+
 // ingestResponseError represents a standard API error response for event ingestion.
 type ingestResponseError struct {
 	Detail string `json:"detail"`
@@ -125,7 +127,7 @@ func (h *EventHandler) IngestEvent(w http.ResponseWriter, r *http.Request) {
 		h.logger.Error("ingest new event", slog.Any("error", err), slog.String("errorId", id))
 		w.WriteHeader(http.StatusInternalServerError)
 		if err := json.NewEncoder(w).Encode(ingestResponseError{
-			Detail:  err.Error(),
+			Detail:  internalErrorDetail,
 			ErrorID: id,
 		}); err != nil {
 			h.logger.Error("encode error response", slog.Any("error", err))

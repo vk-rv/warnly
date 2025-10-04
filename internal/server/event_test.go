@@ -2,6 +2,8 @@ package server_test
 
 import (
 	"bytes"
+	"context"
+	"encoding/json"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
@@ -132,6 +134,50 @@ func TestServer_HandleEventIngestion(t *testing.T) {
 		assert.Equal(t, http.StatusBadRequest, w.Code)
 		assert.JSONEq(t, `{"detail":"project not found","causes":["invalid project identifier or key"]}`, w.Body.String())
 	})
+
+	t.Run("event ingestion with error problem from event service", func(t *testing.T) {
+		t.Parallel()
+
+		var buf bytes.Buffer
+		logger := slog.New(slog.NewJSONHandler(&buf, nil))
+
+		svc := NewTestEventService(assert.AnError)
+		eventHandler := server.NewEventAPIHandler(svc, logger)
+
+		r := httptest.NewRequest(
+			http.MethodPost,
+			ingestEventPath,
+			bytes.NewReader(body))
+		r.SetPathValue("project_id", "1")
+		r.Header.Set("Content-Type", "application/json")
+		r.Header.Set("X-Sentry-Auth", "Sentry sentry_version=7, sentry_client=sentry.go/0.30.0, sentry_key=urzovxt")
+
+		w := httptest.NewRecorder()
+
+		eventHandler.IngestEvent(w, r)
+
+		assert.Equal(t, http.StatusInternalServerError, w.Code)
+		var resp struct {
+			Detail string `json:"detail"`
+			//nolint:tagliatelle // keep ErrorID as is for backward compatibility
+			ErrorID string `json:"errorId"`
+		}
+		require.NoError(t, json.Unmarshal(w.Body.Bytes(), &resp))
+		assert.Equal(t, "Internal Error", resp.Detail)
+		require.NoError(t, warnly.ValidateNanoID("errorId", resp.ErrorID))
+	})
+}
+
+type testEventService struct {
+	err error
+}
+
+func NewTestEventService(err error) *testEventService {
+	return &testEventService{err: err}
+}
+
+func (s *testEventService) IngestEvent(ctx context.Context, req warnly.IngestRequest) (warnly.IngestEventResult, error) {
+	return warnly.IngestEventResult{}, s.err
 }
 
 func TestIngestErrors(t *testing.T) {
@@ -178,5 +224,20 @@ func TestIngestErrors(t *testing.T) {
 		assert.Empty(t, err.Causes)
 		require.NoError(t, err.WrappedError)
 		assert.Equal(t, "invalid DSN or project key.", err.Error())
+	})
+
+	t.Run("IngestError Unwrap returns wrapped error", func(t *testing.T) {
+		t.Parallel()
+		origErr := assert.AnError
+		err := server.NewBadRequestError("bad request", origErr, "cause1")
+		unwrapped := err.Unwrap()
+		assert.Equal(t, origErr, unwrapped)
+	})
+
+	t.Run("IngestError Unwrap returns nil when no wrapped error", func(t *testing.T) {
+		t.Parallel()
+		err := server.NewBadRequestError("bad request", nil, "cause1")
+		unwrapped := err.Unwrap()
+		require.NoError(t, unwrapped)
 	})
 }
