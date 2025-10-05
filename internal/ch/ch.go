@@ -145,8 +145,8 @@ func (s *ClickhouseStore) StoreEvent(ctx context.Context, ev *warnly.EventClickh
 		exception_frames.in_app, contexts.key, exception_frames.colno, exception_frames.abs_path,
 		exception_frames.lineno, exception_stacks.type, exception_stacks.value, tags.key,
 		exception_frames.function, tags.value, exception_frames.filename, contexts.value,
-		gid, user_id, pid, level, type, sdk_id, platform, retention_days, deleted
-	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+		gid, user_name, user_username, user_email, pid, level, type, sdk_id, platform, retention_days, deleted
+	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
 	if err := s.conn.AsyncInsert(
 		ctx,
@@ -179,7 +179,9 @@ func (s *ClickhouseStore) StoreEvent(ctx context.Context, ev *warnly.EventClickh
 		ev.ExceptionFramesFilename,
 		ev.ContextsValue,
 		ev.GroupID,
-		ev.UserID,
+		ev.UserName,
+		ev.UserUsername,
+		ev.UserEmail,
 		ev.ProjectID,
 		ev.Level,
 		ev.Type,
@@ -200,7 +202,8 @@ func (s *ClickhouseStore) GetIssueEvent(ctx context.Context, c warnly.EventDefCr
 	defer span.End()
 
 	const query = `SELECT replaceAll(toString(event_id), '-', '') AS event_id, 
-						  env, release, 
+						  env, release,
+						  user, user_username, user_name, user_email, 
 						  tags.key, tags.value, message, 
 						  exception_frames.abs_path, exception_frames.colno, 
 						  exception_frames.function, exception_frames.lineno, 
@@ -230,6 +233,10 @@ func (s *ClickhouseStore) GetIssueEvent(ctx context.Context, c warnly.EventDefCr
 			&i.EventID,
 			&i.Env,
 			&i.Release,
+			&i.UserID,
+			&i.UserUsername,
+			&i.UserName,
+			&i.UserEmail,
 			&i.TagsKey,
 			&i.TagsValue,
 			&i.Message,
@@ -356,7 +363,9 @@ func (s *ClickhouseStore) ListEvents(ctx context.Context, criteria *warnly.Event
 				release,
 				env,
 				user,
-				user_id,
+				user_email,
+				user_username,
+				user_name,
 				tags.value[indexOf(tags.key, 'os')] AS os
 			FROM event
 			WHERE deleted = 0
@@ -408,7 +417,9 @@ func (s *ClickhouseStore) ListEvents(ctx context.Context, criteria *warnly.Event
 			&event.Release,
 			&event.Env,
 			&event.User,
-			&event.UserID,
+			&event.UserEmail,
+			&event.UserUsername,
+			&event.UserName,
 			&event.OS); err != nil {
 			return nil, fmt.Errorf("clickhouse: list events, scan result: %w", err)
 		}

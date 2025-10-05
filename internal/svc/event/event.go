@@ -118,12 +118,17 @@ func (s *EventService) IngestEvent(ctx context.Context, req warnly.IngestRequest
 		s.cache.Set(cacheKey, issueInfo, cache.DefaultExpiration)
 	}
 
+	tkv := makeTags(event)
+
 	ev := &warnly.EventClickhouse{
 		EventID:       event.EventID,
 		Deleted:       0,
 		GroupID:       uint64(issueInfo.ID),
 		RetentionDays: opts.RetentionDays,
-		User:          "",
+		User:          makeUser(event),
+		UserEmail:     event.User.Email,
+		UserName:      event.User.Name,
+		UserUsername:  event.User.Username,
 		HTTPReferer:   "",
 		ProjectID:     uint16(req.ProjectID),
 		Type:          warnly.EventTypeException,
@@ -136,7 +141,6 @@ func (s *EventService) IngestEvent(ctx context.Context, req warnly.IngestRequest
 		SDKID:         warnly.GetSDKID(event.SDK.Name),
 		SDKVersion:    event.SDK.Version,
 		Title:         exceptionType + ": " + exceptionValue,
-		UserID:        0,
 		IPv4:          ipv4,
 		IPv6:          ipv6,
 		HTTPMethod:    "UNDEFINED",
@@ -154,18 +158,8 @@ func (s *EventService) IngestEvent(ctx context.Context, req warnly.IngestRequest
 			event.Contexts.Trace.SpanID,
 			event.Contexts.Trace.TraceID,
 		},
-		TagsKey: []string{
-			"env",
-			"level",
-			"release",
-			"server_name",
-		},
-		TagsValue: []string{
-			event.Environment,
-			event.Level,
-			event.Release,
-			event.ServerName,
-		},
+		TagsKey:                 tkv.keys,
+		TagsValue:               tkv.values,
 		PrimaryHash:             issueInfo.UUID,
 		Location:                "",
 		ExceptionStacksType:     warnly.GetExceptionStackTypes(event.Exception),
@@ -185,6 +179,39 @@ func (s *EventService) IngestEvent(ctx context.Context, req warnly.IngestRequest
 	res.EventID = ev.EventID
 
 	return res, nil
+}
+
+type tagsKeyValue struct {
+	keys   []string
+	values []string
+}
+
+func makeTags(event *warnly.EventBody) tagsKeyValue {
+	tagsKeys := []string{
+		"env",
+		"level",
+		"release",
+		"server_name",
+	}
+	tagsValues := []string{
+		event.Environment,
+		event.Level,
+		event.Release,
+		event.ServerName,
+	}
+	if event.User.ID != "" {
+		tagsKeys = append(tagsKeys, "user")
+		tagsValues = append(tagsValues, "id:"+event.User.ID)
+	}
+	return tagsKeyValue{keys: tagsKeys, values: tagsValues}
+}
+
+func makeUser(event *warnly.EventBody) string {
+	user := ""
+	if event.User.ID != "" {
+		user = "id:" + event.User.ID
+	}
+	return user
 }
 
 // updateLastSeen updates the last seen time of an issue in oltp database.

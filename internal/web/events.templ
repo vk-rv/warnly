@@ -133,10 +133,7 @@ func alpineData(res *warnly.ListEventsResult) string {
 		if env == "" {
 			env = noValue
 		}
-		user := event.User
-		if user == "" {
-			user = noValue
-		}
+		user := event.DisplayUser()
 		os := event.OS
 		if os == "" {
 			os = noValue

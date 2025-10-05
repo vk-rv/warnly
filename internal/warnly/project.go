@@ -285,6 +285,10 @@ type GetIssueRequest struct {
 }
 
 type IssueEvent struct {
+	UserID                  string
+	UserEmail               string
+	UserName                string
+	UserUsername            string
 	EventID                 string
 	Env                     string
 	Release                 string

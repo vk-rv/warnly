@@ -90,6 +90,35 @@ templ GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) {
 					</svg>
 				</div>
 			</div>
+			if issue.LastEvent.UserID != "" {
+				<div class="bg-white rounded-lg mb-6">
+					<h2 class="text-sm font-medium text-gray-700 mb-2">User Info</h2>
+					<div class="flex items-center space-x-4">
+						<div class="flex flex-col">
+							<span class="text-xs text-gray-500">Identifier</span>
+							<span class="font-mono text-sm text-gray-800">{ issue.LastEvent.UserID }</span>
+						</div>
+						if issue.LastEvent.UserName != "" {
+							<div class="flex flex-col">
+								<span class="text-xs text-gray-500">Name</span>
+								<span class="font-mono text-sm text-gray-800">{ issue.LastEvent.UserName }</span>
+							</div>
+						}
+						if issue.LastEvent.UserUsername != "" {
+							<div class="flex flex-col">
+								<span class="text-xs text-gray-500">Username</span>
+								<span class="font-mono text-sm text-gray-800">{ issue.LastEvent.UserUsername }</span>
+							</div>
+						}
+						if issue.LastEvent.UserEmail != "" {
+							<div class="flex flex-col">
+								<span class="text-xs text-gray-500">Email</span>
+								<span class="font-mono text-sm text-gray-800">{ issue.LastEvent.UserEmail }</span>
+							</div>
+						}
+					</div>
+				</div>
+			}
 			<div class="bg-white rounded-lg mb-6">
 				<div class="">
 					<div class="flex items-center justify-between">

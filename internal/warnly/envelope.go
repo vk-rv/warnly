@@ -108,7 +108,7 @@ type Exception struct {
 type EventBody struct {
 	Timestamp   time.Time         `json:"timestamp"`
 	Modules     map[string]string `json:"modules"`
-	User        map[string]any    `json:"user"`
+	User        EventUser         `json:"user"`
 	Message     string            `json:"message"`
 	Platform    string            `json:"platform"`
 	Release     string            `json:"release"`
@@ -121,6 +121,16 @@ type EventBody struct {
 	Contexts    Contexts          `json:"contexts"`
 }
 
+// EventUser represents user information associated with an event.
+type EventUser struct {
+	Data      map[string]string `json:"data"`
+	ID        string            `json:"id"`
+	Email     string            `json:"email"`
+	IPAddress string            `json:"ip_address"`
+	Username  string            `json:"username"`
+	Name      string            `json:"name"`
+}
+
 // EventClickhouse represents the event structure for ClickHouse storage.
 // It is what ingested into ClickHouse as error events after normalization and processing.
 type EventClickhouse struct {
@@ -129,6 +139,9 @@ type EventClickhouse struct {
 	Location                string    `ch:"location"`
 	SDKVersion              string    `ch:"sdk_version"`
 	User                    string    `ch:"user"`
+	UserEmail               string    `ch:"user_email"`
+	UserName                string    `ch:"user_name"`
+	UserUsername            string    `ch:"user_username"`
 	HTTPReferer             string    `ch:"http_referer"`
 	PrimaryHash             string    `ch:"primary_hash"`
 	Env                     string    `ch:"env"`
@@ -151,7 +164,6 @@ type EventClickhouse struct {
 	ExceptionFramesFilename []string  `ch:"exception_frames.filename"`
 	ContextsValue           []string  `ch:"contexts.value"`
 	GroupID                 uint64    `ch:"gid"`
-	UserID                  uint64    `ch:"user_id"`
 	ProjectID               uint16    `ch:"pid"`
 	Level                   uint8     `ch:"level"`
 	Type                    uint8     `ch:"type"`

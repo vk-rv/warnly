@@ -64,15 +64,36 @@ type ListErrorsCriteria struct {
 
 // EventEntry represents an event entry in the analytics store.
 type EventEntry struct {
-	CreatedAt time.Time
-	EventID   string
-	Title     string
-	Message   string
-	Release   string
-	Env       string
-	User      string
-	OS        string
-	UserID    uint64
+	CreatedAt    time.Time
+	EventID      string
+	Title        string
+	Message      string
+	Release      string
+	Env          string
+	UserEmail    string
+	UserUsername string
+	User         string
+	UserName     string
+	OS           string
+}
+
+// DisplayUser returns a string representation of the user associated with the event.
+// The order of preference is email, username, id, name, and finally "(unknown)" if none are available.
+func (e *EventEntry) DisplayUser() string {
+	if e.UserEmail != "" {
+		return e.UserEmail
+	}
+	if e.UserUsername != "" {
+		return e.UserUsername
+	}
+	if e.User != "" {
+		return e.User
+	}
+	if e.UserName != "" {
+		return e.UserName
+	}
+
+	return "(no value)"
 }
 
 // FieldsCriteria represents the criteria for querying fields.
