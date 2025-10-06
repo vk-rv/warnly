@@ -108,6 +108,7 @@ type Exception struct {
 type EventBody struct {
 	Timestamp   time.Time         `json:"timestamp"`
 	Modules     map[string]string `json:"modules"`
+	Tags        map[string]string `json:"tags"`
 	User        EventUser         `json:"user"`
 	Message     string            `json:"message"`
 	Platform    string            `json:"platform"`

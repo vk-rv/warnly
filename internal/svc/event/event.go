@@ -208,6 +208,13 @@ func makeTags(event *warnly.EventBody) tagsKeyValue {
 		tagsValues = append(tagsValues, "id:"+event.User.ID)
 	}
 
+	for k, v := range event.Tags {
+		if k != "" && v != "" {
+			tagsKeys = append(tagsKeys, k)
+			tagsValues = append(tagsValues, v)
+		}
+	}
+
 	return tagsKeyValue{keys: tagsKeys, values: tagsValues}
 }
 
