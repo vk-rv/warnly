@@ -135,14 +135,11 @@ type EventUser struct {
 // It is what ingested into ClickHouse as error events after normalization and processing.
 type EventClickhouse struct {
 	CreatedAt               time.Time `ch:"created_at"`
-	HTTPMethod              string    `ch:"http_method"`
-	Location                string    `ch:"location"`
 	SDKVersion              string    `ch:"sdk_version"`
 	User                    string    `ch:"user"`
 	UserEmail               string    `ch:"user_email"`
 	UserName                string    `ch:"user_name"`
 	UserUsername            string    `ch:"user_username"`
-	HTTPReferer             string    `ch:"http_referer"`
 	PrimaryHash             string    `ch:"primary_hash"`
 	Env                     string    `ch:"env"`
 	EventID                 string    `ch:"event_id"`

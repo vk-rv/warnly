@@ -140,24 +140,21 @@ func (s *ClickhouseStore) StoreEvent(ctx context.Context, ev *warnly.EventClickh
 	defer span.End()
 
 	const query = `INSERT INTO event (
-		created_at, http_method, location, sdk_version, user, http_referer, primary_hash, env, event_id,
+		created_at, sdk_version, user, primary_hash, env, event_id,
 		message, ipv6, release, title, ipv4,
 		exception_frames.in_app, contexts.key, exception_frames.colno, exception_frames.abs_path,
 		exception_frames.lineno, exception_stacks.type, exception_stacks.value, tags.key,
 		exception_frames.function, tags.value, exception_frames.filename, contexts.value,
 		gid, user_name, user_username, user_email, pid, level, type, sdk_id, platform, retention_days, deleted
-	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+	) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
 	if err := s.conn.AsyncInsert(
 		ctx,
 		query,
 		false, // No need to wait for acknowledgment for async insert
 		ev.CreatedAt,
-		ev.HTTPMethod,
-		ev.Location,
 		ev.SDKVersion,
 		ev.User,
-		ev.HTTPReferer,
 		ev.PrimaryHash,
 		ev.Env,
 		ev.EventID,

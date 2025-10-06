@@ -129,7 +129,6 @@ func (s *EventService) IngestEvent(ctx context.Context, req warnly.IngestRequest
 		UserEmail:     event.User.Email,
 		UserName:      event.User.Name,
 		UserUsername:  event.User.Username,
-		HTTPReferer:   "",
 		ProjectID:     uint16(req.ProjectID),
 		Type:          warnly.EventTypeException,
 		CreatedAt:     event.Timestamp.UTC(),
@@ -143,7 +142,6 @@ func (s *EventService) IngestEvent(ctx context.Context, req warnly.IngestRequest
 		Title:         exceptionType + ": " + exceptionValue,
 		IPv4:          ipv4,
 		IPv6:          ipv6,
-		HTTPMethod:    "UNDEFINED",
 		ContextsKey: []string{
 			"device.arch",
 			"device.num_cpu",
@@ -161,7 +159,6 @@ func (s *EventService) IngestEvent(ctx context.Context, req warnly.IngestRequest
 		TagsKey:                 tkv.keys,
 		TagsValue:               tkv.values,
 		PrimaryHash:             issueInfo.UUID,
-		Location:                "",
 		ExceptionStacksType:     warnly.GetExceptionStackTypes(event.Exception),
 		ExceptionStacksValue:    warnly.GetExceptionStackValues(event.Exception),
 		ExceptionFramesAbsPath:  warnly.GetExceptionFramesAbsPath(event.Exception),
