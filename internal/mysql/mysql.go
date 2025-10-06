@@ -6,7 +6,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"io"
 	"log/slog"
+	"syscall"
 	"time"
 
 	"github.com/go-sql-driver/mysql"
@@ -108,6 +110,15 @@ func isRetryableError(err error) bool {
 		return false
 	}
 
+	if errors.Is(err, mysql.ErrInvalidConn) || errors.Is(err, io.EOF) {
+		return true
+	}
+
+	var errno syscall.Errno
+	if errors.As(err, &errno) {
+		return isSyscallErrorRetryable(errno)
+	}
+
 	var mysqlErr *mysql.MySQLError
 	if errors.As(err, &mysqlErr) {
 		return isMySQLErrorRetryable(mysqlErr)
@@ -153,6 +164,23 @@ func isMySQLErrorRetryable(err *mysql.MySQLError) bool {
 
 	default:
 		// Unknown MySQL errors - don't retry
+		return false
+	}
+}
+
+// isSyscallErrorRetryable checks if a syscall error is retryable.
+//
+//nolint:exhaustive // consider adding more error codes if needed
+func isSyscallErrorRetryable(errno syscall.Errno) bool {
+	switch errno {
+	case syscall.ECONNREFUSED, // Connection refused
+		syscall.ECONNRESET,   // Connection reset
+		syscall.ECONNABORTED, // Connection aborted
+		syscall.ETIMEDOUT,    // Timeout
+		syscall.EHOSTUNREACH, // Host unreachable
+		syscall.ENETUNREACH:  // Network unreachable
+		return true
+	default:
 		return false
 	}
 }

@@ -5,10 +5,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"log/slog"
+	"syscall"
 	"time"
 
 	"github.com/ClickHouse/clickhouse-go/v2"
+
 	"github.com/ClickHouse/clickhouse-go/v2/lib/driver"
 )
 
@@ -74,6 +77,15 @@ func isRetryableError(err error) bool {
 		return false
 	}
 
+	if errors.Is(err, io.EOF) {
+		return true
+	}
+
+	var errno syscall.Errno
+	if errors.As(err, &errno) {
+		return isSyscallErrorRetryable(errno)
+	}
+
 	// Check ClickHouse specific errors
 	var chErr *clickhouse.Exception
 	if errors.As(err, &chErr) {
@@ -118,6 +130,23 @@ func isClickHouseErrorRetryable(err *clickhouse.Exception) bool {
 
 	default:
 		// Unknown ClickHouse errors - don't retry
+		return false
+	}
+}
+
+// isSyscallErrorRetryable checks if a syscall error is retryable.
+//
+//nolint:exhaustive // consider adding more error codes if needed
+func isSyscallErrorRetryable(errno syscall.Errno) bool {
+	switch errno {
+	case syscall.ECONNREFUSED, // Connection refused
+		syscall.ECONNRESET,   // Connection reset
+		syscall.ECONNABORTED, // Connection aborted
+		syscall.ETIMEDOUT,    // Timeout
+		syscall.EHOSTUNREACH, // Host unreachable
+		syscall.ENETUNREACH:  // Network unreachable
+		return true
+	default:
 		return false
 	}
 }

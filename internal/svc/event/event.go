@@ -184,22 +184,30 @@ type tagsKeyValue struct {
 }
 
 func makeTags(event *warnly.EventBody) tagsKeyValue {
-	tagsKeys := []string{
-		"env",
-		"level",
-		"release",
-		"server_name",
+	tagsKeys := []string{}
+	tagsValues := []string{}
+
+	if event.Environment != "" {
+		tagsKeys = append(tagsKeys, "env")
+		tagsValues = append(tagsValues, event.Environment)
 	}
-	tagsValues := []string{
-		event.Environment,
-		event.Level,
-		event.Release,
-		event.ServerName,
+	if event.Level != "" {
+		tagsKeys = append(tagsKeys, "level")
+		tagsValues = append(tagsValues, event.Level)
+	}
+	if event.Release != "" {
+		tagsKeys = append(tagsKeys, "release")
+		tagsValues = append(tagsValues, event.Release)
+	}
+	if event.ServerName != "" {
+		tagsKeys = append(tagsKeys, "server_name")
+		tagsValues = append(tagsValues, event.ServerName)
 	}
 	if event.User.ID != "" {
 		tagsKeys = append(tagsKeys, "user")
 		tagsValues = append(tagsValues, "id:"+event.User.ID)
 	}
+
 	return tagsKeyValue{keys: tagsKeys, values: tagsValues}
 }
 
