@@ -47,12 +47,14 @@ func ConnectLoop(ctx context.Context, cfg DBConfig, logger *slog.Logger) (db *sq
 	cfg.PoolConfig.maxOpenConnections = 20
 	cfg.PoolConfig.maxIdleConnections = 20
 	cfg.PoolConfig.maxLifetime = 5 * time.Minute
+
 	if cfg.Timeout == 0 {
 		cfg.Timeout = time.Second * 3
 	}
 
 	dsn := cfg.DSN
 	const driverName = "mysql"
+
 	if err = mysql.SetLogger(&SQLogger{logger.With("subsystem", driverName)}); err != nil {
 		return nil, nil, errors.New("mysql: problem setting logger")
 	}
@@ -64,6 +66,10 @@ func ConnectLoop(ctx context.Context, cfg DBConfig, logger *slog.Logger) (db *sq
 	}
 
 	logger.Error("mysql: failed to connect to the database", slog.Any("error", err))
+
+	if !isRetryableError(err) {
+		return nil, nil, err
+	}
 
 	if cfg.Timeout == 0 {
 		const defaultTimeout = 5
@@ -85,10 +91,69 @@ func ConnectLoop(ctx context.Context, cfg DBConfig, logger *slog.Logger) (db *sq
 				configureDBPool(db, cfg.PoolConfig)
 				return db, db.Close, nil
 			}
+			if !isRetryableError(err) {
+				return nil, nil, err
+			}
 			logger.Error("mysql: connect to the database", slog.Any("error", err))
 		case <-ctx.Done():
 			return nil, nil, fmt.Errorf("mysql: db connection failed, ctx done: %w", ctx.Err())
 		}
+	}
+}
+
+// isRetryableError determines if an error is transient and worth retrying.
+// Returns true for network/timeout errors, false for auth/config errors.
+func isRetryableError(err error) bool {
+	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+		return false
+	}
+
+	var mysqlErr *mysql.MySQLError
+	if errors.As(err, &mysqlErr) {
+		return isMySQLErrorRetryable(mysqlErr)
+	}
+
+	// Check network errors
+	var netErr interface{ Timeout() bool }
+	if errors.As(err, &netErr) && netErr.Timeout() {
+		return true
+	}
+
+	var netOpErr interface{ Temporary() bool }
+	if errors.As(err, &netOpErr) && netOpErr.Temporary() {
+		return true
+	}
+
+	return false
+}
+
+// isMySQLErrorRetryable checks MySQL specific error codes.
+func isMySQLErrorRetryable(err *mysql.MySQLError) bool {
+	switch err.Number {
+	// Authentication and permission errors - NOT retryable
+	case 1044, // ER_DBACCESS_DENIED_ERROR
+		1045, // ER_ACCESS_DENIED_ERROR
+		1049, // ER_BAD_DB_ERROR
+		1095, // ER_KILL_DENIED_ERROR
+		1142, // ER_TABLEACCESS_DENIED_ERROR
+		1143, // ER_COLUMNACCESS_DENIED_ERROR
+		1227, // ER_SPECIFIC_ACCESS_DENIED_ERROR
+		1370, // ER_PROC_AUTO_GRANT_FAIL
+		1396: // ER_CANNOT_USER
+		return false
+
+	// Connection/resource errors - retryable
+	case 1040, // ER_CON_COUNT_ERROR - Too many connections
+		1152, // ER_ABORTING_CONNECTION
+		1153, // ER_NET_PACKET_TOO_LARGE
+		1159, // ER_NET_READ_ERROR
+		1160, // ER_NET_READ_INTERRUPTED
+		1161: // ER_NET_ERROR_ON_WRITE
+		return true
+
+	default:
+		// Unknown MySQL errors - don't retry
+		return false
 	}
 }
 
