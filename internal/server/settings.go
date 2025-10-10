@@ -10,13 +10,16 @@ import (
 
 // settingsHandler handles HTTP requests related to Warnly settings.
 type settingsHandler struct {
+	*BaseHandler
+
 	logger *slog.Logger
 }
 
 // newSettingsHandler creates a new settingsHandler instance.
 func newSettingsHandler(logger *slog.Logger) *settingsHandler {
 	return &settingsHandler{
-		logger: logger,
+		BaseHandler: NewBaseHandler(logger),
+		logger:      logger,
 	}
 }
 

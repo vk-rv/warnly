@@ -8,25 +8,24 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/vk-rv/warnly/internal/session"
 	"github.com/vk-rv/warnly/internal/warnly"
 	"github.com/vk-rv/warnly/internal/web"
 )
 
 // ProjectHandler handles operations on project resource.
 type ProjectHandler struct {
-	svc         warnly.ProjectService
-	cookieStore *session.CookieStore
-	logger      *slog.Logger
+	*BaseHandler
+
+	svc    warnly.ProjectService
+	logger *slog.Logger
 }
 
 // NewProjectHandler is a constructor of projectHandler.
 func NewProjectHandler(
 	svc warnly.ProjectService,
-	cookieStore *session.CookieStore,
 	logger *slog.Logger,
 ) *ProjectHandler {
-	return &ProjectHandler{svc: svc, cookieStore: cookieStore, logger: logger}
+	return &ProjectHandler{BaseHandler: NewBaseHandler(logger), svc: svc, logger: logger}
 }
 
 // DeleteAssignment deletes a user assignment for an issue.
@@ -37,7 +36,7 @@ func (h *ProjectHandler) DeleteAssignment(w http.ResponseWriter, r *http.Request
 
 	projectID, issueID, err := getProjectIssue(r)
 	if err != nil {
-		h.writeError(ctx, w, http.StatusInternalServerError, "delete assignment: get project and issue", err)
+		h.writeError(ctx, w, http.StatusBadRequest, "delete assignment: get project and issue", err)
 		return
 	}
 
@@ -68,12 +67,7 @@ func (h *ProjectHandler) DeleteAssignment(w http.ResponseWriter, r *http.Request
 		Page:      h.getPage(r.URL.Query().Get("page")),
 	}, &user)
 	if err != nil {
-		h.logger.Error("delete assignment: get project details", slog.Any("error", err))
-		if err = web.ServerError(
-			strconv.Itoa(http.StatusInternalServerError),
-			http.StatusText(http.StatusInternalServerError)).Render(ctx, w); err != nil {
-			h.logger.Error("project details server error web render", slog.Any("error", err))
-		}
+		h.writeError(ctx, w, http.StatusInternalServerError, "delete assignment: get project details", err)
 		return
 	}
 
@@ -126,13 +120,7 @@ func (h *ProjectHandler) AssignIssue(w http.ResponseWriter, r *http.Request) {
 		Page:      h.getPage(r.URL.Query().Get("page")),
 	}, &user)
 	if err != nil {
-		h.logger.Error("assign issue: get project details", slog.Any("error", err))
-		if err = web.ServerError(
-			strconv.Itoa(http.StatusInternalServerError),
-			http.StatusText(http.StatusInternalServerError),
-		).Render(ctx, w); err != nil {
-			h.logger.Error("project details server error web render", slog.Any("error", err))
-		}
+		h.writeError(ctx, w, http.StatusInternalServerError, "assign issue: get project details", err)
 		return
 	}
 
@@ -186,13 +174,7 @@ func (h *ProjectHandler) ListFields(w http.ResponseWriter, r *http.Request) {
 
 	projectID, issueID, err := getProjectIssue(r)
 	if err != nil {
-		h.logger.Error("list fields: get project and issue", slog.Any("error", err))
-		if err = web.ServerError(
-			strconv.Itoa(http.StatusBadRequest),
-			http.StatusText(http.StatusBadRequest),
-		).Render(ctx, w); err != nil {
-			h.logger.Error("list fields server error web render", slog.Any("error", err))
-		}
+		h.writeError(ctx, w, http.StatusBadRequest, "list fields: get project and issue", err)
 		return
 	}
 
@@ -204,13 +186,7 @@ func (h *ProjectHandler) ListFields(w http.ResponseWriter, r *http.Request) {
 
 	fields, err := h.svc.ListFields(ctx, req)
 	if err != nil {
-		h.logger.Error("list fields: get fields", slog.Any("error", err))
-		if err = web.ServerError(
-			strconv.Itoa(http.StatusInternalServerError),
-			http.StatusText(http.StatusInternalServerError),
-		).Render(ctx, w); err != nil {
-			h.logger.Error("list fields server error web render", slog.Any("error", err))
-		}
+		h.writeError(ctx, w, http.StatusInternalServerError, "list fields: get fields", err)
 		return
 	}
 
@@ -227,25 +203,13 @@ func (h *ProjectHandler) DeleteMessage(w http.ResponseWriter, r *http.Request) {
 
 	projectID, issueID, err := getProjectIssue(r)
 	if err != nil {
-		h.logger.Error("post discussion: get project and issue", slog.Any("error", err))
-		if err = web.ServerError(
-			strconv.Itoa(http.StatusBadRequest),
-			http.StatusText(http.StatusBadRequest),
-		).Render(ctx, w); err != nil {
-			h.logger.Error("post discussion server error web render", slog.Any("error", err))
-		}
+		h.writeError(ctx, w, http.StatusBadRequest, "post discussion: get project and issue", err)
 		return
 	}
 
 	messageID, err := strconv.Atoi(r.PathValue("message_id"))
 	if err != nil {
-		h.logger.Error("delete message: parse message ID", slog.Any("error", err))
-		if err = web.ServerError(
-			strconv.Itoa(http.StatusBadRequest),
-			http.StatusText(http.StatusBadRequest),
-		).Render(ctx, w); err != nil {
-			h.logger.Error("delete message server error web render", slog.Any("error", err))
-		}
+		h.writeError(ctx, w, http.StatusBadRequest, "delete message: parse message ID", err)
 		return
 	}
 
@@ -256,13 +220,7 @@ func (h *ProjectHandler) DeleteMessage(w http.ResponseWriter, r *http.Request) {
 		User:      &user,
 	})
 	if err != nil {
-		h.logger.Error("delete message: delete message", slog.Any("error", err))
-		if err = web.ServerError(
-			strconv.Itoa(http.StatusBadRequest),
-			http.StatusText(http.StatusBadRequest),
-		).Render(ctx, w); err != nil {
-			h.logger.Error("delete message server error web render", slog.Any("error", err))
-		}
+		h.writeError(ctx, w, http.StatusInternalServerError, "delete message: delete message", err)
 		return
 	}
 
@@ -279,36 +237,19 @@ func (h *ProjectHandler) PostMessage(w http.ResponseWriter, r *http.Request) {
 
 	projectID, issueID, err := getProjectIssue(r)
 	if err != nil {
-		h.logger.Error("post discussion: get project and issue", slog.Any("error", err))
-		if err = web.ServerError(
-			strconv.Itoa(http.StatusBadRequest),
-			http.StatusText(http.StatusBadRequest),
-		).Render(ctx, w); err != nil {
-			h.logger.Error("post discussion server error web render", slog.Any("error", err))
-		}
+		h.writeError(ctx, w, http.StatusBadRequest, "post discussion: get project and issue", err)
 		return
 	}
 
 	req, err := newMessageRequest(r, projectID, issueID, &user)
 	if err != nil {
-		if err = web.ServerError(
-			strconv.Itoa(http.StatusBadRequest),
-			http.StatusText(http.StatusBadRequest),
-		).Render(ctx, w); err != nil {
-			h.logger.Error("post discussion server error web render", slog.Any("error", err))
-		}
+		h.writeError(ctx, w, http.StatusBadRequest, "post discussion: new message request", err)
 		return
 	}
 
 	discussion, err := h.svc.CreateMessage(ctx, req)
 	if err != nil {
-		h.logger.Error("post discussion: create discussion", slog.Any("error", err))
-		if err = web.ServerError(
-			strconv.Itoa(http.StatusInternalServerError),
-			http.StatusText(http.StatusInternalServerError),
-		).Render(ctx, w); err != nil {
-			h.logger.Error("post discussion server error web render", slog.Any("error", err))
-		}
+		h.writeError(ctx, w, http.StatusInternalServerError, "post discussion: create discussion", err)
 		return
 	}
 
@@ -351,13 +292,7 @@ func (h *ProjectHandler) GetDiscussions(w http.ResponseWriter, r *http.Request) 
 
 	projectID, issueID, err := getProjectIssue(r)
 	if err != nil {
-		h.logger.Error("get discussions: get project and issue", slog.Any("error", err))
-		if err = web.ServerError(
-			strconv.Itoa(http.StatusBadRequest),
-			http.StatusText(http.StatusBadRequest),
-		).Render(ctx, w); err != nil {
-			h.logger.Error("get discussions server error web render", slog.Any("error", err))
-		}
+		h.writeError(ctx, w, http.StatusBadRequest, "get discussions: get project and issue", err)
 		return
 	}
 
@@ -369,13 +304,7 @@ func (h *ProjectHandler) GetDiscussions(w http.ResponseWriter, r *http.Request) 
 
 	discussion, err := h.svc.GetDiscussion(ctx, req)
 	if err != nil {
-		h.logger.Error("get discussions: get discussions", slog.Any("error", err))
-		if err = web.ServerError(
-			strconv.Itoa(http.StatusInternalServerError),
-			http.StatusText(http.StatusInternalServerError),
-		).Render(ctx, w); err != nil {
-			h.logger.Error("get discussions server error web render", slog.Any("error", err))
-		}
+		h.writeError(ctx, w, http.StatusInternalServerError, "get discussions: get discussions", err)
 		return
 	}
 
@@ -392,13 +321,7 @@ func (h *ProjectHandler) GetIssue(w http.ResponseWriter, r *http.Request) {
 
 	projectID, issueID, err := getProjectIssue(r)
 	if err != nil {
-		h.logger.Error("project get issue: get project and issue", slog.Any("error", err))
-		if err = web.ServerError(
-			strconv.Itoa(http.StatusBadRequest),
-			http.StatusText(http.StatusBadRequest),
-		).Render(ctx, w); err != nil {
-			h.logger.Error("project get issue server error web render", slog.Any("error", err))
-		}
+		h.writeError(ctx, w, http.StatusBadRequest, "project get issue: get project and issue", err)
 		return
 	}
 
@@ -411,13 +334,7 @@ func (h *ProjectHandler) GetIssue(w http.ResponseWriter, r *http.Request) {
 
 	issue, err := h.svc.GetIssue(ctx, req)
 	if err != nil {
-		h.logger.Error("project get issue: get issue", slog.Any("error", err))
-		if err = web.ServerError(
-			strconv.Itoa(http.StatusInternalServerError),
-			http.StatusText(http.StatusInternalServerError),
-		).Render(ctx, w); err != nil {
-			h.logger.Error("project get issue server error web render", slog.Any("error", err))
-		}
+		h.writeError(ctx, w, http.StatusInternalServerError, "project get issue: get issue", err)
 		return
 	}
 
@@ -442,13 +359,7 @@ func (h *ProjectHandler) SearchProjectByName(w http.ResponseWriter, r *http.Requ
 			w.WriteHeader(http.StatusNoContent)
 			return
 		}
-		h.logger.Error("search project by name", slog.Any("error", err))
-		if err = web.ServerError(
-			strconv.Itoa(http.StatusInternalServerError),
-			http.StatusText(http.StatusInternalServerError),
-		).Render(ctx, w); err != nil {
-			h.logger.Error("project details server error web render", slog.Any("error", err))
-		}
+		h.writeError(ctx, w, http.StatusInternalServerError, "search project by name", err)
 		return
 	}
 
@@ -497,7 +408,7 @@ func (h *ProjectHandler) ListProjects(w http.ResponseWriter, r *http.Request) {
 	if team := r.URL.Query().Get("team"); team != "" {
 		teamID, err = strconv.Atoi(team)
 		if err != nil {
-			h.logger.Error("list projects: parse team ID", slog.Any("error", err))
+			h.writeError(ctx, w, http.StatusBadRequest, "list projects: parse team ID", err)
 			return
 		}
 	}
@@ -509,13 +420,7 @@ func (h *ProjectHandler) ListProjects(w http.ResponseWriter, r *http.Request) {
 
 	res, err := h.svc.ListProjects(ctx, &criteria, &user)
 	if err != nil {
-		h.logger.Error("list projects: get projects", slog.Any("error", err))
-		if err = web.ServerError(
-			strconv.Itoa(http.StatusInternalServerError),
-			http.StatusText(http.StatusInternalServerError),
-		).Render(ctx, w); err != nil {
-			h.logger.Error("list projects server error web render", slog.Any("error", err))
-		}
+		h.writeError(ctx, w, http.StatusInternalServerError, "list projects: get projects", err)
 		return
 	}
 
@@ -531,13 +436,7 @@ func (h *ProjectHandler) DeleteProject(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	projectID, err := strconv.Atoi(id)
 	if err != nil {
-		h.logger.Error("delete project: parse project ID", slog.Any("error", err))
-		if err = web.ServerError(
-			strconv.Itoa(http.StatusBadRequest),
-			http.StatusText(http.StatusBadRequest),
-		).Render(ctx, w); err != nil {
-			h.logger.Error("delete project server error web render", slog.Any("error", err))
-		}
+		h.writeError(ctx, w, http.StatusBadRequest, "delete project: parse project ID", err)
 		return
 	}
 
@@ -547,13 +446,7 @@ func (h *ProjectHandler) DeleteProject(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Hx-Redirect", "/")
 			return
 		}
-		h.logger.Error("delete project: delete project", slog.Any("error", err))
-		if err = web.ServerError(
-			strconv.Itoa(http.StatusInternalServerError),
-			http.StatusText(http.StatusInternalServerError),
-		).Render(ctx, w); err != nil {
-			h.logger.Error("delete project server error web render", slog.Any("error", err))
-		}
+		h.writeError(ctx, w, http.StatusInternalServerError, "delete project: delete project", err)
 		return
 	}
 
@@ -569,25 +462,13 @@ func (h *ProjectHandler) ProjectSettings(w http.ResponseWriter, r *http.Request)
 	id := r.PathValue("id")
 	projectID, err := strconv.Atoi(id)
 	if err != nil {
-		h.logger.Error("project settings: parse project ID", slog.Any("error", err))
-		if err = web.ServerError(
-			strconv.Itoa(http.StatusBadRequest),
-			http.StatusText(http.StatusBadRequest),
-		).Render(ctx, w); err != nil {
-			h.logger.Error("project settings server error web render", slog.Any("error", err))
-		}
+		h.writeError(ctx, w, http.StatusBadRequest, "project settings: parse project ID", err)
 		return
 	}
 
 	project, err := h.svc.GetProject(ctx, projectID, &user)
 	if err != nil {
-		h.logger.Error("project settings: get project", slog.Any("error", err))
-		if err = web.ServerError(
-			strconv.Itoa(http.StatusInternalServerError),
-			http.StatusText(http.StatusInternalServerError),
-		).Render(ctx, w); err != nil {
-			h.logger.Error("project settings server error web render", slog.Any("error", err))
-		}
+		h.writeError(ctx, w, http.StatusInternalServerError, "project settings: get project", err)
 		return
 	}
 
@@ -623,13 +504,7 @@ func (h *ProjectHandler) GetPlatforms(w http.ResponseWriter, r *http.Request) {
 
 	teams, err := h.svc.ListTeams(ctx, &user)
 	if err != nil {
-		h.logger.Error("get platforms: get teams", slog.Any("error", err))
-		if err = web.ServerError(
-			strconv.Itoa(http.StatusInternalServerError),
-			http.StatusText(http.StatusInternalServerError),
-		).Render(ctx, w); err != nil {
-			h.logger.Error("get platforms server error web render", slog.Any("error", err))
-		}
+		h.writeError(ctx, w, http.StatusInternalServerError, "get platforms: get teams", err)
 		return
 	}
 
@@ -700,15 +575,6 @@ func (h *ProjectHandler) writeProjectSettings(
 		if err := web.ProjectSettings(project, user).Render(ctx, w); err != nil {
 			h.logger.Error("project settings web render", slog.Any("error", err))
 		}
-	}
-}
-
-// writeError logs the error and renders a server error page.
-func (h *ProjectHandler) writeError(ctx context.Context, w http.ResponseWriter, code int, msg string, err error) {
-	h.logger.Error(msg, slog.Any("error", err))
-	w.WriteHeader(code)
-	if err = web.ServerError(strconv.Itoa(code), http.StatusText(code)).Render(ctx, w); err != nil {
-		h.logger.Error(msg+" server error web render", slog.Any("error", err))
 	}
 }
 

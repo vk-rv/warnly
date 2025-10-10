@@ -9,7 +9,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/vk-rv/warnly/internal/server"
-	"github.com/vk-rv/warnly/internal/session"
 	"github.com/vk-rv/warnly/internal/svc/event"
 	"github.com/vk-rv/warnly/internal/svc/project"
 	"github.com/vk-rv/warnly/internal/warnly"
@@ -73,9 +72,7 @@ func TestServer_HandleProjectDetails(t *testing.T) {
 			logger,
 		)
 
-		cookieStore := session.NewCookieStore(nowTime, testKey)
-
-		projectHandler := server.NewProjectHandler(projectSvc, cookieStore, logger)
+		projectHandler := server.NewProjectHandler(projectSvc, logger)
 
 		require.NoError(t, s.teamStore.CreateTeam(ctx, warnly.Team{
 			CreatedAt: nowTime(),

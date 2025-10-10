@@ -90,7 +90,7 @@ func NewHandler(b *Backend) (*Handler, error) {
 		slog.String("handler", "event"),
 	))
 
-	projectHandler := NewProjectHandler(b.ProjectService, b.CookieStore, b.Logger.With(
+	projectHandler := NewProjectHandler(b.ProjectService, b.Logger.With(
 		slog.String("handler", "project"),
 	))
 

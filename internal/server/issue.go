@@ -3,7 +3,6 @@ package server
 import (
 	"log/slog"
 	"net/http"
-	"strconv"
 
 	"github.com/vk-rv/warnly/internal/session"
 	"github.com/vk-rv/warnly/internal/warnly"
@@ -12,6 +11,8 @@ import (
 
 // issueHandler handles HTTP requests related to issues.
 type issueHandler struct {
+	*BaseHandler
+
 	svc         warnly.ProjectService
 	cookieStore *session.CookieStore
 	logger      *slog.Logger
@@ -23,7 +24,7 @@ func newIssueHandler(
 	cookieStore *session.CookieStore,
 	logger *slog.Logger,
 ) *issueHandler {
-	return &issueHandler{svc: svc, cookieStore: cookieStore, logger: logger}
+	return &issueHandler{BaseHandler: NewBaseHandler(logger), svc: svc, cookieStore: cookieStore, logger: logger}
 }
 
 // listIssues handles the HTTP request to list issues on main page.
@@ -40,13 +41,7 @@ func (h *issueHandler) listIssues(w http.ResponseWriter, r *http.Request) {
 
 	res, err := h.svc.ListIssues(ctx, req)
 	if err != nil {
-		h.logger.Error("list issues: get project", slog.Any("error", err))
-		if err = web.ServerError(
-			strconv.Itoa(http.StatusInternalServerError),
-			http.StatusText(http.StatusInternalServerError),
-		).Render(ctx, w); err != nil {
-			h.logger.Error("list issues server error web render", slog.Any("error", err))
-		}
+		h.writeError(ctx, w, http.StatusInternalServerError, "list issues: get project", err)
 		return
 	}
 

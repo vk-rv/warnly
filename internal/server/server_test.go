@@ -49,6 +49,7 @@ var testUser = warnly.User{
 	Email:    "johndoe@example.com",
 }
 
+//nolint:unused // will be used in tests in cookie store
 var testKey = []byte("01234567890123456789012345678901")
 
 func TestMain(m *testing.M) {
