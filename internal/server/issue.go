@@ -3,6 +3,7 @@ package server
 import (
 	"log/slog"
 	"net/http"
+	"strconv"
 
 	"github.com/vk-rv/warnly/internal/session"
 	"github.com/vk-rv/warnly/internal/warnly"
@@ -40,7 +41,10 @@ func (h *issueHandler) listIssues(w http.ResponseWriter, r *http.Request) {
 	res, err := h.svc.ListIssues(ctx, req)
 	if err != nil {
 		h.logger.Error("list issues: get project", slog.Any("error", err))
-		if err = web.ServerError().Render(ctx, w); err != nil {
+		if err = web.ServerError(
+			strconv.Itoa(http.StatusInternalServerError),
+			http.StatusText(http.StatusInternalServerError),
+		).Render(ctx, w); err != nil {
 			h.logger.Error("list issues server error web render", slog.Any("error", err))
 		}
 		return

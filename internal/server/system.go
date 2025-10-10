@@ -4,6 +4,7 @@ package server
 import (
 	"log/slog"
 	"net/http"
+	"strconv"
 
 	"github.com/vk-rv/warnly/internal/session"
 	"github.com/vk-rv/warnly/internal/warnly"
@@ -35,7 +36,10 @@ func (h *systemHandler) listSlowQueries(w http.ResponseWriter, r *http.Request) 
 	result, err := h.svc.ListSlowQueries(ctx)
 	if err != nil {
 		h.logger.Error("list slow queries", slog.Any("error", err))
-		if err = web.ServerError().Render(ctx, w); err != nil {
+		if err = web.ServerError(
+			strconv.Itoa(http.StatusInternalServerError),
+			http.StatusText(http.StatusInternalServerError),
+		).Render(ctx, w); err != nil {
 			h.logger.Error("list slow queries server error web render", slog.Any("error", err))
 		}
 		return
@@ -56,7 +60,10 @@ func (h *systemHandler) listSchemas(w http.ResponseWriter, r *http.Request) {
 	result, err := h.svc.ListSchemas(ctx)
 	if err != nil {
 		h.logger.Error("get schemas", slog.Any("error", err))
-		if err = web.ServerError().Render(ctx, w); err != nil {
+		if err = web.ServerError(
+			strconv.Itoa(http.StatusInternalServerError),
+			http.StatusText(http.StatusInternalServerError),
+		).Render(ctx, w); err != nil {
 			h.logger.Error("get schemas server error web render", slog.Any("error", err))
 		}
 		return
@@ -74,7 +81,10 @@ func (h *systemHandler) listErrors(w http.ResponseWriter, r *http.Request) {
 	result, err := h.svc.ListErrors(ctx)
 	if err != nil {
 		h.logger.Error("list errors", slog.Any("error", err))
-		if err = web.ServerError().Render(ctx, w); err != nil {
+		if err = web.ServerError(
+			strconv.Itoa(http.StatusInternalServerError),
+			http.StatusText(http.StatusInternalServerError),
+		).Render(ctx, w); err != nil {
 			h.logger.Error("list errors server error web render", slog.Any("error", err))
 		}
 		return

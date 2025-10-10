@@ -16,9 +16,9 @@ const (
 	htmxTarget = "Hx-Target"
 )
 
-func projectDecodeValid(r *http.Request) (*warnly.CreateProjectRequest, error) {
+func decodeProject(r *http.Request) (*warnly.CreateProjectRequest, error) {
 	if err := r.ParseForm(); err != nil {
-		return nil, fmt.Errorf("project decode valid: parse form: %w", err)
+		return nil, fmt.Errorf("project decode: parse form: %w", err)
 	}
 
 	req := &warnly.CreateProjectRequest{}
@@ -27,12 +27,12 @@ func projectDecodeValid(r *http.Request) (*warnly.CreateProjectRequest, error) {
 	req.Platform = r.FormValue("platform")
 	teamID, err := strconv.Atoi(r.FormValue("team"))
 	if err != nil {
-		return nil, fmt.Errorf("project decode valid: parse team_id: %w", err)
+		return nil, fmt.Errorf("project decode: parse team_id: %w", err)
 	}
 	req.TeamID = teamID
 
 	if req.ProjectName == "" || req.Platform == "" {
-		return nil, errors.New("project decode valid: missing required fields")
+		return nil, errors.New("project decode: missing required fields")
 	}
 
 	return req, nil

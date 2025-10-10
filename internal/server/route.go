@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"log/slog"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -149,7 +150,10 @@ func NewHandler(b *Backend) (*Handler, error) {
 	mux.HandleFunc("DELETE /projects/{project_id}/issues/{issue_id}/assignments", chain(projectHandler.DeleteAssignment))
 
 	mux.HandleFunc("GET /error", chain(func(w http.ResponseWriter, r *http.Request) {
-		if err := web.ServerError().Render(r.Context(), w); err != nil {
+		if err := web.ServerError(
+			strconv.Itoa(http.StatusInternalServerError),
+			http.StatusText(http.StatusInternalServerError),
+		).Render(r.Context(), w); err != nil {
 			b.Logger.Error("server error web render", slog.Any("error", err))
 		}
 	}))

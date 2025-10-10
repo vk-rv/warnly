@@ -1,20 +1,20 @@
 package web
 
-templ ServerError() {
+templ ServerError(code string, statusText string) {
 	<!DOCTYPE html>
 	<html lang="en">
-		@htmlHeader("500 - Internal Server Error")
+		@htmlHeader(code + " - " + statusText)
 		<body>
 			<main class="flex flex-col items-center justify-center min-h-screen bg-white">
-				<h1 class="font-bold leading-tight text-5xl">500</h1>
+				<h1 class="font-bold leading-tight text-5xl">{ code }</h1>
 				<div class="max-w-[460px] text-[20px] leading-[1.6] mt-2">
-					<h2 class="font-normal text-2xl">Internal Server Error</h2>
+					<h2 class="font-normal text-2xl">{ statusText }</h2>
 				</div>
 				<div class="max-w-[460px] mt-4">
 					<p class="text-sm leading-[1.6] text-[rgb(102 102 102)/var(--tw-text-opacity,1)] mt-2">
 						Warnly encountered an internal error or misconfiguration and was unable to complete your request.
 						Please check the service logs for more information.
-						If the error persists, <a href="https://github.com/warnly/warnly/issues" class="text-blue-600 underline">report the issue on our GitHub</a>.
+						If the error persists, <a href="https://github.com/vk-rv/warnly/issues" class="text-blue-600 underline">report the issue on our GitHub</a>.
 					</p>
 				</div>
 				<a href="/" class="mt-6 px-6 py-2 rounded bg-black text-white font-semibold hover:bg-gray-800 transition-colors">Home</a>

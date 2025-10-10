@@ -8,7 +8,7 @@ package web
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-func ServerError() templ.Component {
+func ServerError(code string, statusText string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -33,11 +33,37 @@ func ServerError() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = htmlHeader("500 - Internal Server Error").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = htmlHeader(code+" - "+statusText).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<body><main class=\"flex flex-col items-center justify-center min-h-screen bg-white\"><h1 class=\"font-bold leading-tight text-5xl\">500</h1><div class=\"max-w-[460px] text-[20px] leading-[1.6] mt-2\"><h2 class=\"font-normal text-2xl\">Internal Server Error</h2></div><div class=\"max-w-[460px] mt-4\"><p class=\"text-sm leading-[1.6] text-[rgb(102 102 102)/var(--tw-text-opacity,1)] mt-2\">Warnly encountered an internal error or misconfiguration and was unable to complete your request. Please check the service logs for more information. If the error persists, <a href=\"https://github.com/warnly/warnly/issues\" class=\"text-blue-600 underline\">report the issue on our GitHub</a>.</p></div><a href=\"/\" class=\"mt-6 px-6 py-2 rounded bg-black text-white font-semibold hover:bg-gray-800 transition-colors\">Home</a></main></body></html>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<body><main class=\"flex flex-col items-center justify-center min-h-screen bg-white\"><h1 class=\"font-bold leading-tight text-5xl\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var2 string
+		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(code)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/server_error.templ`, Line: 9, Col: 55}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</h1><div class=\"max-w-[460px] text-[20px] leading-[1.6] mt-2\"><h2 class=\"font-normal text-2xl\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var3 string
+		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(statusText)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/server_error.templ`, Line: 11, Col: 50}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</h2></div><div class=\"max-w-[460px] mt-4\"><p class=\"text-sm leading-[1.6] text-[rgb(102 102 102)/var(--tw-text-opacity,1)] mt-2\">Warnly encountered an internal error or misconfiguration and was unable to complete your request. Please check the service logs for more information. If the error persists, <a href=\"https://github.com/vk-rv/warnly/issues\" class=\"text-blue-600 underline\">report the issue on our GitHub</a>.</p></div><a href=\"/\" class=\"mt-6 px-6 py-2 rounded bg-black text-white font-semibold hover:bg-gray-800 transition-colors\">Home</a></main></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -208,6 +208,12 @@ templ sidebar(currentPage string, user *warnly.User) {
 					</svg>
 				</button>
 				<script>
+				 document.body.addEventListener('htmx:beforeSwap', function(evt) {
+    if(evt.detail.xhr.status === 400 || evt.detail.xhr.status === 500) {
+        evt.detail.shouldSwap = true;
+        evt.detail.isError = false;
+    }
+});
 				function deleteSession() {
 					fetch('/session', {
 						method: 'DELETE',
