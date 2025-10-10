@@ -3,8 +3,8 @@ module github.com/vk-rv/warnly
 go 1.25.1
 
 require (
+	github.com/PuerkitoBio/goquery v1.10.3
 	github.com/a-h/templ v0.3.943
-	github.com/go-playground/universal-translator v0.18.1
 	github.com/go-sql-driver/mysql v1.9.3
 	github.com/golang-migrate/migrate/v4 v4.19.0
 	github.com/google/go-cmp v0.7.0
@@ -32,6 +32,7 @@ require (
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/Nvveen/Gotty v0.0.0-20120604004816-cd527374f1e5 // indirect
 	github.com/andybalholm/brotli v1.2.0 // indirect
+	github.com/andybalholm/cascadia v1.3.3 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cenkalti/backoff v2.2.1+incompatible // indirect
@@ -42,7 +43,6 @@ require (
 	github.com/docker/go-connections v0.6.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
-	github.com/gabriel-vasile/mimetype v1.4.10 // indirect
 	github.com/go-faster/city v1.0.1 // indirect
 	github.com/go-faster/errors v0.7.1 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
@@ -54,7 +54,6 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/klauspost/compress v1.18.0 // indirect
-	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/moby/sys/user v0.4.0 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
@@ -93,9 +92,6 @@ require (
 	github.com/ClickHouse/clickhouse-go/v2 v2.40.3
 	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/fxamacker/cbor/v2 v2.9.0
-	github.com/go-playground/locales v0.14.1
-	github.com/go-playground/validator/v10 v10.27.0
-	github.com/gorilla/schema v1.4.1
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/matoous/go-nanoid/v2 v2.1.0
 	github.com/microcosm-cc/bluemonday v1.0.27

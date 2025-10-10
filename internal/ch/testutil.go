@@ -77,6 +77,7 @@ func NewTestInstance() (*ClickHouseTestInstance, error) {
 	}
 
 	ctx := context.Background()
+
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
 	// Create the pool.

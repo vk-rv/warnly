@@ -354,27 +354,27 @@ func IssueListTable(details *warnly.ProjectDetails, isHtmx bool) templ.Component
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "\" hx-target=\"#main-content\" hx-swap=\"outerHTML settle:0 show:window:top\" hx-push-url=\"true\"><a><div class=\"flex items-center space-x-1\"><span class=\"text-vercel-blue font-semibold\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "\" hx-target=\"#main-content\" hx-swap=\"outerHTML settle:0 show:window:top\" hx-push-url=\"true\"><a><div class=\"flex items-center space-x-1\"><span class=\"text-vercel-blue font-semibold iss-type\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var22 string
 			templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(issue.Type)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 340, Col: 66}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 340, Col: 75}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "</span> <span class=\"text-gray-600 text-sm truncate max-w-xs\" title=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "</span> <span class=\"text-gray-600 text-sm truncate max-w-xs iss-view\" title=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var23 string
 			templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(issue.View)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 341, Col: 81}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 341, Col: 90}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
 			if templ_7745c5c3_Err != nil {
@@ -387,20 +387,20 @@ func IssueListTable(details *warnly.ProjectDetails, isHtmx bool) templ.Component
 			var templ_7745c5c3_Var24 string
 			templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinStringErrs(issue.View)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 341, Col: 96}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 341, Col: 105}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var24))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "</span></div><div class=\"text-gray-600 text-sm mt-1\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "</span></div><div class=\"text-gray-600 text-sm mt-1 iss-msg\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var25 string
 			templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(issue.Message)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 343, Col: 63}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 343, Col: 71}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var25))
 			if templ_7745c5c3_Err != nil {

@@ -337,10 +337,10 @@ templ IssueListTable(details *warnly.ProjectDetails, isHtmx bool) {
 						<div class="flex items-start cursor-pointer" hx-get={ fmt.Sprintf("/projects/%d/issues/%d?period=14d", details.Project.ID, issue.ID) } hx-target="#main-content" hx-swap="outerHTML settle:0 show:window:top" hx-push-url="true">
 							<a>
 								<div class="flex items-center space-x-1">
-									<span class="text-vercel-blue font-semibold">{ issue.Type }</span>
-									<span class="text-gray-600 text-sm truncate max-w-xs" title={ issue.View }>{ issue.View }</span>
+									<span class="text-vercel-blue font-semibold iss-type">{ issue.Type }</span>
+									<span class="text-gray-600 text-sm truncate max-w-xs iss-view" title={ issue.View }>{ issue.View }</span>
 								</div>
-								<div class="text-gray-600 text-sm mt-1">{ issue.Message } </div>
+								<div class="text-gray-600 text-sm mt-1 iss-msg">{ issue.Message } </div>
 								<div class="flex items-center space-x-2 mt-2">
 									<span class="text-gray-400 text-xs flex items-center">
 										Last Noticed: { warnly.TimeAgo(time.Now, issue.LastSeen, true) } ago | First Noticed: { warnly.TimeAgo(time.Now, issue.FirstSeen, true) } old

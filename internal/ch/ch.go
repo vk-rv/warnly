@@ -14,13 +14,18 @@ import (
 
 // ClickhouseStore encapsulates clickhouse connection.
 type ClickhouseStore struct {
-	conn   clickhouse.Conn
-	tracer trace.Tracer // https://github.com/ClickHouse/clickhouse-go/issues/1444
+	conn            clickhouse.Conn
+	tracer          trace.Tracer // https://github.com/ClickHouse/clickhouse-go/issues/1444
+	asyncInsertWait bool
 }
 
 // NewClickhouseStore creates a new ClickhouseStore.
 func NewClickhouseStore(conn clickhouse.Conn, tracerProvider svcotel.TracerProvider) *ClickhouseStore {
 	return &ClickhouseStore{conn: conn, tracer: tracerProvider.Tracer("clickhouse")}
+}
+
+func (c *ClickhouseStore) EnableAsyncInsertWait() {
+	c.asyncInsertWait = true
 }
 
 // Close closes the connection to Clickhouse.
@@ -53,7 +58,7 @@ func (s *ClickhouseStore) ListIssueMetrics(
 			   WHERE deleted = 0
 			   AND gid IN (` + strings.Join(gidQuestionMarks, ",") + `)
 			   AND created_at >= toDateTime(?, 'UTC')
-			   AND created_at < toDateTime(?, 'UTC')
+			   AND created_at <= toDateTime(?, 'UTC')
 			   AND pid IN (` + strings.Join(pidQuestionMarks, ",") + `)
 			   GROUP BY gid`
 
@@ -151,7 +156,7 @@ func (s *ClickhouseStore) StoreEvent(ctx context.Context, ev *warnly.EventClickh
 	if err := s.conn.AsyncInsert(
 		ctx,
 		query,
-		false, // No need to wait for acknowledgment for async insert
+		s.asyncInsertWait, // No need to wait for acknowledgment for async insert depends on testing
 		ev.CreatedAt,
 		ev.SDKVersion,
 		ev.User,
@@ -639,6 +644,8 @@ func (s *ClickhouseStore) ListSlowQueries(ctx context.Context) ([]warnly.SQLQuer
 }
 
 // CalculateEvents calculates the number of events per day split by hour.
+//
+//nolint:staticcheck // false positive
 func (s *ClickhouseStore) CalculateEvents(
 	ctx context.Context,
 	c *warnly.ListIssueMetricsCriteria,

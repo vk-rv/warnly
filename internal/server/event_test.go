@@ -1,29 +1,22 @@
 package server_test
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
-	"log/slog"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 	"time"
 
-	"github.com/patrickmn/go-cache"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/vk-rv/warnly/internal/ch"
-	"github.com/vk-rv/warnly/internal/mysql"
 	"github.com/vk-rv/warnly/internal/server"
 	"github.com/vk-rv/warnly/internal/svc/event"
-	"github.com/vk-rv/warnly/internal/svcotel"
 	"github.com/vk-rv/warnly/internal/warnly"
 )
 
 const ingestEventPath = "/ingest/api/{project_id}/envelope/"
 
-var testTime = time.Date(2024, 1, 1, 12, 0, 0, 0, time.UTC)
+var testTime = time.Date(2030, 1, 1, 12, 0, 0, 0, time.UTC)
 
 var body = []byte(`{"event_id":"3708a788c39c44508a3c9442214b2f9f","sent_at":"2025-10-04T02:33:58.305163+03:00","dsn":"http://urzovxt@127.0.0.1:8030/ingest/2","sdk":{"name":"sentry.go","version":"0.30.0"},"trace":{"environment":"production","public_key":"urzovxt","release":"1.0.0","trace_id":"588ec04f1a82873ba26825cc1d8594d9"}}
 {"type":"event","length":3663}
@@ -34,51 +27,45 @@ func nowTime() time.Time {
 	return testTime
 }
 
+func nowHalfAnHourBefore() time.Time {
+	return testTime.Add(-30 * time.Minute)
+}
+
 func TestServer_HandleEventIngestion(t *testing.T) {
 	t.Parallel()
 
 	t.Run("event ingestion from zapsentry", func(t *testing.T) {
 		t.Parallel()
 
+		ctx := t.Context()
+
 		testDB, _ := testMySQLDatabaseInstance.NewDatabase(t)
 		testOlapDB := testClickHouseDatabaseInstance.NewDatabase(t)
 
-		var buf bytes.Buffer
-		logger := slog.New(slog.NewJSONHandler(&buf, nil))
+		logger, _ := getTestLogger()
 
-		projectStore := mysql.NewProjectStore(testDB)
-		issueStore := mysql.NewIssueStore(testDB)
-		memoryCache := cache.New(5*time.Minute, 10*time.Minute)
-		olap := ch.NewClickhouseStore(testOlapDB, svcotel.NewNoopProvider())
+		s := getTestStores(testDB, testOlapDB, logger)
 
-		err := projectStore.CreateProject(t.Context(), &warnly.Project{
+		err := s.projectStore.CreateProject(ctx, &warnly.Project{
 			CreatedAt: nowTime(),
-			Name:      "go-test",
-			Key:       "urzovxt",
-			UserID:    1,
-			TeamID:    1,
+			Name:      testProjectName,
+			Key:       testProjectKey,
+			UserID:    testOwnerID,
+			TeamID:    testOwnerID,
 			Platform:  warnly.PlatformGolang,
 		})
 		require.NoError(t, err)
 
 		svc := event.NewEventService(
-			projectStore,
-			issueStore,
-			memoryCache,
-			olap,
+			s.projectStore,
+			s.issueStore,
+			s.memoryCache,
+			s.olap,
 			nowTime,
 		)
 		eventHandler := server.NewEventAPIHandler(svc, logger)
 
-		r := httptest.NewRequest(
-			http.MethodPost,
-			ingestEventPath,
-			bytes.NewReader(body))
-		r.SetPathValue("project_id", "1")
-		r.Header.Set("Content-Type", "application/json")
-		r.Header.Set("X-Sentry-Auth", "Sentry sentry_version=7, sentry_client=sentry.go/0.30.0, sentry_key=urzovxt")
-
-		w := httptest.NewRecorder()
+		w, r := getIngestRequest(body)
 
 		eventHandler.IngestEvent(w, r)
 
@@ -89,45 +76,36 @@ func TestServer_HandleEventIngestion(t *testing.T) {
 	t.Run("event ingestion with invalid project key", func(t *testing.T) {
 		t.Parallel()
 
-		var buf bytes.Buffer
-		logger := slog.New(slog.NewJSONHandler(&buf, nil))
+		ctx := t.Context()
+
+		logger, _ := getTestLogger()
 
 		testDB, _ := testMySQLDatabaseInstance.NewDatabase(t)
 		testOlapDB := testClickHouseDatabaseInstance.NewDatabase(t)
 
-		projectStore := mysql.NewProjectStore(testDB)
-		issueStore := mysql.NewIssueStore(testDB)
-		memoryCache := cache.New(5*time.Minute, 10*time.Minute)
-		olap := ch.NewClickhouseStore(testOlapDB, svcotel.NewNoopProvider())
+		s := getTestStores(testDB, testOlapDB, logger)
 
-		err := projectStore.CreateProject(t.Context(), &warnly.Project{
+		err := s.projectStore.CreateProject(ctx, &warnly.Project{
 			CreatedAt: nowTime(),
-			Name:      "go-test",
-			Key:       "urzovxt",
-			UserID:    1,
-			TeamID:    1,
+			Name:      testProjectName,
+			Key:       testProjectKey,
+			UserID:    testOwnerID,
+			TeamID:    testOwnerID,
 			Platform:  warnly.PlatformGolang,
 		})
 		require.NoError(t, err)
 
 		svc := event.NewEventService(
-			projectStore,
-			issueStore,
-			memoryCache,
-			olap,
+			s.projectStore,
+			s.issueStore,
+			s.memoryCache,
+			s.olap,
 			nowTime,
 		)
 		eventHandler := server.NewEventAPIHandler(svc, logger)
 
-		r := httptest.NewRequest(
-			http.MethodPost,
-			ingestEventPath,
-			bytes.NewReader(body))
-		r.SetPathValue("project_id", "1")
-		r.Header.Set("Content-Type", "application/json")
+		w, r := getIngestRequest(body)
 		r.Header.Set("X-Sentry-Auth", "Sentry sentry_version=7, sentry_client=sentry.go/0.30.0, sentry_key=invalidkey")
-
-		w := httptest.NewRecorder()
 
 		eventHandler.IngestEvent(w, r)
 
@@ -138,21 +116,12 @@ func TestServer_HandleEventIngestion(t *testing.T) {
 	t.Run("event ingestion with error problem from event service", func(t *testing.T) {
 		t.Parallel()
 
-		var buf bytes.Buffer
-		logger := slog.New(slog.NewJSONHandler(&buf, nil))
+		logger, _ := getTestLogger()
 
 		svc := NewTestEventService(assert.AnError)
 		eventHandler := server.NewEventAPIHandler(svc, logger)
 
-		r := httptest.NewRequest(
-			http.MethodPost,
-			ingestEventPath,
-			bytes.NewReader(body))
-		r.SetPathValue("project_id", "1")
-		r.Header.Set("Content-Type", "application/json")
-		r.Header.Set("X-Sentry-Auth", "Sentry sentry_version=7, sentry_client=sentry.go/0.30.0, sentry_key=urzovxt")
-
-		w := httptest.NewRecorder()
+		w, r := getIngestRequest(body)
 
 		eventHandler.IngestEvent(w, r)
 

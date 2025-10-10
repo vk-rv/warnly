@@ -13,24 +13,24 @@ import (
 	"github.com/vk-rv/warnly/internal/web"
 )
 
-// projectHandler handles operations on project resource.
-type projectHandler struct {
+// ProjectHandler handles operations on project resource.
+type ProjectHandler struct {
 	svc         warnly.ProjectService
 	cookieStore *session.CookieStore
 	logger      *slog.Logger
 }
 
-// newProjectHandler is a constructor of projectHandler.
-func newProjectHandler(
+// NewProjectHandler is a constructor of projectHandler.
+func NewProjectHandler(
 	svc warnly.ProjectService,
 	cookieStore *session.CookieStore,
 	logger *slog.Logger,
-) *projectHandler {
-	return &projectHandler{svc: svc, cookieStore: cookieStore, logger: logger}
+) *ProjectHandler {
+	return &ProjectHandler{svc: svc, cookieStore: cookieStore, logger: logger}
 }
 
-// deleteAssignment deletes a user assignment for an issue.
-func (h *projectHandler) deleteAssignment(w http.ResponseWriter, r *http.Request) {
+// DeleteAssignment deletes a user assignment for an issue.
+func (h *ProjectHandler) DeleteAssignment(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	user := getUser(ctx)
@@ -78,8 +78,8 @@ func (h *projectHandler) deleteAssignment(w http.ResponseWriter, r *http.Request
 	h.writeProjectDetails(ctx, w, r, details, &user)
 }
 
-// assignIssue assigns an issue to a user.
-func (h *projectHandler) assignIssue(w http.ResponseWriter, r *http.Request) {
+// AssignIssue assigns an issue to a user.
+func (h *ProjectHandler) AssignIssue(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	user := getUser(ctx)
@@ -134,9 +134,9 @@ func (h *projectHandler) assignIssue(w http.ResponseWriter, r *http.Request) {
 	h.writeProjectDetails(ctx, w, r, details, &user)
 }
 
-// listEvents lists all events per specified issue.
+// ListEvents lists all events per specified issue.
 // it handles "All Errors" page in issue details.
-func (h *projectHandler) listEvents(w http.ResponseWriter, r *http.Request) {
+func (h *ProjectHandler) ListEvents(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	user := getUser(ctx)
@@ -172,25 +172,9 @@ func (h *projectHandler) listEvents(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// writeError logs the error and renders a server error page.
-func (h *projectHandler) writeError(ctx context.Context, w http.ResponseWriter, msg string, err error) {
-	h.logger.Error(msg, slog.Any("error", err))
-	if err = web.ServerError().Render(ctx, w); err != nil {
-		h.logger.Error(msg+" server error web render", slog.Any("error", err))
-	}
-}
-
-// getPage parses the page number from string to int.
-func parseOffset(offsetParam string) (int, error) {
-	if offsetParam == "" {
-		return 0, nil
-	}
-	return strconv.Atoi(offsetParam)
-}
-
-// listFields renders list of fields related to an issue with some statistics,
+// ListFields renders list of fields related to an issue with some statistics,
 // e.g. how many times a field like browser or os was seen in events.
-func (h *projectHandler) listFields(w http.ResponseWriter, r *http.Request) {
+func (h *ProjectHandler) ListFields(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	user := getUser(ctx)
@@ -224,8 +208,8 @@ func (h *projectHandler) listFields(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// deleteMessage deletes a message (user comment for issue) by identifier in issue discussion.
-func (h *projectHandler) deleteMessage(w http.ResponseWriter, r *http.Request) {
+// DeleteMessage deletes a message (user comment for issue) by identifier in issue discussion.
+func (h *ProjectHandler) DeleteMessage(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	user := getUser(ctx)
@@ -267,8 +251,8 @@ func (h *projectHandler) deleteMessage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// postMessage creates a new message (user comment) in issue discussion.
-func (h *projectHandler) postMessage(w http.ResponseWriter, r *http.Request) {
+// PostMessage creates a new message (user comment) in issue discussion.
+func (h *ProjectHandler) PostMessage(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	user := getUser(ctx)
@@ -330,8 +314,8 @@ func newMessageRequest(r *http.Request, projectID, issueID int, user *warnly.Use
 	}, nil
 }
 
-// getDiscussions retrieves discussions for an issue.
-func (h *projectHandler) getDiscussions(w http.ResponseWriter, r *http.Request) {
+// GetDiscussions retrieves discussions for an issue.
+func (h *ProjectHandler) GetDiscussions(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	user := getUser(ctx)
@@ -365,8 +349,8 @@ func (h *projectHandler) getDiscussions(w http.ResponseWriter, r *http.Request) 
 	}
 }
 
-// getIssue renders issue page.
-func (h *projectHandler) getIssue(w http.ResponseWriter, r *http.Request) {
+// GetIssue renders issue page.
+func (h *ProjectHandler) GetIssue(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	user := getUser(ctx)
@@ -399,27 +383,8 @@ func (h *projectHandler) getIssue(w http.ResponseWriter, r *http.Request) {
 	h.writeIssue(ctx, w, r, issue, &user)
 }
 
-// writeIssue writes issue details to the response writer.
-func (h *projectHandler) writeIssue(
-	ctx context.Context,
-	w http.ResponseWriter,
-	r *http.Request,
-	issue *warnly.IssueDetails, user *warnly.User,
-) {
-	source := r.URL.Query().Get("source")
-	if r.Header.Get(htmxHeader) != "" {
-		if err := web.GetIssueHtmx(issue, user, source).Render(ctx, w); err != nil {
-			h.logger.Error("project get issue htmx web render", slog.Any("error", err))
-		}
-	} else {
-		if err := web.GetIssue(issue, user, source).Render(ctx, w); err != nil {
-			h.logger.Error("project get issue web render", slog.Any("error", err))
-		}
-	}
-}
-
-// searchProjectByName is a method that searches projects by name.
-func (h *projectHandler) searchProjectByName(w http.ResponseWriter, r *http.Request) {
+// SearchProjectByName is a method that searches projects by name.
+func (h *ProjectHandler) SearchProjectByName(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	user := getUser(ctx)
@@ -446,8 +411,8 @@ func (h *projectHandler) searchProjectByName(w http.ResponseWriter, r *http.Requ
 	w.WriteHeader(http.StatusOK)
 }
 
-// projectDetails renders project details page.
-func (h *projectHandler) projectDetails(w http.ResponseWriter, r *http.Request) {
+// ProjectDetails renders project details page.
+func (h *ProjectHandler) ProjectDetails(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	user := getUser(ctx)
@@ -482,34 +447,8 @@ func (h *projectHandler) projectDetails(w http.ResponseWriter, r *http.Request) 
 	h.writeProjectDetails(ctx, w, r, details, &user)
 }
 
-// writeProjectDetails writes project details to the response writer.
-func (h *projectHandler) writeProjectDetails(
-	ctx context.Context,
-	w http.ResponseWriter,
-	r *http.Request,
-	details *warnly.ProjectDetails,
-	user *warnly.User,
-) {
-	if r.URL.Query().Get("out") == "table" && r.Header.Get(htmxHeader) != "" {
-		w.Header().Add("Hx-Push-Url", r.URL.Path+"?"+r.URL.RawQuery)
-		if err := web.IssueListTable(details /* isHtmx call */, true).Render(ctx, w); err != nil {
-			h.logger.Error("project details issue list table web render", slog.Any("error", err))
-		}
-		return
-	}
-	if r.Header.Get(htmxHeader) != "" {
-		if err := web.ProjectDetailsHtmx(details, user /* isHtmx call */, true).Render(ctx, w); err != nil {
-			h.logger.Error("project details htmx web render", slog.Any("error", err))
-		}
-	} else {
-		if err := web.ProjectDetails(details, user).Render(ctx, w); err != nil {
-			h.logger.Error("project details web render", slog.Any("error", err))
-		}
-	}
-}
-
-// listProjects returns a list of projects among with errors for last 24 hours.
-func (h *projectHandler) listProjects(w http.ResponseWriter, r *http.Request) {
+// ListProjects returns a list of projects among with errors for last 24 hours.
+func (h *ProjectHandler) ListProjects(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	user := getUser(ctx)
@@ -542,37 +481,8 @@ func (h *projectHandler) listProjects(w http.ResponseWriter, r *http.Request) {
 	h.writeProjectContents(ctx, r, w, &user, res)
 }
 
-// writeProjectContents is a method that renders project contents.
-// It is used for both HTMX and non-HTMX requests.
-func (h *projectHandler) writeProjectContents(
-	ctx context.Context,
-	r *http.Request,
-	w http.ResponseWriter,
-	user *warnly.User,
-	res *warnly.ListProjectsResult,
-) {
-	// don't update the whole screen when searching project by name
-	const projectGrid = "projectGrid"
-
-	if r.Header.Get(htmxHeader) != "" {
-		if r.Header.Get(htmxTarget) == projectGrid {
-			if err := web.ProjectGrid(res).Render(ctx, w); err != nil {
-				h.logger.Error("project contents htmx web render", slog.Any("error", err))
-			}
-			return
-		}
-		if err := web.ProjectContentHtmx(user, res).Render(ctx, w); err != nil {
-			h.logger.Error("project contents htmx web render", slog.Any("error", err))
-		}
-	} else {
-		if err := web.ProjectContents(user, res).Render(ctx, w); err != nil {
-			h.logger.Error("project contents web render", slog.Any("error", err))
-		}
-	}
-}
-
-// deleteProject is a method that deletes a project.
-func (h *projectHandler) deleteProject(w http.ResponseWriter, r *http.Request) {
+// DeleteProject is a method that deletes a project.
+func (h *ProjectHandler) DeleteProject(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	user := getUser(ctx)
@@ -603,8 +513,8 @@ func (h *projectHandler) deleteProject(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Hx-Redirect", "/projects")
 }
 
-// projectSettings is a method that renders project settings page.
-func (h *projectHandler) projectSettings(w http.ResponseWriter, r *http.Request) {
+// ProjectSettings is a method that renders project settings page.
+func (h *ProjectHandler) ProjectSettings(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	user := getUser(ctx)
@@ -631,41 +541,22 @@ func (h *projectHandler) projectSettings(w http.ResponseWriter, r *http.Request)
 	h.writeProjectSettings(ctx, w, r, project, &user)
 }
 
-// writeProjectSettings writes project settings to the response writer.
-func (h *projectHandler) writeProjectSettings(
-	ctx context.Context,
-	w http.ResponseWriter,
-	r *http.Request,
-	project *warnly.Project,
-	user *warnly.User,
-) {
-	if r.Header.Get(htmxHeader) != "" {
-		if err := web.ProjectSettingsHtmx(project).Render(ctx, w); err != nil {
-			h.logger.Error("project settings htmx web render", slog.Any("error", err))
-		}
-	} else {
-		if err := web.ProjectSettings(project, user).Render(ctx, w); err != nil {
-			h.logger.Error("project settings web render", slog.Any("error", err))
-		}
-	}
-}
-
-// createProject creates a new project.
-func (h *projectHandler) createProject(w http.ResponseWriter, r *http.Request) {
+// CreateProject creates a new project.
+func (h *ProjectHandler) CreateProject(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	user := getUser(ctx)
 
-	req, problems, err := decodeValid[warnly.CreateProjectRequest](r)
+	req, err := projectDecodeValid(r)
 	if err != nil {
-		h.logger.Error("create new project: decodeValid project info", slog.Any("problems", problems), slog.Any("error", err))
+		h.logger.Error("create new project: decodeValid project info", slog.Any("error", err))
 		if err = web.Hello("").Render(ctx, w); err != nil {
 			h.logger.Error("create new project: hello web render", slog.Any("error", err))
 		}
 		return
 	}
 
-	res, err := h.svc.CreateProject(ctx, &req, &user)
+	res, err := h.svc.CreateProject(ctx, req, &user)
 	if err != nil {
 		h.logger.Error("create new project: create project", slog.Any("error", err))
 		if err = web.ServerError().Render(ctx, w); err != nil {
@@ -674,13 +565,13 @@ func (h *projectHandler) createProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = web.GettingStarted(res).Render(r.Context(), w); err != nil {
+	if err = web.GettingStarted(res).Render(ctx, w); err != nil {
 		h.logger.Error("create new project: getting started web render", slog.Any("error", err))
 	}
 }
 
-// getPlatforms renders possible project platforms.
-func (h *projectHandler) getPlatforms(w http.ResponseWriter, r *http.Request) {
+// GetPlatforms renders possible project platforms.
+func (h *ProjectHandler) GetPlatforms(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	user := getUser(ctx)
@@ -697,21 +588,8 @@ func (h *projectHandler) getPlatforms(w http.ResponseWriter, r *http.Request) {
 	h.writePlatform(w, r, teams, &user)
 }
 
-// writePlatform writes platform information to the response writer.
-func (h *projectHandler) writePlatform(w http.ResponseWriter, r *http.Request, teams []warnly.Team, user *warnly.User) {
-	if r.Header.Get(htmxHeader) != "" {
-		if err := web.PlatformHtmx(teams).Render(r.Context(), w); err != nil {
-			h.logger.Error("get platforms htmx web render", slog.Any("error", err))
-		}
-	} else {
-		if err := web.Platform(teams, user).Render(r.Context(), w); err != nil {
-			h.logger.Error("get platforms web render", slog.Any("error", err))
-		}
-	}
-}
-
-// gettingStarted renders getting started page.
-func (h *projectHandler) gettingStarted(w http.ResponseWriter, r *http.Request) {
+// GettingStarted renders getting started page.
+func (h *ProjectHandler) GettingStarted(w http.ResponseWriter, r *http.Request) {
 	if err := web.GettingStarted(nil).Render(r.Context(), w); err != nil {
 		h.logger.Error("getting started web render", slog.Any("error", err))
 	}
@@ -732,7 +610,7 @@ func getProjectIssue(r *http.Request) (projectID, issueID int, err error) {
 }
 
 // getPage parses the page number from string to int.
-func (h *projectHandler) getPage(page string) int {
+func (h *ProjectHandler) getPage(page string) int {
 	const defaultPage = 1
 	if page == "" {
 		return defaultPage
@@ -743,4 +621,126 @@ func (h *projectHandler) getPage(page string) int {
 		return defaultPage
 	}
 	return p
+}
+
+// writePlatform writes platform information to the response writer.
+func (h *ProjectHandler) writePlatform(w http.ResponseWriter, r *http.Request, teams []warnly.Team, user *warnly.User) {
+	if r.Header.Get(htmxHeader) != "" {
+		if err := web.PlatformHtmx(teams).Render(r.Context(), w); err != nil {
+			h.logger.Error("get platforms htmx web render", slog.Any("error", err))
+		}
+	} else {
+		if err := web.Platform(teams, user).Render(r.Context(), w); err != nil {
+			h.logger.Error("get platforms web render", slog.Any("error", err))
+		}
+	}
+}
+
+// writeProjectSettings writes project settings to the response writer.
+func (h *ProjectHandler) writeProjectSettings(
+	ctx context.Context,
+	w http.ResponseWriter,
+	r *http.Request,
+	project *warnly.Project,
+	user *warnly.User,
+) {
+	if r.Header.Get(htmxHeader) != "" {
+		if err := web.ProjectSettingsHtmx(project).Render(ctx, w); err != nil {
+			h.logger.Error("project settings htmx web render", slog.Any("error", err))
+		}
+	} else {
+		if err := web.ProjectSettings(project, user).Render(ctx, w); err != nil {
+			h.logger.Error("project settings web render", slog.Any("error", err))
+		}
+	}
+}
+
+// writeError logs the error and renders a server error page.
+func (h *ProjectHandler) writeError(ctx context.Context, w http.ResponseWriter, msg string, err error) {
+	h.logger.Error(msg, slog.Any("error", err))
+	if err = web.ServerError().Render(ctx, w); err != nil {
+		h.logger.Error(msg+" server error web render", slog.Any("error", err))
+	}
+}
+
+// getPage parses the page number from string to int.
+func parseOffset(offsetParam string) (int, error) {
+	if offsetParam == "" {
+		return 0, nil
+	}
+	return strconv.Atoi(offsetParam)
+}
+
+// writeIssue writes issue details to the response writer.
+func (h *ProjectHandler) writeIssue(
+	ctx context.Context,
+	w http.ResponseWriter,
+	r *http.Request,
+	issue *warnly.IssueDetails, user *warnly.User,
+) {
+	source := r.URL.Query().Get("source")
+	if r.Header.Get(htmxHeader) != "" {
+		if err := web.GetIssueHtmx(issue, user, source).Render(ctx, w); err != nil {
+			h.logger.Error("project get issue htmx web render", slog.Any("error", err))
+		}
+	} else {
+		if err := web.GetIssue(issue, user, source).Render(ctx, w); err != nil {
+			h.logger.Error("project get issue web render", slog.Any("error", err))
+		}
+	}
+}
+
+// writeProjectDetails writes project details to the response writer.
+func (h *ProjectHandler) writeProjectDetails(
+	ctx context.Context,
+	w http.ResponseWriter,
+	r *http.Request,
+	details *warnly.ProjectDetails,
+	user *warnly.User,
+) {
+	if r.URL.Query().Get("out") == "table" && r.Header.Get(htmxHeader) != "" {
+		w.Header().Add("Hx-Push-Url", r.URL.Path+"?"+r.URL.RawQuery)
+		if err := web.IssueListTable(details /* isHtmx call */, true).Render(ctx, w); err != nil {
+			h.logger.Error("project details issue list table web render", slog.Any("error", err))
+		}
+		return
+	}
+	if r.Header.Get(htmxHeader) != "" {
+		if err := web.ProjectDetailsHtmx(details, user /* isHtmx call */, true).Render(ctx, w); err != nil {
+			h.logger.Error("project details htmx web render", slog.Any("error", err))
+		}
+	} else {
+		if err := web.ProjectDetails(details, user).Render(ctx, w); err != nil {
+			h.logger.Error("project details web render", slog.Any("error", err))
+		}
+	}
+}
+
+// writeProjectContents is a method that renders project contents.
+// It is used for both HTMX and non-HTMX requests.
+func (h *ProjectHandler) writeProjectContents(
+	ctx context.Context,
+	r *http.Request,
+	w http.ResponseWriter,
+	user *warnly.User,
+	res *warnly.ListProjectsResult,
+) {
+	// don't update the whole screen when searching project by name
+	const projectGrid = "projectGrid"
+
+	if r.Header.Get(htmxHeader) != "" {
+		if r.Header.Get(htmxTarget) == projectGrid {
+			if err := web.ProjectGrid(res).Render(ctx, w); err != nil {
+				h.logger.Error("project contents htmx web render", slog.Any("error", err))
+			}
+			return
+		}
+		if err := web.ProjectContentHtmx(user, res).Render(ctx, w); err != nil {
+			h.logger.Error("project contents htmx web render", slog.Any("error", err))
+		}
+	} else {
+		if err := web.ProjectContents(user, res).Render(ctx, w); err != nil {
+			h.logger.Error("project contents web render", slog.Any("error", err))
+		}
+	}
 }

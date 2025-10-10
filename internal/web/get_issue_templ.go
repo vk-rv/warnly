@@ -264,7 +264,7 @@ func GetIssueHtmx(issue *warnly.IssueDetails, user *warnly.User, source string) 
 			var templ_7745c5c3_Var14 string
 			templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/projects/%d/issues/%d/discussions", issue.ProjectID, issue.IssueID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 69, Col: 157}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 69, Col: 156}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 			if templ_7745c5c3_Err != nil {
@@ -277,7 +277,7 @@ func GetIssueHtmx(issue *warnly.IssueDetails, user *warnly.User, source string) 
 			var templ_7745c5c3_Var15 string
 			templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", issue.MessagesCount))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 69, Col: 470}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 69, Col: 469}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 			if templ_7745c5c3_Err != nil {
@@ -303,7 +303,7 @@ func GetIssueHtmx(issue *warnly.IssueDetails, user *warnly.User, source string) 
 			var templ_7745c5c3_Var17 string
 			templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/projects/%d/issues/%d/events", issue.ProjectID, issue.IssueID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 71, Col: 152}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 71, Col: 151}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 			if templ_7745c5c3_Err != nil {

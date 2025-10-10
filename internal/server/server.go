@@ -1,14 +1,12 @@
 package server
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 
-	"github.com/go-playground/locales/en"
-	ut "github.com/go-playground/universal-translator"
-	validate "github.com/go-playground/validator/v10"
-	entranslations "github.com/go-playground/validator/v10/translations/en"
-	"github.com/gorilla/schema"
+	"github.com/vk-rv/warnly/internal/warnly"
 )
 
 const (
@@ -18,41 +16,24 @@ const (
 	htmxTarget = "Hx-Target"
 )
 
-var (
-	decoder   = schema.NewDecoder()
-	validator *validate.Validate
-	trans     ut.Translator
-)
-
-func initValidator() {
-	english := en.New()
-	uni := ut.New(english, english)
-	trans, _ = uni.GetTranslator("en")
-	validator = validate.New(validate.WithRequiredStructEnabled())
-	if err := entranslations.RegisterDefaultTranslations(validator, trans); err != nil {
-		panic(err)
-	}
-}
-
-//nolint:ireturn,errorlint // will be removed in the future.
-func decodeValid[T any](r *http.Request) (obj T, problems map[string]string, err error) {
+func projectDecodeValid(r *http.Request) (*warnly.CreateProjectRequest, error) {
 	if err := r.ParseForm(); err != nil {
-		return obj, nil, fmt.Errorf("parse form http request: %w", err)
+		return nil, fmt.Errorf("project decode valid: parse form: %w", err)
 	}
 
-	if err := decoder.Decode(&obj, r.PostForm); err != nil {
-		return obj, nil, fmt.Errorf("decode form: %w", err)
+	req := &warnly.CreateProjectRequest{}
+
+	req.ProjectName = r.FormValue("projectName")
+	req.Platform = r.FormValue("platform")
+	teamID, err := strconv.Atoi(r.FormValue("team"))
+	if err != nil {
+		return nil, fmt.Errorf("project decode valid: parse team_id: %w", err)
+	}
+	req.TeamID = teamID
+
+	if req.ProjectName == "" || req.Platform == "" {
+		return nil, errors.New("project decode valid: missing required fields")
 	}
 
-	if err := validator.Struct(obj); err != nil {
-		errs, ok := err.(validate.ValidationErrors)
-		if !ok {
-			return obj, nil, err
-		}
-		problems := errs.Translate(trans)
-
-		return obj, problems, fmt.Errorf("invalid %T: %d problems", obj, len(problems))
-	}
-
-	return obj, nil, nil
+	return req, nil
 }

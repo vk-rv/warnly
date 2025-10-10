@@ -131,7 +131,7 @@ func (s *EventService) IngestEvent(ctx context.Context, req warnly.IngestRequest
 		UserUsername:  event.User.Username,
 		ProjectID:     uint16(req.ProjectID),
 		Type:          warnly.EventTypeException,
-		CreatedAt:     event.Timestamp.UTC(),
+		CreatedAt:     s.now(),
 		Platform:      uint8(warnly.PlatformByName(event.Platform)),
 		Env:           event.Environment,
 		Release:       event.Release,

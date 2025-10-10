@@ -48,9 +48,13 @@ func (mw *authMw) authenticate(handler http.HandlerFunc) http.HandlerFunc {
 			}
 			return
 		}
-		ctx := context.WithValue(r.Context(), userContextKey, user)
-		handler.ServeHTTP(w, r.WithContext(ctx))
+		handler.ServeHTTP(w, r.WithContext(NewContextWithUser(r.Context(), user)))
 	}
+}
+
+// NewContextWithUser is a helper function to add user to context.
+func NewContextWithUser(ctx context.Context, user warnly.User) context.Context {
+	return context.WithValue(ctx, userContextKey, user)
 }
 
 // getUser retrieves user from the session cookie.

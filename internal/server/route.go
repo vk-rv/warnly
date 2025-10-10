@@ -40,8 +40,6 @@ type Handler struct {
 
 // NewHandler initialize dependencies and returns router with attached routes.
 func NewHandler(b *Backend) (*Handler, error) {
-	initValidator()
-
 	mux := http.NewServeMux()
 
 	authenticateMw := newAuthMW(b.CookieStore, b.Logger.With(
@@ -91,7 +89,7 @@ func NewHandler(b *Backend) (*Handler, error) {
 		slog.String("handler", "event"),
 	))
 
-	projectHandler := newProjectHandler(b.ProjectService, b.CookieStore, b.Logger.With(
+	projectHandler := NewProjectHandler(b.ProjectService, b.CookieStore, b.Logger.With(
 		slog.String("handler", "project"),
 	))
 
@@ -132,23 +130,23 @@ func NewHandler(b *Backend) (*Handler, error) {
 		}
 	}))
 
-	mux.HandleFunc("GET /settings/projects/{id}", chain(projectHandler.projectSettings))
+	mux.HandleFunc("GET /settings/projects/{id}", chain(projectHandler.ProjectSettings))
 
-	mux.HandleFunc("GET /projects/q", chain(projectHandler.searchProjectByName))
-	mux.HandleFunc("GET /projects/{id}", chain(projectHandler.projectDetails))
-	mux.HandleFunc("GET /projects", chain(projectHandler.listProjects))
-	mux.HandleFunc("GET /projects/new", chain(projectHandler.getPlatforms))
-	mux.HandleFunc("POST /projects", chain(projectHandler.createProject))
-	mux.HandleFunc("GET /projects/{projectID}/getting-started", chain(projectHandler.gettingStarted))
-	mux.HandleFunc("DELETE /projects/{id}", chain(projectHandler.deleteProject))
-	mux.HandleFunc("GET /projects/{project_id}/issues/{issue_id}", chain(projectHandler.getIssue))
-	mux.HandleFunc("GET /projects/{project_id}/issues/{issue_id}/discussions", chain(projectHandler.getDiscussions))
-	mux.HandleFunc("POST /projects/{project_id}/issues/{issue_id}/discussions", chain(projectHandler.postMessage))
-	mux.HandleFunc("DELETE /projects/{project_id}/issues/{issue_id}/discussions/{message_id}", chain(projectHandler.deleteMessage))
-	mux.HandleFunc("GET /projects/{project_id}/issues/{issue_id}/fields", chain(projectHandler.listFields))
-	mux.HandleFunc("GET /projects/{project_id}/issues/{issue_id}/events", chain(projectHandler.listEvents))
-	mux.HandleFunc("POST /projects/{project_id}/issues/{issue_id}/assignments", chain(projectHandler.assignIssue))
-	mux.HandleFunc("DELETE /projects/{project_id}/issues/{issue_id}/assignments", chain(projectHandler.deleteAssignment))
+	mux.HandleFunc("GET /projects/q", chain(projectHandler.SearchProjectByName))
+	mux.HandleFunc("GET /projects/{id}", chain(projectHandler.ProjectDetails))
+	mux.HandleFunc("GET /projects", chain(projectHandler.ListProjects))
+	mux.HandleFunc("GET /projects/new", chain(projectHandler.GetPlatforms))
+	mux.HandleFunc("POST /projects", chain(projectHandler.CreateProject))
+	mux.HandleFunc("GET /projects/{projectID}/getting-started", chain(projectHandler.GettingStarted))
+	mux.HandleFunc("DELETE /projects/{id}", chain(projectHandler.DeleteProject))
+	mux.HandleFunc("GET /projects/{project_id}/issues/{issue_id}", chain(projectHandler.GetIssue))
+	mux.HandleFunc("GET /projects/{project_id}/issues/{issue_id}/discussions", chain(projectHandler.GetDiscussions))
+	mux.HandleFunc("POST /projects/{project_id}/issues/{issue_id}/discussions", chain(projectHandler.PostMessage))
+	mux.HandleFunc("DELETE /projects/{project_id}/issues/{issue_id}/discussions/{message_id}", chain(projectHandler.DeleteMessage))
+	mux.HandleFunc("GET /projects/{project_id}/issues/{issue_id}/fields", chain(projectHandler.ListFields))
+	mux.HandleFunc("GET /projects/{project_id}/issues/{issue_id}/events", chain(projectHandler.ListEvents))
+	mux.HandleFunc("POST /projects/{project_id}/issues/{issue_id}/assignments", chain(projectHandler.AssignIssue))
+	mux.HandleFunc("DELETE /projects/{project_id}/issues/{issue_id}/assignments", chain(projectHandler.DeleteAssignment))
 
 	mux.HandleFunc("GET /error", chain(func(w http.ResponseWriter, r *http.Request) {
 		if err := web.ServerError().Render(r.Context(), w); err != nil {
