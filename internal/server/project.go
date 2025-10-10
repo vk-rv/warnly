@@ -463,13 +463,7 @@ func (h *ProjectHandler) ProjectDetails(w http.ResponseWriter, r *http.Request) 
 
 	projectID, err := strconv.Atoi(r.PathValue("id"))
 	if err != nil {
-		h.logger.Error("project details: parse project ID", slog.Any("error", err))
-		if err = web.ServerError(
-			strconv.Itoa(http.StatusBadRequest),
-			http.StatusText(http.StatusBadRequest),
-		).Render(ctx, w); err != nil {
-			h.logger.Error("project details server error web render", slog.Any("error", err))
-		}
+		h.writeError(ctx, w, http.StatusBadRequest, "project details: parse project ID", err)
 		return
 	}
 
@@ -484,13 +478,7 @@ func (h *ProjectHandler) ProjectDetails(w http.ResponseWriter, r *http.Request) 
 
 	details, err := h.svc.GetProjectDetails(ctx, req, &user)
 	if err != nil {
-		h.logger.Error("project details: get project details", slog.Any("error", err))
-		if err = web.ServerError(
-			strconv.Itoa(http.StatusInternalServerError),
-			http.StatusText(http.StatusInternalServerError),
-		).Render(ctx, w); err != nil {
-			h.logger.Error("project details server error web render", slog.Any("error", err))
-		}
+		h.writeError(ctx, w, http.StatusInternalServerError, "project details: get project details", err)
 		return
 	}
 
