@@ -20,6 +20,8 @@ import (
 	"github.com/vk-rv/warnly/internal/warnly"
 )
 
+const projectDetailsPath = "/projects/{id}?issues=all&period=1h"
+
 const (
 	testBaseURL    = "http://localhost:8030"
 	testBaseScheme = "http"
