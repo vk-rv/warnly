@@ -70,6 +70,7 @@ func (s *EventService) IngestEvent(ctx context.Context, req warnly.IngestRequest
 
 	exceptionType := warnly.GetExceptionType(event.Exception, event.Message)
 	exceptionValue := warnly.GetExceptionValue(event.Exception, warnly.DefaultMessage)
+	view := warnly.GetBreaker(event.Exception)
 
 	issueInfo := warnly.IssueInfo{}
 	var ok bool
@@ -79,7 +80,13 @@ func (s *EventService) IngestEvent(ctx context.Context, req warnly.IngestRequest
 		if !ok {
 			return res, errors.New("event service ingest: cache issue info type assertion")
 		}
-		_, err, _ := s.sf.Do(cacheKey, s.updateLastSeen(ctx, issueInfo.ID, s.now().UTC()))
+		_, err, _ := s.sf.Do(cacheKey, s.updateLastSeen(ctx, &warnly.UpdateLastSeen{
+			IssueID:   issueInfo.ID,
+			LastSeen:  s.now().UTC(),
+			Message:   exceptionValue,
+			ErrorType: exceptionType,
+			View:      view,
+		}))
 		if err != nil {
 			return res, fmt.Errorf("event service ingest: update last seen %w", err)
 		}
@@ -101,7 +108,7 @@ func (s *EventService) IngestEvent(ctx context.Context, req warnly.IngestRequest
 				Hash:        eventHash,
 				Message:     exceptionValue,
 				ErrorType:   exceptionType,
-				View:        warnly.GetBreaker(event.Exception),
+				View:        view,
 				NumComments: 0,
 				ProjectID:   req.ProjectID,
 				Priority:    warnly.PriorityHigh,
@@ -110,7 +117,13 @@ func (s *EventService) IngestEvent(ctx context.Context, req warnly.IngestRequest
 				return res, fmt.Errorf("event service ingest: store issue %w", err)
 			}
 		} else {
-			if _, err, _ := s.sf.Do(cacheKey, s.updateLastSeen(ctx, issueInfo.ID, s.now().UTC())); err != nil {
+			if _, err, _ := s.sf.Do(cacheKey, s.updateLastSeen(ctx, &warnly.UpdateLastSeen{
+				IssueID:   issue.ID,
+				LastSeen:  s.now().UTC(),
+				Message:   exceptionValue,
+				ErrorType: exceptionType,
+				View:      view,
+			})); err != nil {
 				return res, fmt.Errorf("event service ingest: update last seen %w", err)
 			}
 		}
@@ -227,9 +240,9 @@ func makeUser(event *warnly.EventBody) string {
 }
 
 // updateLastSeen updates the last seen time of an issue in oltp database.
-func (s *EventService) updateLastSeen(ctx context.Context, issueID int64, now time.Time) func() (any, error) {
+func (s *EventService) updateLastSeen(ctx context.Context, upd *warnly.UpdateLastSeen) func() (any, error) {
 	return func() (any, error) {
-		if err := s.issueStore.UpdateLastSeen(ctx, issueID, now); err != nil {
+		if err := s.issueStore.UpdateLastSeen(ctx, upd); err != nil {
 			return false, fmt.Errorf("event service update last seen: %w", err)
 		}
 		return true, nil

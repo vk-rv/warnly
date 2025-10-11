@@ -81,7 +81,15 @@ type IssueStore interface {
 	// ListIssues returns a list of issues.
 	ListIssues(ctx context.Context, criteria ListIssuesCriteria) ([]Issue, error)
 	// UpdateLastSeen updates the last seen time of an issue.
-	UpdateLastSeen(ctx context.Context, issueID int64, lastSeen time.Time) error
+	UpdateLastSeen(ctx context.Context, upd *UpdateLastSeen) error
+}
+
+type UpdateLastSeen struct {
+	LastSeen  time.Time
+	Message   string
+	ErrorType string
+	View      string
+	IssueID   int64
 }
 
 // GetIssueCriteria is used to specify criteria for fetching an issue.
