@@ -8,6 +8,14 @@ import (
 	"time"
 )
 
+const defaultExceptionType = "Error"
+
+var ignoredModules = map[string]struct{}{
+	"github.com/buger/jsonparser":    {},
+	"github.com/rs/zerolog":          {},
+	"github.com/getsentry/sentry-go": {},
+}
+
 // Event represents the main event structure.
 type (
 	Event struct {
@@ -221,7 +229,20 @@ func GetBreaker(exceptions []Exception) string {
 	if len(e.StackTrace.Frames) == 0 {
 		return ""
 	}
-	return e.StackTrace.Frames[len(e.StackTrace.Frames)-1].Module + " in " + e.StackTrace.Frames[len(e.StackTrace.Frames)-1].Function
+
+	frames := e.StackTrace.Frames
+
+	for i := len(frames) - 1; i >= 0; i-- {
+		frame := frames[i]
+		if _, found := ignoredModules[frame.Module]; found {
+			continue
+		}
+		return frame.Module + " in " + frame.Function
+	}
+
+	firstFrame := frames[0]
+
+	return firstFrame.Module + " in " + firstFrame.Function
 }
 
 func GetExceptionValue(exceptions []Exception, defaultVal string) string {
@@ -235,7 +256,15 @@ func GetExceptionType(exceptions []Exception, defaultVal string) string {
 	if len(exceptions) == 0 {
 		return defaultVal
 	}
-	return exceptions[len(exceptions)-1].Type
+	exc := exceptions[len(exceptions)-1]
+	if exc.Type != "" {
+		return exc.Type
+	}
+	if exc.Value != "" {
+		return defaultExceptionType
+	}
+
+	return defaultVal
 }
 
 func GetExceptionFramesColNo(exceptions []Exception) []uint32 {
