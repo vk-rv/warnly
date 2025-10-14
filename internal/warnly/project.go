@@ -638,9 +638,8 @@ func (e EventsList) DashboardDataForPeriod(now func() time.Time, period string) 
 	endTime := timeNow.Truncate(time.Hour).Add(time.Hour) // Round up to next hour boundary
 	startTime := endTime.Add(-duration)
 
-	// For very short periods, ensure we have at least a few data points
 	if duration < 6*time.Hour {
-		startTime = endTime.Add(-6 * time.Hour)
+		startTime = endTime.Add(-24 * time.Hour)
 	}
 
 	// Align start/end to interval boundaries
