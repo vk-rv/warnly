@@ -2,38 +2,40 @@ package web
 
 templ Toast() {
 	<script>
-        function showToast(message, duration = 3000) {
-            let toastContainer = document.querySelector('.toast-container');
-            if (!toastContainer) {
-                toastContainer = document.createElement('div');
-                toastContainer.className = 'toast-container';
-                document.body.appendChild(toastContainer);
+        if (typeof showToast === 'undefined') {
+            window.showToast = function(message, duration = 3000) {
+                let toastContainer = document.querySelector('.toast-container');
+                if (!toastContainer) {
+                    toastContainer = document.createElement('div');
+                    toastContainer.className = 'toast-container';
+                    document.body.appendChild(toastContainer);
+                }
+
+                const toast = document.createElement('div');
+                toast.className = 'toast-message';
+                toast.textContent = message;
+
+
+                toastContainer.appendChild(toast);
+
+
+                requestAnimationFrame(() => {
+                    toast.classList.add('show');
+                });
+
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    toast.classList.add('hide'); 
+
+                    toast.addEventListener('transitionend', () => {
+                        toast.remove();
+                        if (toastContainer.children.length === 0) {
+                            toastContainer.remove();
+                        }
+                    }, { once: true });
+
+                }, duration);
             }
-
-            const toast = document.createElement('div');
-            toast.className = 'toast-message';
-            toast.textContent = message;
-
-
-            toastContainer.appendChild(toast);
-
-
-            requestAnimationFrame(() => {
-                toast.classList.add('show');
-            });
-
-            setTimeout(() => {
-                toast.classList.remove('show');
-                toast.classList.add('hide'); 
-
-                toast.addEventListener('transitionend', () => {
-                    toast.remove();
-                    if (toastContainer.children.length === 0) {
-                        toastContainer.remove();
-                    }
-                }, { once: true });
-
-            }, duration);
         }
 </script>
 }
