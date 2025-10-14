@@ -18,6 +18,7 @@ import (
 
 const (
 	defaultLimit = 50
+	defaultPeriod = "24h"
 )
 
 // ProjectService implements warnly.ProjectService interface.
@@ -303,10 +304,16 @@ func (s *ProjectService) GetProjectDetails(
 		return nil, err
 	}
 
+	period := req.Period
+	if period == "" {
+		period = defaultPeriod
+	}
+
 	return &warnly.ProjectDetails{
 		Project:     project,
 		Teammates:   teammates,
 		Assignments: assignments,
+		Period:      period,
 	}, nil
 }
 
@@ -454,7 +461,7 @@ func (s *ProjectService) ListEvents(ctx context.Context, req *warnly.ListEventsR
 	criteria := &warnly.EventCriteria{
 		ProjectID: project.ID,
 		GroupID:   req.IssueID,
-		From:      issue.FirstSeen,
+		From:      issue.FirstSeen.Add(-time.Second * 1),
 		To:        now,
 		Message:   raw,
 		Tags:      structured,

@@ -90,150 +90,187 @@ func ProjectDetailsHtmx(details *warnly.ProjectDetails, user *warnly.User, isHtm
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</title><div id=\"content\" x-data=\"{\n        page: 1,\n        pid: 0,\n        period: '1h', // Reverted to original '1h'\n        activeTab: 'all',\n        issueListCount: 0,\n\n        changeActiveTab(tab, pid) {\n            this.activeTab = tab;\n            this.page = 1;\n            htmx.ajax('GET', `/projects/${pid}?page=${this.page}&period=${this.period}&out=table&issues=${this.activeTab}`, {\n                target: '#issuetable',\n                swap: 'outerHTML settle:0',\n            }).then(() => {\n                this.updateIssueListCount();\n            });\n        },\n        updateIssueListCount() {\n            const tableBody = document.querySelector('#issuetable tbody');\n            if (tableBody) {\n                this.issueListCount = tableBody.rows.length;\n            }\n        },\n        paginatePrev(pid) {\n            this.page = Math.max(1, this.page - 1);\n            htmx.ajax('GET', `/projects/${pid}?page=${this.page}&period=${this.period}&out=table&issues=${this.activeTab}`, {\n                target: '#issuetable',\n                swap: 'outerHTML settle:0',\n            }).then(() => {\n                this.updateIssueListCount();\n            });\n        },\n        paginateNext(pid) {\n            this.page += 1;\n            htmx.ajax('GET', `/projects/${pid}?page=${this.page}&period=${this.period}&out=table&issues=${this.activeTab}`, {\n                target: '#issuetable',\n                swap: 'outerHTML settle:0',\n            }).then(() => {\n                this.updateIssueListCount();\n            });\n        },\n\n\t\tisOpen: false,\n                        selectedPreset: '1h',\n                        customRangeInput: '',\n                        customRangeError: null,\n\n                        presets: [\n                            { label: 'Last hour', value: '1h' },\n                            { label: 'Last 24 hours', value: '24h' },\n                            { label: 'Last 7 days', value: '7d' },\n                            { label: 'Last 14 days', value: '14d' },\n                            { label: 'Last 30 days', value: '30d' },\n                            { label: 'Last 90 days', value: '90d' }\n                        ],\n\n                        get displayLabel() {\n                            if (this.selectedPreset === 'custom' && this.customRangeInput) {\n                                return this.customRangeInput;\n                            }\n\n                            const preset = this.presets.find(p => p.value === this.selectedPreset);\n                            return preset ? preset.label : 'Last hour';\n                        },\n\n                        toggleDropdown() {\n                            this.isOpen = !this.isOpen;\n                        },\n\n                        selectPreset(value) {\n                            this.selectedPreset = value;\n                            this.isOpen = false;\n\t\t\t\t\t\t\tthis.period = value;\n                            htmx.ajax('GET', `/projects/${pid}?page=${this.page}&period=${this.period}&out=table&issues=${this.activeTab}`, {\n                \t\t\t\t\ttarget: '#issuetable',\n\t\t\t\t\t\t\t\t\tswap: 'outerHTML settle:0',\n\t\t\t\t\t\t\t\t\t}).then(() => {\n\t\t\t\t\t\t\t\t\tthis.updateIssueListCount();\n\t\t\t\t\t\t\t\t\t});\n                        },\n\n                        validateCustomRange(input) {\n                            this.customRangeError = null;\n\n                            input = input.trim();\n\n                            if (!input) {\n                                this.customRangeError = 'Please enter a time range';\n                                return false;\n                            }\n\n                            // Regex to validate format: number + unit (h, d, w, m, y)\n                            const regex = /^(\\d+)(h|d|w|m|y)$/i;\n                            const match = input.match(regex);\n\n                            if (!match) {\n                                this.customRangeError = 'Invalid format. Use format like: 1h, 2d, 3w, 4m, 1y';\n                                return false;\n                            }\n\n                            const value = parseInt(match[1]);\n                            const unit = match[2].toLowerCase();\n\n                            // Validate value is positive\n                            if (value <= 0) {\n                                this.customRangeError = 'Value must be positive';\n                                return false;\n                            }\n\n                            // Validate reasonable limits for each unit\n                            const limits = {\n                                'h': 720,    // Max 30 days in hours\n                                'd': 365,    // Max 1 year in days\n                                'w': 52,     // Max 1 year in weeks\n                                'm': 60,     // Max 5 years in months\n                                'y': 10      // Max 10 years\n                            };\n\n                            if (value > limits[unit]) {\n                                this.customRangeError = `Maximum value for ${unit} is ${limits[unit]}`;\n                                return false;\n                            }\n\n                            return true;\n                        },\n\n                        applyCustomRange() {\n                            if (this.validateCustomRange(this.customRangeInput)) {\n                                this.selectedPreset = 'custom';\n                                this.isOpen = false;\n\t\t\t\t\t\t\t\tthis.period = this.customRangeInput;\n                            htmx.ajax('GET', `/projects/${pid}?page=${this.page}&period=${this.period}&out=table&issues=${this.activeTab}`, {\n                \t\t\t\t\ttarget: '#issuetable',\n\t\t\t\t\t\t\t\t\tswap: 'outerHTML settle:0',\n\t\t\t\t\t\t\t\t\t}).then(() => {\n\t\t\t\t\t\t\t\t\tthis.updateIssueListCount();\n\t\t\t\t\t\t\t\t\t});\n                                \n                            }\n                        },\n    }\" x-init=\"\n      updateIssueListCount();\n      this.pid = document.getElementById('project-id').value;\n    \" class=\"flex-grow bg-white p-8\"><header class=\"flex items-center justify-between mb-8\"><div class=\"flex items-center gap-2 text-gray-600\"><span class=\"cursor-pointer\" hx-swap=\"outerHTML settle:0\" hx-get=\"/projects\" hx-target=\"#content\" hx-push-url=\"true\">Projects</span> <span class=\"text-gray-400\">/</span> <span class=\"text-gray-900\">Project Details</span></div></header><div class=\"flex items-center gap-3 mb-8\"><div class=\"w-10 h-10 bg-gray-100 rounded flex items-center justify-center\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</title><div id=\"content\" data-project-id=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var5 string
-		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(string(details.Project.Name[0]))
+		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprint(details.Project.ID))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 172, Col: 112}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 17, Col: 50}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div><h1 class=\"text-2xl font-bold\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "\" data-period=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var6 string
-		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(details.Project.Name)
+		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(details.Period)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 173, Col: 56}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 18, Col: 30}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</h1></div><input type=\"hidden\" id=\"project-id\" value=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\" x-data=\"{\n        page: 1,\n        pid: parseInt($el.dataset.projectId),\n        period: $el.dataset.period,\n        activeTab: 'all',\n        issueListCount: 0,\n\n        changeActiveTab(tab) {\n            this.activeTab = tab;\n            this.page = 1;\n            htmx.ajax('GET', `/projects/${this.pid}?page=${this.page}&period=${this.period}&out=table&issues=${this.activeTab}`, {\n                target: '#issuetable',\n                swap: 'outerHTML settle:0',\n            }).then(() => {\n                this.updateIssueListCount();\n            });\n        },\n        updateIssueListCount() {\n            const tableBody = document.querySelector('#issuetable tbody');\n            if (tableBody) {\n                this.issueListCount = tableBody.rows.length;\n            }\n        },\n        paginatePrev() {\n            this.page = Math.max(1, this.page - 1);\n            htmx.ajax('GET', `/projects/${this.pid}?page=${this.page}&period=${this.period}&out=table&issues=${this.activeTab}`, {\n                target: '#issuetable',\n                swap: 'outerHTML settle:0',\n            }).then(() => {\n                this.updateIssueListCount();\n            });\n        },\n        paginateNext() {\n            this.page += 1;\n            htmx.ajax('GET', `/projects/${this.pid}?page=${this.page}&period=${this.period}&out=table&issues=${this.activeTab}`, {\n                target: '#issuetable',\n                swap: 'outerHTML settle:0',\n            }).then(() => {\n                this.updateIssueListCount();\n            });\n        },\n\n\t\tisOpen: false,\n                        selectedPreset: $el.dataset.period,\n                        customRangeInput: '',\n                        customRangeError: null,\n\n                        presets: [\n                            { label: 'Last hour', value: '1h' },\n                            { label: 'Last 24 hours', value: '24h' },\n                            { label: 'Last 7 days', value: '7d' },\n                            { label: 'Last 14 days', value: '14d' },\n                            { label: 'Last 30 days', value: '30d' },\n                            { label: 'Last 90 days', value: '90d' }\n                        ],\n\n                        get displayLabel() {\n                            if (this.selectedPreset === 'custom' && this.customRangeInput) {\n                                return this.customRangeInput;\n                            }\n\n                            const preset = this.presets.find(p => p.value === this.selectedPreset);\n                            return preset ? preset.label : 'Last 24 hours';\n                        },\n\n                        toggleDropdown() {\n                            this.isOpen = !this.isOpen;\n                        },\n\n                        selectPreset(value) {\n                            this.selectedPreset = value;\n                            this.isOpen = false;\n\t\t\t\t\t\t\tthis.period = value;\n\t\t\t\t\t\t\tthis.page = 1;\n                            htmx.ajax('GET', `/projects/${this.pid}?page=${this.page}&period=${this.period}&out=full&issues=${this.activeTab}`, {\n                \t\t\t\t\ttarget: '#chart-and-table',\n\t\t\t\t\t\t\t\t\tswap: 'outerHTML settle:0',\n\t\t\t\t\t\t\t\t\t}).then(() => {\n\t\t\t\t\t\t\t\t\tthis.updateIssueListCount();\n\t\t\t\t\t\t\t\t\t});\n                        },\n\n                        validateCustomRange(input) {\n                            this.customRangeError = null;\n\n                            input = input.trim();\n\n                            if (!input) {\n                                this.customRangeError = 'Please enter a time range';\n                                return false;\n                            }\n\n                            // Regex to validate format: number + unit (h, d, w, m, y)\n                            const regex = /^(\\d+)(h|d|w|m|y)$/i;\n                            const match = input.match(regex);\n\n                            if (!match) {\n                                this.customRangeError = 'Invalid format. Use format like: 1h, 2d, 3w, 4m, 1y';\n                                return false;\n                            }\n\n                            const value = parseInt(match[1]);\n                            const unit = match[2].toLowerCase();\n\n                            // Validate value is positive\n                            if (value <= 0) {\n                                this.customRangeError = 'Value must be positive';\n                                return false;\n                            }\n\n                            // Validate reasonable limits for each unit\n                            const limits = {\n                                'h': 720,    // Max 30 days in hours\n                                'd': 365,    // Max 1 year in days\n                                'w': 52,     // Max 1 year in weeks\n                                'm': 60,     // Max 5 years in months\n                                'y': 10      // Max 10 years\n                            };\n\n                            if (value > limits[unit]) {\n                                this.customRangeError = `Maximum value for ${unit} is ${limits[unit]}`;\n                                return false;\n                            }\n\n                            return true;\n                        },\n\n                        applyCustomRange() {\n                            if (this.validateCustomRange(this.customRangeInput)) {\n                                this.selectedPreset = 'custom';\n                                this.isOpen = false;\n\t\t\t\t\t\t\t\tthis.period = this.customRangeInput;\n\t\t\t\t\t\t\t\tthis.page = 1;\n                            htmx.ajax('GET', `/projects/${this.pid}?page=${this.page}&period=${this.period}&out=full&issues=${this.activeTab}`, {\n                \t\t\t\t\ttarget: '#chart-and-table',\n\t\t\t\t\t\t\t\t\tswap: 'outerHTML settle:0',\n\t\t\t\t\t\t\t\t\t}).then(() => {\n\t\t\t\t\t\t\t\t\tthis.updateIssueListCount();\n\t\t\t\t\t\t\t\t\t});\n                                \n                            }\n                        },\n    }\" x-init=\"updateIssueListCount()\" class=\"flex-grow bg-white p-8\"><header class=\"flex items-center justify-between mb-8\"><div class=\"flex items-center gap-2 text-gray-600\"><span class=\"cursor-pointer\" hx-swap=\"outerHTML settle:0\" hx-get=\"/projects\" hx-target=\"#content\" hx-push-url=\"true\">Projects</span> <span class=\"text-gray-400\">/</span> <span class=\"text-gray-900\">Project Details</span></div></header><div class=\"flex items-center gap-3 mb-8\"><div class=\"w-10 h-10 bg-gray-100 rounded flex items-center justify-center\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var7 string
-		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprint(details.Project.ID))
+		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(string(details.Project.Name[0]))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 175, Col: 77}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 173, Col: 112}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "\"><div class=\"flex mb-8\"><style>\n                [x-cloak] { display: none !important; }\n            </style><div><div class=\"flex border hover:bg-gray-50 border-gray-300 rounded-md overflow-hidden bg-white\"><button @click=\"toggleDropdown()\" class=\"flex cursor-pointer items-center px-4 py-2 text-sm\"><span x-text=\"displayLabel\"></span> <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4 ml-1\" viewBox=\"0 0 20 20\" fill=\"currentColor\" :class=\"{'transform rotate-180': isOpen}\"><path fill-rule=\"evenodd\" d=\"M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z\" clip-rule=\"evenodd\"></path></svg></button></div><div x-show=\"isOpen\" x-cloak @click.away=\"isOpen = false\" class=\"absolute mt-2 w-64 rounded-md bg-white shadow-lg z-10\"><div><div class=\"p-4 border-b border-gray-200\"><h3 class=\"text-sm font-medium text-gray-800\">Filter Time Range</h3></div><div class=\"p-3\"><input type=\"text\" x-model=\"customRangeInput\" placeholder=\"Custom range: 2h, 4d, 8w...\" class=\"w-full p-2 border text-sm rounded-md focus:outline-none border-gray-300\" @keydown.enter=\"applyCustomRange()\" :class=\"{'border-red-500': customRangeError}\"><div x-show=\"customRangeError\" class=\"text-red-500 text-xs mt-1\" x-text=\"customRangeError\"></div></div><div><template x-for=\"(preset, index) in presets\" :key=\"index\"><div @click=\"selectPreset(preset.value)\" class=\"flex text-sm items-center px-3 py-2 hover:bg-gray-50 cursor-pointer\"><div class=\"w-6\"><svg x-show=\"selectedPreset === preset.value\" xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5 text-black-500\" viewBox=\"0 0 20 20\" fill=\"currentColor\"><path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"></path></svg></div><span class=\"ml-2\" :class=\"{'text-black-600 font-medium': selectedPreset === preset.value}\" x-text=\"preset.label\"></span></div></template></div></div></div></div></div><div class=\"bg-white border border-gray-200 rounded-lg overflow-hidden\"><div class=\"border-b border-gray-300 p-4 flex justify-between items-center\"><div class=\"flex items-center gap-3\"><div><h3 class=\"font-bold text-sm\">Number of Errors</h3></div></div></div><div class=\"h-[1px] bg-gray-50\"></div><div class=\"warnly-project h-[200px]\" data-chart=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</div><h1 class=\"text-2xl font-bold\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var8 string
-		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(details.Project.Events.DashboardData(time.Now))
+		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(details.Project.Name)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 251, Col: 100}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 174, Col: 56}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "\"></div><div class=\"border-t border-gray-300 p-4 grid grid-cols-2\"><div class=\"text-sm\"><p class=\"text-gray-500\"><span class=\"font-bold\">Total Errors:</span> ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</h1></div><input type=\"hidden\" id=\"project-id\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var9 string
-		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(details.Project.Events.TotalErrors())
+		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprint(details.Project.ID))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 254, Col: 113}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 176, Col: 77}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</p></div></div></div><nav class=\"flex gap-6 mt-5 justify-between\"><div class=\"flex gap-6\"><button id=\"allIssuesBtn\" :class=\"{ 'border-black text-black': activeTab === 'all', 'border-transparent text-gray-500': activeTab !== 'all' }\" @click=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "\"> <input type=\"hidden\" id=\"project-period\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var10 string
-		templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("changeActiveTab('all', '%d')", details.Project.ID))
+		templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(details.Period)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 260, Col: 219}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 177, Col: 65}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "\" class=\"pb-2 text-sm px-1 border-b-2 cursor-pointer\">All Issues ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "\"><div class=\"flex mb-8\"><style>\n                [x-cloak] { display: none !important; }\n            </style><div><div class=\"flex border hover:bg-gray-50 border-gray-300 rounded-md overflow-hidden bg-white\"><button @click=\"toggleDropdown()\" class=\"flex cursor-pointer items-center px-4 py-2 text-sm\"><span x-text=\"displayLabel\"></span> <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4 ml-1\" viewBox=\"0 0 20 20\" fill=\"currentColor\" :class=\"{'transform rotate-180': isOpen}\"><path fill-rule=\"evenodd\" d=\"M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z\" clip-rule=\"evenodd\"></path></svg></button></div><div x-show=\"isOpen\" x-cloak @click.away=\"isOpen = false\" class=\"absolute mt-2 w-64 rounded-md bg-white shadow-lg z-10\"><div><div class=\"p-4 border-b border-gray-200\"><h3 class=\"text-sm font-medium text-gray-800\">Filter Time Range</h3></div><div class=\"p-3\"><input type=\"text\" x-model=\"customRangeInput\" placeholder=\"Custom range: 2h, 4d, 8w...\" class=\"w-full p-2 border text-sm rounded-md focus:outline-none border-gray-300\" @keydown.enter=\"applyCustomRange()\" :class=\"{'border-red-500': customRangeError}\"><div x-show=\"customRangeError\" class=\"text-red-500 text-xs mt-1\" x-text=\"customRangeError\"></div></div><div><template x-for=\"(preset, index) in presets\" :key=\"index\"><div @click=\"selectPreset(preset.value)\" class=\"flex text-sm items-center px-3 py-2 hover:bg-gray-50 cursor-pointer\"><div class=\"w-6\"><svg x-show=\"selectedPreset === preset.value\" xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5 text-black-500\" viewBox=\"0 0 20 20\" fill=\"currentColor\"><path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"></path></svg></div><span class=\"ml-2\" :class=\"{'text-black-600 font-medium': selectedPreset === preset.value}\" x-text=\"preset.label\"></span></div></template></div></div></div></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var11 string
-		templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(details.AllLength())
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 260, Col: 306}
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
+		templ_7745c5c3_Err = ChartAndTable(details, isHtmx).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</button> <button id=\"newIssuesBtn\" :class=\"{ 'border-black text-black': activeTab === 'new', 'border-transparent text-gray-500': activeTab !== 'new' }\" @click=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+func ChartAndTable(details *warnly.ProjectDetails, isHtmx bool) templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var11 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var11 == nil {
+			templ_7745c5c3_Var11 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<div id=\"chart-and-table\"><div class=\"bg-white border border-gray-200 rounded-lg overflow-hidden\"><div class=\"border-b border-gray-300 p-4 flex justify-between items-center\"><div class=\"flex items-center gap-3\"><div><h3 class=\"font-bold text-sm\">Number of Errors</h3></div></div></div><div class=\"h-[1px] bg-gray-50\"></div><div class=\"warnly-project h-[200px]\" data-chart=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var12 string
-		templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("changeActiveTab('new', '%d')", details.Project.ID))
+		templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(details.Project.Events.DashboardDataForPeriod(time.Now, details.Period))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 261, Col: 219}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 259, Col: 125}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "\" class=\"pb-2 text-sm px-1 border-b-2 cursor-pointer\">New Issues ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "\" data-period=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var13 string
-		templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(details.NewLength())
+		templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(details.Period)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 261, Col: 306}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 259, Col: 156}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</button></div><div class=\"flex\"><button :disabled=\"page == 1\" :class=\"page == 1 ? 'px-4 py-2 text-sm border rounded-lg flex items-center border-gray-200 cursor-not-allowed opacity-60 bg-gray-100 hover:bg-gray-100' : 'px-4 cursor-pointer py-2 text-sm border rounded-lg hover:bg-gray-50 flex items-center border-gray-300'\" @click=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "\"></div><div class=\"border-t border-gray-300 p-4 grid grid-cols-2\"><div class=\"text-sm\"><p class=\"text-gray-500\"><span class=\"font-bold\">Total Errors:</span> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var14 string
-		templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("paginatePrev('%d')", details.Project.ID))
+		templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(details.Project.Events.TotalErrors())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 267, Col: 67}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 262, Col: 113}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "\" class=\"px-4 cursor-pointer py-2 text-sm border rounded-lg hover:bg-gray-50 flex items-center border-gray-300\"><svg class=\"w-4 h-4 mr-2\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M15 19l-7-7 7-7\"></path></svg></button> <button :disabled=\"issueListCount < 5\" :class=\"issueListCount < 5 ? 'px-4 py-2 text-sm border rounded-lg flex items-center border-gray-200 cursor-not-allowed opacity-60 bg-gray-100 hover:bg-gray-100' : 'px-4 cursor-pointer py-2 text-sm border rounded-lg hover:bg-gray-50 flex items-center ml-2 border-gray-300'\" @click=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "</p></div></div></div><nav class=\"flex gap-6 mt-5 justify-between\"><div class=\"flex gap-6\"><button id=\"allIssuesBtn\" :class=\"{ 'border-black text-black': activeTab === 'all', 'border-transparent text-gray-500': activeTab !== 'all' }\" @click=\"changeActiveTab('all')\" class=\"pb-2 text-sm px-1 border-b-2 cursor-pointer\">All Issues ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var15 string
-		templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("paginateNext('%d')", details.Project.ID))
+		templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(details.AllLength())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 277, Col: 67}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 268, Col: 262}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "\" class=\"px-4 cursor-pointer py-2 text-sm border rounded-lg hover:bg-gray-50 flex items-center ml-2 border-gray-300\"><svg class=\"w-4 h-4 ml-2\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M9 5l7 7-7 7\"></path></svg></button></div></nav><div class=\"flex justify-between items-center mt-4\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "</button> <button id=\"newIssuesBtn\" :class=\"{ 'border-black text-black': activeTab === 'new', 'border-transparent text-gray-500': activeTab !== 'new' }\" @click=\"changeActiveTab('new')\" class=\"pb-2 text-sm px-1 border-b-2 cursor-pointer\">New Issues ")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var16 string
+		templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(details.NewLength())
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 269, Col: 262}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</button></div><div class=\"flex\"><button :disabled=\"page == 1\" :class=\"page == 1 ? 'px-4 py-2 text-sm border rounded-lg flex items-center border-gray-200 cursor-not-allowed opacity-60 bg-gray-100 hover:bg-gray-100' : 'px-4 cursor-pointer py-2 text-sm border rounded-lg hover:bg-gray-50 flex items-center border-gray-300'\" @click=\"paginatePrev()\" class=\"px-4 cursor-pointer py-2 text-sm border rounded-lg hover:bg-gray-50 flex items-center border-gray-300\"><svg class=\"w-4 h-4 mr-2\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M15 19l-7-7 7-7\"></path></svg></button> <button :disabled=\"issueListCount < 5\" :class=\"issueListCount < 5 ? 'px-4 py-2 text-sm border rounded-lg flex items-center border-gray-200 cursor-not-allowed opacity-60 bg-gray-100 hover:bg-gray-100' : 'px-4 cursor-pointer py-2 text-sm border rounded-lg hover:bg-gray-50 flex items-center ml-2 border-gray-300'\" @click=\"paginateNext()\" class=\"px-4 cursor-pointer py-2 text-sm border rounded-lg hover:bg-gray-50 flex items-center ml-2 border-gray-300\"><svg class=\"w-4 h-4 ml-2\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M9 5l7 7-7 7\"></path></svg></button></div></nav><div class=\"flex justify-between items-center mt-4\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -241,7 +278,7 @@ func ProjectDetailsHtmx(details *warnly.ProjectDetails, user *warnly.User, isHtm
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "<script>\n                function openUserSelector(event, issueId) {\n                    const selector = document.getElementById(`user-selector-${issueId}`);\n                    if (!selector.classList.contains('hidden')) {\n                        selector.classList.add('hidden');\n                        return;\n                    }\n                    selector.classList.remove('hidden');\n\n                    const rect = event.target.getBoundingClientRect();\n                    const selectorRect = selector.getBoundingClientRect();\n                    const left = rect.left + (rect.width / 2) - (selectorRect.width / 2);\n\n                    selector.style.top = `${rect.bottom + window.scrollY}px`;\n                    selector.style.left = `${left}px`;\n                }\n\n                document.addEventListener('click', (e) => {\n                    const selectors = document.querySelectorAll('[id^=\"user-selector-\"]');\n                    selectors.forEach(selector => {\n                        if (!selector.contains(e.target) && !e.target.closest('td')) {\n                            selector.classList.add('hidden');\n                        }\n                    });\n                });\n            </script></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "<script>\n\t\t\t\tfunction openUserSelector(event, issueId) {\n\t\t\t\t\tconst selector = document.getElementById(`user-selector-${issueId}`);\n\t\t\t\t\tif (!selector.classList.contains('hidden')) {\n\t\t\t\t\t\tselector.classList.add('hidden');\n\t\t\t\t\t\treturn;\n\t\t\t\t\t}\n\t\t\t\t\tselector.classList.remove('hidden');\n\t\t\t\n\t\t\t\t\tconst rect = event.target.getBoundingClientRect();\n\t\t\t\t\tconst selectorRect = selector.getBoundingClientRect();\n\t\t\t\t\tconst left = rect.left + (rect.width / 2) - (selectorRect.width / 2);\n\t\t\t\n\t\t\t\t\tselector.style.top = `${rect.bottom + window.scrollY}px`;\n\t\t\t\t\tselector.style.left = `${left}px`;\n\t\t\t\t}\n\t\t\t\n\t\t\t\tdocument.addEventListener('click', (e) => {\n\t\t\t\t\tconst selectors = document.querySelectorAll('[id^=\"user-selector-\"]');\n\t\t\t\t\tselectors.forEach(selector => {\n\t\t\t\t\t\tif (!selector.contains(e.target) && !e.target.closest('td')) {\n\t\t\t\t\t\t\tselector.classList.add('hidden');\n\t\t\t\t\t\t}\n\t\t\t\t\t});\n\t\t\t\t});\n\t\t\t</script></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -249,7 +286,7 @@ func ProjectDetailsHtmx(details *warnly.ProjectDetails, user *warnly.User, isHtm
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "</div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -273,61 +310,35 @@ func IssueListTable(details *warnly.ProjectDetails, isHtmx bool) templ.Component
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var16 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var16 == nil {
-			templ_7745c5c3_Var16 = templ.NopComponent
+		templ_7745c5c3_Var17 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var17 == nil {
+			templ_7745c5c3_Var17 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
 		if isHtmx {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "<button hx-swap-oob=\"true\" id=\"allIssuesBtn\" :class=\"{ 'border-black text-black': activeTab === 'all', 'border-transparent text-gray-500': activeTab !== 'all' }\" @click=\"")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			var templ_7745c5c3_Var17 string
-			templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("changeActiveTab('all', '%d')", details.Project.ID))
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 321, Col: 236}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "\" class=\"pb-2 text-sm px-1 border-b-2 cursor-pointer\">All Issues ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "<button hx-swap-oob=\"true\" id=\"allIssuesBtn\" :class=\"{ 'border-black text-black': activeTab === 'all', 'border-transparent text-gray-500': activeTab !== 'all' }\" @click=\"changeActiveTab('all')\" class=\"pb-2 text-sm px-1 border-b-2 cursor-pointer\">All Issues ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var18 string
 			templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(details.AllLength())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 321, Col: 323}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 329, Col: 280}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "</button> <button hx-swap-oob=\"true\" id=\"newIssuesBtn\" :class=\"{ 'border-black text-black': activeTab === 'new', 'border-transparent text-gray-500': activeTab !== 'new' }\" @click=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "</button> <button hx-swap-oob=\"true\" id=\"newIssuesBtn\" :class=\"{ 'border-black text-black': activeTab === 'new', 'border-transparent text-gray-500': activeTab !== 'new' }\" @click=\"changeActiveTab('new')\" class=\"pb-2 text-sm px-1 border-b-2 cursor-pointer\">New Issues ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var19 string
-			templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("changeActiveTab('new', '%d')", details.Project.ID))
+			templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(details.NewLength())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 322, Col: 236}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 330, Col: 280}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "\" class=\"pb-2 text-sm px-1 border-b-2 cursor-pointer\">New Issues ")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			var templ_7745c5c3_Var20 string
-			templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(details.NewLength())
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 322, Col: 323}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -345,12 +356,12 @@ func IssueListTable(details *warnly.ProjectDetails, isHtmx bool) templ.Component
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var21 string
-			templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/projects/%d/issues/%d?period=14d", details.Project.ID, issue.ID))
+			var templ_7745c5c3_Var20 string
+			templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/projects/%d/issues/%d?period=14d", details.Project.ID, issue.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 337, Col: 138}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 345, Col: 138}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -358,12 +369,12 @@ func IssueListTable(details *warnly.ProjectDetails, isHtmx bool) templ.Component
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var22 string
-			templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(issue.Type)
+			var templ_7745c5c3_Var21 string
+			templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(issue.Type)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 340, Col: 75}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 348, Col: 75}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -371,12 +382,12 @@ func IssueListTable(details *warnly.ProjectDetails, isHtmx bool) templ.Component
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var23 string
-			templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(issue.View)
+			var templ_7745c5c3_Var22 string
+			templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(issue.View)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 341, Col: 90}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 349, Col: 90}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -384,12 +395,12 @@ func IssueListTable(details *warnly.ProjectDetails, isHtmx bool) templ.Component
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var24 string
-			templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinStringErrs(issue.View)
+			var templ_7745c5c3_Var23 string
+			templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(issue.View)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 341, Col: 105}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 349, Col: 105}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var24))
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -397,12 +408,12 @@ func IssueListTable(details *warnly.ProjectDetails, isHtmx bool) templ.Component
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var25 string
-			templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(issue.Message)
+			var templ_7745c5c3_Var24 string
+			templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinStringErrs(issue.Message)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 343, Col: 71}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 351, Col: 71}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var25))
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var24))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -410,12 +421,12 @@ func IssueListTable(details *warnly.ProjectDetails, isHtmx bool) templ.Component
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var26 string
-			templ_7745c5c3_Var26, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.TimeAgo(time.Now, issue.LastSeen, true))
+			var templ_7745c5c3_Var25 string
+			templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.TimeAgo(time.Now, issue.LastSeen, true))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 346, Col: 72}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 354, Col: 72}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var26))
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var25))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -423,12 +434,12 @@ func IssueListTable(details *warnly.ProjectDetails, isHtmx bool) templ.Component
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var27 string
-			templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.TimeAgo(time.Now, issue.FirstSeen, true))
+			var templ_7745c5c3_Var26 string
+			templ_7745c5c3_Var26, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.TimeAgo(time.Now, issue.FirstSeen, true))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 346, Col: 145}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 354, Col: 145}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var27))
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var26))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -441,12 +452,12 @@ func IssueListTable(details *warnly.ProjectDetails, isHtmx bool) templ.Component
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				var templ_7745c5c3_Var28 string
-				templ_7745c5c3_Var28, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprint(issue.MessagesCount))
+				var templ_7745c5c3_Var27 string
+				templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprint(issue.MessagesCount))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 349, Col: 44}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 357, Col: 44}
 				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var28))
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var27))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -455,12 +466,12 @@ func IssueListTable(details *warnly.ProjectDetails, isHtmx bool) templ.Component
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var29 string
-			templ_7745c5c3_Var29, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.NumFormatted(issue.TimesSeen))
+			var templ_7745c5c3_Var28 string
+			templ_7745c5c3_Var28, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.NumFormatted(issue.TimesSeen))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 356, Col: 100}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 364, Col: 100}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var29))
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var28))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -468,12 +479,12 @@ func IssueListTable(details *warnly.ProjectDetails, isHtmx bool) templ.Component
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var30 string
-			templ_7745c5c3_Var30, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.NumFormatted(issue.UserCount))
+			var templ_7745c5c3_Var29 string
+			templ_7745c5c3_Var29, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.NumFormatted(issue.UserCount))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 357, Col: 100}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 365, Col: 100}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var30))
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var29))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -490,8 +501,8 @@ func IssueListTable(details *warnly.ProjectDetails, isHtmx bool) templ.Component
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				var templ_7745c5c3_Var31 templ.ComponentScript = templ.JSFuncCall("openUserSelector", templ.JSExpression("event"), issue.ID)
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var31.Call)
+				var templ_7745c5c3_Var30 templ.ComponentScript = templ.JSFuncCall("openUserSelector", templ.JSExpression("event"), issue.ID)
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var30.Call)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -499,12 +510,12 @@ func IssueListTable(details *warnly.ProjectDetails, isHtmx bool) templ.Component
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				var templ_7745c5c3_Var32 string
-				templ_7745c5c3_Var32, templ_7745c5c3_Err = templ.JoinStringErrs(string(assigned.Username))
+				var templ_7745c5c3_Var31 string
+				templ_7745c5c3_Var31, templ_7745c5c3_Err = templ.JoinStringErrs(string(assigned.Username))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 362, Col: 36}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 370, Col: 36}
 				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var32))
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var31))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -521,8 +532,8 @@ func IssueListTable(details *warnly.ProjectDetails, isHtmx bool) templ.Component
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				var templ_7745c5c3_Var33 templ.ComponentScript = templ.JSFuncCall("openUserSelector", templ.JSExpression("event"), issue.ID)
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var33.Call)
+				var templ_7745c5c3_Var32 templ.ComponentScript = templ.JSFuncCall("openUserSelector", templ.JSExpression("event"), issue.ID)
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var32.Call)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -535,12 +546,12 @@ func IssueListTable(details *warnly.ProjectDetails, isHtmx bool) templ.Component
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var34 string
-			templ_7745c5c3_Var34, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("user-selector-%d", issue.ID))
+			var templ_7745c5c3_Var33 string
+			templ_7745c5c3_Var33, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("user-selector-%d", issue.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 373, Col: 56}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 381, Col: 56}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var34))
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var33))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -554,12 +565,12 @@ func IssueListTable(details *warnly.ProjectDetails, isHtmx bool) templ.Component
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					var templ_7745c5c3_Var35 string
-					templ_7745c5c3_Var35, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/projects/%d/issues/%d/assignments?issues=all&period=14d", details.Project.ID, issue.ID))
+					var templ_7745c5c3_Var34 string
+					templ_7745c5c3_Var34, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/projects/%d/issues/%d/assignments?issues=all&period=14d", details.Project.ID, issue.ID))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 380, Col: 121}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 388, Col: 121}
 					}
-					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var35))
+					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var34))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -567,12 +578,12 @@ func IssueListTable(details *warnly.ProjectDetails, isHtmx bool) templ.Component
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					var templ_7745c5c3_Var36 string
-					templ_7745c5c3_Var36, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf(`{"user_id":"%d"}`, details.Teammates[i].ID))
+					var templ_7745c5c3_Var35 string
+					templ_7745c5c3_Var35, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf(`{"user_id":"%d"}`, details.Teammates[i].ID))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 383, Col: 76}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 391, Col: 76}
 					}
-					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var36))
+					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var35))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -580,12 +591,12 @@ func IssueListTable(details *warnly.ProjectDetails, isHtmx bool) templ.Component
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					var templ_7745c5c3_Var37 string
-					templ_7745c5c3_Var37, templ_7745c5c3_Err = templ.JoinStringErrs(details.Teammates[i].FullName())
+					var templ_7745c5c3_Var36 string
+					templ_7745c5c3_Var36, templ_7745c5c3_Err = templ.JoinStringErrs(details.Teammates[i].FullName())
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 386, Col: 73}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 394, Col: 73}
 					}
-					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var37))
+					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var36))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -598,12 +609,12 @@ func IssueListTable(details *warnly.ProjectDetails, isHtmx bool) templ.Component
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					var templ_7745c5c3_Var38 string
-					templ_7745c5c3_Var38, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/projects/%d/issues/%d/assignments?issues=all&period=14d", details.Project.ID, issue.ID))
+					var templ_7745c5c3_Var37 string
+					templ_7745c5c3_Var37, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/projects/%d/issues/%d/assignments?issues=all&period=14d", details.Project.ID, issue.ID))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 394, Col: 121}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 402, Col: 121}
 					}
-					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var38))
+					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var37))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -611,12 +622,12 @@ func IssueListTable(details *warnly.ProjectDetails, isHtmx bool) templ.Component
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					var templ_7745c5c3_Var39 string
-					templ_7745c5c3_Var39, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf(`{"user_id":"%d"}`, details.Teammates[i].ID))
+					var templ_7745c5c3_Var38 string
+					templ_7745c5c3_Var38, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf(`{"user_id":"%d"}`, details.Teammates[i].ID))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 397, Col: 76}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 405, Col: 76}
 					}
-					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var39))
+					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var38))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -624,12 +635,12 @@ func IssueListTable(details *warnly.ProjectDetails, isHtmx bool) templ.Component
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
-					var templ_7745c5c3_Var40 string
-					templ_7745c5c3_Var40, templ_7745c5c3_Err = templ.JoinStringErrs(details.Teammates[i].FullName())
+					var templ_7745c5c3_Var39 string
+					templ_7745c5c3_Var39, templ_7745c5c3_Err = templ.JoinStringErrs(details.Teammates[i].FullName())
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 403, Col: 73}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 411, Col: 73}
 					}
-					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var40))
+					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var39))
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
@@ -644,12 +655,12 @@ func IssueListTable(details *warnly.ProjectDetails, isHtmx bool) templ.Component
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				var templ_7745c5c3_Var41 string
-				templ_7745c5c3_Var41, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/projects/%d/issues/%d/assignments?issues=all&period=14d", details.Project.ID, issue.ID))
+				var templ_7745c5c3_Var40 string
+				templ_7745c5c3_Var40, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/projects/%d/issues/%d/assignments?issues=all&period=14d", details.Project.ID, issue.ID))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 410, Col: 122}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project_details.templ`, Line: 418, Col: 122}
 				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var41))
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var40))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

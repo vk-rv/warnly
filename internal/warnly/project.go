@@ -500,6 +500,7 @@ type ProjectDetails struct {
 	Project     *Project
 	Assignments *Assignments
 	Teammates   []Teammate
+	Period      string
 }
 
 func (pd *ProjectDetails) AllLength() string {
@@ -602,24 +603,102 @@ const (
 	EventTypeException EventType = iota + 1
 )
 
-// DashboardData returns the data for frontend dashboard.
+// DashboardData returns the data for frontend dashboard (24h period).
 func (e EventsList) DashboardData(now func() time.Time) string {
-	counts := make([]int, 24)
+	return e.DashboardDataForPeriod(now, "24h")
+}
+
+// DashboardDataForPeriod returns the data for frontend dashboard adapted to the given period.
+// Returns JSON array of [timestamps, counts] like: [[t1,t2,t3...], [c1,c2,c3...]]
+func (e EventsList) DashboardDataForPeriod(now func() time.Time, period string) string {
+	if period == "" {
+		period = "24h"
+	}
+
+	duration, err := ParseDuration(period)
+	if err != nil {
+		duration = 24 * time.Hour
+	}
+
+	// Determine interval based on period
+	var interval time.Duration
 	timeNow := now().UTC()
+	
+	switch {
+	case duration <= 24*time.Hour:
+		interval = time.Hour
+	case duration <= 7*24*time.Hour:
+		interval = 6 * time.Hour
+	case duration <= 30*24*time.Hour:
+		interval = 24 * time.Hour
+	default:
+		interval = 24 * time.Hour
+	}
+	
+	endTime := timeNow.Truncate(time.Hour).Add(time.Hour) // Round up to next hour boundary
+	startTime := endTime.Add(-duration)
+	
+	// For very short periods, ensure we have at least a few data points
+	if duration < 6*time.Hour {
+		startTime = endTime.Add(-6 * time.Hour)
+	}
+	
+	// Align start/end to interval boundaries
+	startTime = startTime.Truncate(interval)
+	endTime = endTime.Truncate(interval)
+	if endTime.Before(timeNow) {
+		endTime = endTime.Add(interval)
+	}
+	
+	// Calculate number of buckets
+	numPoints := int(endTime.Sub(startTime) / interval)
+	if numPoints > 100 {
+		numPoints = 100
+		interval = endTime.Sub(startTime) / time.Duration(numPoints)
+		startTime = startTime.Truncate(interval)
+	}
+
+	// Create map of events by timestamp for quick lookup (ClickHouse returns hourly data)
+	hourlyEventMap := make(map[int64]int, len(e))
 	for _, event := range e {
-		hourDiff := int(timeNow.Sub(event.TS).Hours())
-		if hourDiff >= 0 && hourDiff < 24 {
-			counts[23-hourDiff] = event.Count
+		hourKey := event.TS.Truncate(time.Hour).Unix()
+		hourlyEventMap[hourKey] += event.Count
+	}
+
+	// Build arrays of timestamps and counts, aggregating hourly data into intervals
+	timestamps := make([]int64, numPoints)
+	counts := make([]int, numPoints)
+	
+	for i := 0; i < numPoints; i++ {
+		bucketStart := startTime.Add(time.Duration(i) * interval)
+		bucketEnd := bucketStart.Add(interval)
+		timestamps[i] = bucketStart.Unix()
+		
+		// Aggregate all hourly events that fall in this bucket
+		for hourTS, hourCount := range hourlyEventMap {
+			hourTime := time.Unix(hourTS, 0).UTC()
+			if (hourTime.Equal(bucketStart) || hourTime.After(bucketStart)) && hourTime.Before(bucketEnd) {
+				counts[i] += hourCount
+			}
 		}
 	}
-	result := "["
+
+	// Format as JSON: [[timestamps...], [counts...]]
+	result := "[["
+	for i, ts := range timestamps {
+		if i > 0 {
+			result += ","
+		}
+		result += strconv.FormatInt(ts, 10)
+	}
+	result += "],["
 	for i, count := range counts {
 		if i > 0 {
-			result += ", "
+			result += ","
 		}
 		result += strconv.Itoa(count)
 	}
-	result += "]"
+	result += "]]"
 
 	return result
 }

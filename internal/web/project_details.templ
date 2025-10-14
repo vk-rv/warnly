@@ -14,17 +14,19 @@ templ ProjectDetailsHtmx(details *warnly.ProjectDetails, user *warnly.User, isHt
 	<title>{ ProjectOverviewTitle } - { AppName } </title>
 	<div
 		id="content"
+		data-project-id={ fmt.Sprint(details.Project.ID) }
+		data-period={ details.Period }
 		x-data="{
         page: 1,
-        pid: 0,
-        period: '1h', // Reverted to original '1h'
+        pid: parseInt($el.dataset.projectId),
+        period: $el.dataset.period,
         activeTab: 'all',
         issueListCount: 0,
 
-        changeActiveTab(tab, pid) {
+        changeActiveTab(tab) {
             this.activeTab = tab;
             this.page = 1;
-            htmx.ajax('GET', `/projects/${pid}?page=${this.page}&period=${this.period}&out=table&issues=${this.activeTab}`, {
+            htmx.ajax('GET', `/projects/${this.pid}?page=${this.page}&period=${this.period}&out=table&issues=${this.activeTab}`, {
                 target: '#issuetable',
                 swap: 'outerHTML settle:0',
             }).then(() => {
@@ -37,18 +39,18 @@ templ ProjectDetailsHtmx(details *warnly.ProjectDetails, user *warnly.User, isHt
                 this.issueListCount = tableBody.rows.length;
             }
         },
-        paginatePrev(pid) {
+        paginatePrev() {
             this.page = Math.max(1, this.page - 1);
-            htmx.ajax('GET', `/projects/${pid}?page=${this.page}&period=${this.period}&out=table&issues=${this.activeTab}`, {
+            htmx.ajax('GET', `/projects/${this.pid}?page=${this.page}&period=${this.period}&out=table&issues=${this.activeTab}`, {
                 target: '#issuetable',
                 swap: 'outerHTML settle:0',
             }).then(() => {
                 this.updateIssueListCount();
             });
         },
-        paginateNext(pid) {
+        paginateNext() {
             this.page += 1;
-            htmx.ajax('GET', `/projects/${pid}?page=${this.page}&period=${this.period}&out=table&issues=${this.activeTab}`, {
+            htmx.ajax('GET', `/projects/${this.pid}?page=${this.page}&period=${this.period}&out=table&issues=${this.activeTab}`, {
                 target: '#issuetable',
                 swap: 'outerHTML settle:0',
             }).then(() => {
@@ -57,7 +59,7 @@ templ ProjectDetailsHtmx(details *warnly.ProjectDetails, user *warnly.User, isHt
         },
 
 		isOpen: false,
-                        selectedPreset: '1h',
+                        selectedPreset: $el.dataset.period,
                         customRangeInput: '',
                         customRangeError: null,
 
@@ -76,7 +78,7 @@ templ ProjectDetailsHtmx(details *warnly.ProjectDetails, user *warnly.User, isHt
                             }
 
                             const preset = this.presets.find(p => p.value === this.selectedPreset);
-                            return preset ? preset.label : 'Last hour';
+                            return preset ? preset.label : 'Last 24 hours';
                         },
 
                         toggleDropdown() {
@@ -87,8 +89,9 @@ templ ProjectDetailsHtmx(details *warnly.ProjectDetails, user *warnly.User, isHt
                             this.selectedPreset = value;
                             this.isOpen = false;
 							this.period = value;
-                            htmx.ajax('GET', `/projects/${pid}?page=${this.page}&period=${this.period}&out=table&issues=${this.activeTab}`, {
-                					target: '#issuetable',
+							this.page = 1;
+                            htmx.ajax('GET', `/projects/${this.pid}?page=${this.page}&period=${this.period}&out=full&issues=${this.activeTab}`, {
+                					target: '#chart-and-table',
 									swap: 'outerHTML settle:0',
 									}).then(() => {
 									this.updateIssueListCount();
@@ -145,8 +148,9 @@ templ ProjectDetailsHtmx(details *warnly.ProjectDetails, user *warnly.User, isHt
                                 this.selectedPreset = 'custom';
                                 this.isOpen = false;
 								this.period = this.customRangeInput;
-                            htmx.ajax('GET', `/projects/${pid}?page=${this.page}&period=${this.period}&out=table&issues=${this.activeTab}`, {
-                					target: '#issuetable',
+								this.page = 1;
+                            htmx.ajax('GET', `/projects/${this.pid}?page=${this.page}&period=${this.period}&out=full&issues=${this.activeTab}`, {
+                					target: '#chart-and-table',
 									swap: 'outerHTML settle:0',
 									}).then(() => {
 									this.updateIssueListCount();
@@ -155,10 +159,7 @@ templ ProjectDetailsHtmx(details *warnly.ProjectDetails, user *warnly.User, isHt
                             }
                         },
     }"
-		x-init="
-      updateIssueListCount();
-      this.pid = document.getElementById('project-id').value;
-    "
+		x-init="updateIssueListCount()"
 		class="flex-grow bg-white p-8"
 	>
 		<header class="flex items-center justify-between mb-8">
@@ -173,6 +174,7 @@ templ ProjectDetailsHtmx(details *warnly.ProjectDetails, user *warnly.User, isHt
 			<h1 class="text-2xl font-bold">{ details.Project.Name }</h1>
 		</div>
 		<input type="hidden" id="project-id" value={ fmt.Sprint(details.Project.ID) }/>
+		<input type="hidden" id="project-period" value={ details.Period }/>
 		<div class="flex mb-8">
 			<style>
                 [x-cloak] { display: none !important; }
@@ -239,6 +241,12 @@ templ ProjectDetailsHtmx(details *warnly.ProjectDetails, user *warnly.User, isHt
 				</div>
 			</div>
 		</div>
+		@ChartAndTable(details, isHtmx)
+	</div>
+}
+
+templ ChartAndTable(details *warnly.ProjectDetails, isHtmx bool) {
+	<div id="chart-and-table">
 		<div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
 			<div class="border-b border-gray-300 p-4 flex justify-between items-center">
 				<div class="flex items-center gap-3">
@@ -248,69 +256,69 @@ templ ProjectDetailsHtmx(details *warnly.ProjectDetails, user *warnly.User, isHt
 				</div>
 			</div>
 			<div class="h-[1px] bg-gray-50"></div>
-			<div class="warnly-project h-[200px]" data-chart={ details.Project.Events.DashboardData(time.Now) }></div>
+			<div class="warnly-project h-[200px]" data-chart={ details.Project.Events.DashboardDataForPeriod(time.Now, details.Period) } data-period={ details.Period }></div>
 			<div class="border-t border-gray-300 p-4 grid grid-cols-2">
 				<div class="text-sm">
 					<p class="text-gray-500"><span class="font-bold">Total Errors:</span> { details.Project.Events.TotalErrors() } </p>
 				</div>
 			</div>
 		</div>
-		<nav class="flex gap-6 mt-5 justify-between">
-			<div class="flex gap-6">
-				<button id="allIssuesBtn" :class="{ 'border-black text-black': activeTab === 'all', 'border-transparent text-gray-500': activeTab !== 'all' }" @click={ fmt.Sprintf("changeActiveTab('all', '%d')", details.Project.ID) } class="pb-2 text-sm px-1 border-b-2 cursor-pointer">All Issues { details.AllLength() }</button>
-				<button id="newIssuesBtn" :class="{ 'border-black text-black': activeTab === 'new', 'border-transparent text-gray-500': activeTab !== 'new' }" @click={ fmt.Sprintf("changeActiveTab('new', '%d')", details.Project.ID) } class="pb-2 text-sm px-1 border-b-2 cursor-pointer">New Issues { details.NewLength() }</button>
-			</div>
-			<div class="flex">
-				<button
-					:disabled="page == 1"
-					:class="page == 1 ? 'px-4 py-2 text-sm border rounded-lg flex items-center border-gray-200 cursor-not-allowed opacity-60 bg-gray-100 hover:bg-gray-100' : 'px-4 cursor-pointer py-2 text-sm border rounded-lg hover:bg-gray-50 flex items-center border-gray-300'"
-					@click={ fmt.Sprintf("paginatePrev('%d')", details.Project.ID) }
-					class="px-4 cursor-pointer py-2 text-sm border rounded-lg hover:bg-gray-50 flex items-center border-gray-300"
-				>
-					<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-					</svg>
-				</button>
-				<button
-					:disabled="issueListCount < 5"
-					:class="issueListCount < 5 ? 'px-4 py-2 text-sm border rounded-lg flex items-center border-gray-200 cursor-not-allowed opacity-60 bg-gray-100 hover:bg-gray-100' : 'px-4 cursor-pointer py-2 text-sm border rounded-lg hover:bg-gray-50 flex items-center ml-2 border-gray-300'"
-					@click={ fmt.Sprintf("paginateNext('%d')", details.Project.ID) }
-					class="px-4 cursor-pointer py-2 text-sm border rounded-lg hover:bg-gray-50 flex items-center ml-2 border-gray-300"
-				>
-					<svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-					</svg>
-				</button>
-			</div>
+	<nav class="flex gap-6 mt-5 justify-between">
+		<div class="flex gap-6">
+			<button id="allIssuesBtn" :class="{ 'border-black text-black': activeTab === 'all', 'border-transparent text-gray-500': activeTab !== 'all' }" @click="changeActiveTab('all')" class="pb-2 text-sm px-1 border-b-2 cursor-pointer">All Issues { details.AllLength() }</button>
+			<button id="newIssuesBtn" :class="{ 'border-black text-black': activeTab === 'new', 'border-transparent text-gray-500': activeTab !== 'new' }" @click="changeActiveTab('new')" class="pb-2 text-sm px-1 border-b-2 cursor-pointer">New Issues { details.NewLength() }</button>
+		</div>
+		<div class="flex">
+			<button
+				:disabled="page == 1"
+				:class="page == 1 ? 'px-4 py-2 text-sm border rounded-lg flex items-center border-gray-200 cursor-not-allowed opacity-60 bg-gray-100 hover:bg-gray-100' : 'px-4 cursor-pointer py-2 text-sm border rounded-lg hover:bg-gray-50 flex items-center border-gray-300'"
+				@click="paginatePrev()"
+				class="px-4 cursor-pointer py-2 text-sm border rounded-lg hover:bg-gray-50 flex items-center border-gray-300"
+			>
+				<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+				</svg>
+			</button>
+			<button
+				:disabled="issueListCount < 5"
+				:class="issueListCount < 5 ? 'px-4 py-2 text-sm border rounded-lg flex items-center border-gray-200 cursor-not-allowed opacity-60 bg-gray-100 hover:bg-gray-100' : 'px-4 cursor-pointer py-2 text-sm border rounded-lg hover:bg-gray-50 flex items-center ml-2 border-gray-300'"
+				@click="paginateNext()"
+				class="px-4 cursor-pointer py-2 text-sm border rounded-lg hover:bg-gray-50 flex items-center ml-2 border-gray-300"
+			>
+				<svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+				</svg>
+			</button>
+		</div>
 		</nav>
 		<div class="flex justify-between items-center mt-4">
 			@IssueListTable(details, isHtmx)
 			<script>
-                function openUserSelector(event, issueId) {
-                    const selector = document.getElementById(`user-selector-${issueId}`);
-                    if (!selector.classList.contains('hidden')) {
-                        selector.classList.add('hidden');
-                        return;
-                    }
-                    selector.classList.remove('hidden');
-
-                    const rect = event.target.getBoundingClientRect();
-                    const selectorRect = selector.getBoundingClientRect();
-                    const left = rect.left + (rect.width / 2) - (selectorRect.width / 2);
-
-                    selector.style.top = `${rect.bottom + window.scrollY}px`;
-                    selector.style.left = `${left}px`;
-                }
-
-                document.addEventListener('click', (e) => {
-                    const selectors = document.querySelectorAll('[id^="user-selector-"]');
-                    selectors.forEach(selector => {
-                        if (!selector.contains(e.target) && !e.target.closest('td')) {
-                            selector.classList.add('hidden');
-                        }
-                    });
-                });
-            </script>
+				function openUserSelector(event, issueId) {
+					const selector = document.getElementById(`user-selector-${issueId}`);
+					if (!selector.classList.contains('hidden')) {
+						selector.classList.add('hidden');
+						return;
+					}
+					selector.classList.remove('hidden');
+			
+					const rect = event.target.getBoundingClientRect();
+					const selectorRect = selector.getBoundingClientRect();
+					const left = rect.left + (rect.width / 2) - (selectorRect.width / 2);
+			
+					selector.style.top = `${rect.bottom + window.scrollY}px`;
+					selector.style.left = `${left}px`;
+				}
+			
+				document.addEventListener('click', (e) => {
+					const selectors = document.querySelectorAll('[id^="user-selector-"]');
+					selectors.forEach(selector => {
+						if (!selector.contains(e.target) && !e.target.closest('td')) {
+							selector.classList.add('hidden');
+						}
+					});
+				});
+			</script>
 		</div>
 		@chartInitialization()
 	</div>
@@ -318,8 +326,8 @@ templ ProjectDetailsHtmx(details *warnly.ProjectDetails, user *warnly.User, isHt
 
 templ IssueListTable(details *warnly.ProjectDetails, isHtmx bool) {
 	if isHtmx {
-		<button hx-swap-oob="true" id="allIssuesBtn" :class="{ 'border-black text-black': activeTab === 'all', 'border-transparent text-gray-500': activeTab !== 'all' }" @click={ fmt.Sprintf("changeActiveTab('all', '%d')", details.Project.ID) } class="pb-2 text-sm px-1 border-b-2 cursor-pointer">All Issues { details.AllLength() }</button>
-		<button hx-swap-oob="true" id="newIssuesBtn" :class="{ 'border-black text-black': activeTab === 'new', 'border-transparent text-gray-500': activeTab !== 'new' }" @click={ fmt.Sprintf("changeActiveTab('new', '%d')", details.Project.ID) } class="pb-2 text-sm px-1 border-b-2 cursor-pointer">New Issues { details.NewLength() }</button>
+		<button hx-swap-oob="true" id="allIssuesBtn" :class="{ 'border-black text-black': activeTab === 'all', 'border-transparent text-gray-500': activeTab !== 'all' }" @click="changeActiveTab('all')" class="pb-2 text-sm px-1 border-b-2 cursor-pointer">All Issues { details.AllLength() }</button>
+		<button hx-swap-oob="true" id="newIssuesBtn" :class="{ 'border-black text-black': activeTab === 'new', 'border-transparent text-gray-500': activeTab !== 'new' }" @click="changeActiveTab('new')" class="pb-2 text-sm px-1 border-b-2 cursor-pointer">New Issues { details.NewLength() }</button>
 	}
 	<table id="issuetable" class="min-w-full">
 		<thead>

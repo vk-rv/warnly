@@ -110,7 +110,7 @@ templ ProjectGrid(res *warnly.ListProjectsResult) {
 				<div class="border-b border-gray-300 p-4 flex justify-between items-center">
 					<div class="flex items-center gap-3">
 						<div class="w-8 h-8 bg-gray-100 rounded flex items-center justify-center">{ string(project.Name[0]) }</div>
-						<a hx-get={ fmt.Sprintf("/projects/%d?issues=all&period=1h", project.ID) } hx-target="#content" hx-swap="outerHTML settle:0" hx-push-url="true" class="cursor-pointer">
+						<a hx-get={ fmt.Sprintf("/projects/%d?issues=all&period=24h", project.ID) } hx-target="#content" hx-swap="outerHTML settle:0" hx-push-url="true" class="cursor-pointer">
 							<h3 class="font-medium">{ project.Name }</h3>
 							<p class="text-xs text-gray-600">Errors: { project.Events.TotalErrors() } | Last 24 hours</p>
 						</a>
@@ -141,50 +141,51 @@ templ chartInitialization() {
 			return;
 		}
 		projects.forEach(project => {
+			if (project._uPlot) {
+				project._uPlot.destroy();
+			}
+			if (project._resizeObserver) {
+				project._resizeObserver.disconnect();
+			}
+
 			let chartData = JSON.parse(project.getAttribute('data-chart'));
 
-			// Ensure chartData is an array of numbers
-			if (!Array.isArray(chartData) || chartData.some(isNaN)) {
-				console.error("Invalid chart data:", chartData);
+			if (!Array.isArray(chartData) || chartData.length !== 2) {
+				console.error("Invalid chart data format:", chartData);
 				return;
 			}
 			
-			const now = new Date();
-			const startOfCurrentHour = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), 0, 0, 0);
-			const oneHour = 60 * 60 * 1000; // Milliseconds in one hour
-			const timestamps = [];
-
-			// Generate 24 timestamps from the previous day to the current hour
-			for (let i = 0; i <= 24; i++) {
-				timestamps.push(Math.floor((startOfCurrentHour - (23 - i) * oneHour) / 1000));
-			}
-
-			const data = [timestamps, chartData];
-
+			const data = chartData;
 
 			const opts = {
 				width: project.offsetWidth,
 				height: project.offsetHeight,
-				scales: {
-					x: {
-						
+				cursor: {
+					drag: {
+						x: false,
+						y: false,
 					},
+				},
+				select: {
+					show: false,
+				},
+				scales: {
+					x: {},
 				},
 				axes: [
 					{
-						 ticks: { show: false }, // Hides vertical tick lines
-      grid: { show: false }, // disable vertical grid lines (x-axis)
-    },
-    {
-      grid: { show: false }, // disable horizontal grid lines (y-axis)
-    },
-					
+						ticks: { show: false },
+						grid: { show: false },
+					},
+					{
+						grid: { show: false },
+					},
 				],
 				series: [
 					{},
 					{
 						label: "Errors",
-						paths: uPlot.paths.bars({size: [0.8, 100]}), // Control bar width
+						paths: uPlot.paths.bars({size: [0.8, 100]}),
 						stroke: "black",
 						fill: "rgba(0,0,0,0.5)",
 						width: 1,

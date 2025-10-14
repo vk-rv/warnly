@@ -619,16 +619,27 @@ func (h *ProjectHandler) writeProjectDetails(
 	details *warnly.ProjectDetails,
 	user *warnly.User,
 ) {
-	if r.URL.Query().Get("out") == "table" && r.Header.Get(htmxHeader) != "" {
+	outParam := r.URL.Query().Get("out")
+	isHtmx := r.Header.Get(htmxHeader) != ""
+	
+	if outParam == "table" && isHtmx {
 		w.Header().Add("Hx-Push-Url", r.URL.Path+"?"+r.URL.RawQuery)
 		if err := web.IssueListTable(details /* isHtmx call */, true).Render(ctx, w); err != nil {
 			h.logger.Error("project details issue list table web render", slog.Any("error", err))
 		}
 		return
 	}
-	if r.Header.Get(htmxHeader) != "" {
-		if err := web.ProjectDetailsHtmx(details, user /* isHtmx call */, true).Render(ctx, w); err != nil {
-			h.logger.Error("project details htmx web render", slog.Any("error", err))
+	
+	if isHtmx {
+		w.Header().Add("Hx-Push-Url", r.URL.Path+"?"+r.URL.RawQuery)
+		if outParam == "" {
+			if err := web.ProjectDetailsHtmx(details, user /* isHtmx call */, true).Render(ctx, w); err != nil {
+				h.logger.Error("project details htmx web render", slog.Any("error", err))
+			}
+		} else {
+			if err := web.ChartAndTable(details /* isHtmx call */, true).Render(ctx, w); err != nil {
+				h.logger.Error("project details chart and table web render", slog.Any("error", err))
+			}
 		}
 	} else {
 		if err := web.ProjectDetails(details, user).Render(ctx, w); err != nil {
