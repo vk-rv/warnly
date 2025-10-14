@@ -17,7 +17,7 @@ import (
 )
 
 const (
-	defaultLimit = 50
+	defaultLimit  = 50
 	defaultPeriod = "24h"
 )
 

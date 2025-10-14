@@ -499,8 +499,8 @@ var AllowedIssuesTypes = [...]IssuesType{IssuesTypeAll, IssuesTypeNew}
 type ProjectDetails struct {
 	Project     *Project
 	Assignments *Assignments
-	Teammates   []Teammate
 	Period      string
+	Teammates   []Teammate
 }
 
 func (pd *ProjectDetails) AllLength() string {
@@ -609,7 +609,7 @@ func (e EventsList) DashboardData(now func() time.Time) string {
 }
 
 // DashboardDataForPeriod returns the data for frontend dashboard adapted to the given period.
-// Returns JSON array of [timestamps, counts] like: [[t1,t2,t3...], [c1,c2,c3...]]
+// Returns JSON array of [timestamps, counts] like: [[t1,t2,t3...], [c1,c2,c3...]].
 func (e EventsList) DashboardDataForPeriod(now func() time.Time, period string) string {
 	if period == "" {
 		period = "24h"
@@ -623,7 +623,7 @@ func (e EventsList) DashboardDataForPeriod(now func() time.Time, period string) 
 	// Determine interval based on period
 	var interval time.Duration
 	timeNow := now().UTC()
-	
+
 	switch {
 	case duration <= 24*time.Hour:
 		interval = time.Hour
@@ -634,22 +634,22 @@ func (e EventsList) DashboardDataForPeriod(now func() time.Time, period string) 
 	default:
 		interval = 24 * time.Hour
 	}
-	
+
 	endTime := timeNow.Truncate(time.Hour).Add(time.Hour) // Round up to next hour boundary
 	startTime := endTime.Add(-duration)
-	
+
 	// For very short periods, ensure we have at least a few data points
 	if duration < 6*time.Hour {
 		startTime = endTime.Add(-6 * time.Hour)
 	}
-	
+
 	// Align start/end to interval boundaries
 	startTime = startTime.Truncate(interval)
 	endTime = endTime.Truncate(interval)
 	if endTime.Before(timeNow) {
 		endTime = endTime.Add(interval)
 	}
-	
+
 	// Calculate number of buckets
 	numPoints := int(endTime.Sub(startTime) / interval)
 	if numPoints > 100 {
@@ -668,12 +668,12 @@ func (e EventsList) DashboardDataForPeriod(now func() time.Time, period string) 
 	// Build arrays of timestamps and counts, aggregating hourly data into intervals
 	timestamps := make([]int64, numPoints)
 	counts := make([]int, numPoints)
-	
-	for i := 0; i < numPoints; i++ {
+
+	for i := range numPoints {
 		bucketStart := startTime.Add(time.Duration(i) * interval)
 		bucketEnd := bucketStart.Add(interval)
 		timestamps[i] = bucketStart.Unix()
-		
+
 		// Aggregate all hourly events that fall in this bucket
 		for hourTS, hourCount := range hourlyEventMap {
 			hourTime := time.Unix(hourTS, 0).UTC()

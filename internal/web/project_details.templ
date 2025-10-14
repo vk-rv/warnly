@@ -263,33 +263,33 @@ templ ChartAndTable(details *warnly.ProjectDetails, isHtmx bool) {
 				</div>
 			</div>
 		</div>
-	<nav class="flex gap-6 mt-5 justify-between">
-		<div class="flex gap-6">
-			<button id="allIssuesBtn" :class="{ 'border-black text-black': activeTab === 'all', 'border-transparent text-gray-500': activeTab !== 'all' }" @click="changeActiveTab('all')" class="pb-2 text-sm px-1 border-b-2 cursor-pointer">All Issues { details.AllLength() }</button>
-			<button id="newIssuesBtn" :class="{ 'border-black text-black': activeTab === 'new', 'border-transparent text-gray-500': activeTab !== 'new' }" @click="changeActiveTab('new')" class="pb-2 text-sm px-1 border-b-2 cursor-pointer">New Issues { details.NewLength() }</button>
-		</div>
-		<div class="flex">
-			<button
-				:disabled="page == 1"
-				:class="page == 1 ? 'px-4 py-2 text-sm border rounded-lg flex items-center border-gray-200 cursor-not-allowed opacity-60 bg-gray-100 hover:bg-gray-100' : 'px-4 cursor-pointer py-2 text-sm border rounded-lg hover:bg-gray-50 flex items-center border-gray-300'"
-				@click="paginatePrev()"
-				class="px-4 cursor-pointer py-2 text-sm border rounded-lg hover:bg-gray-50 flex items-center border-gray-300"
-			>
-				<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-				</svg>
-			</button>
-			<button
-				:disabled="issueListCount < 5"
-				:class="issueListCount < 5 ? 'px-4 py-2 text-sm border rounded-lg flex items-center border-gray-200 cursor-not-allowed opacity-60 bg-gray-100 hover:bg-gray-100' : 'px-4 cursor-pointer py-2 text-sm border rounded-lg hover:bg-gray-50 flex items-center ml-2 border-gray-300'"
-				@click="paginateNext()"
-				class="px-4 cursor-pointer py-2 text-sm border rounded-lg hover:bg-gray-50 flex items-center ml-2 border-gray-300"
-			>
-				<svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-				</svg>
-			</button>
-		</div>
+		<nav class="flex gap-6 mt-5 justify-between">
+			<div class="flex gap-6">
+				<button id="allIssuesBtn" :class="{ 'border-black text-black': activeTab === 'all', 'border-transparent text-gray-500': activeTab !== 'all' }" @click="changeActiveTab('all')" class="pb-2 text-sm px-1 border-b-2 cursor-pointer">All Issues { details.AllLength() }</button>
+				<button id="newIssuesBtn" :class="{ 'border-black text-black': activeTab === 'new', 'border-transparent text-gray-500': activeTab !== 'new' }" @click="changeActiveTab('new')" class="pb-2 text-sm px-1 border-b-2 cursor-pointer">New Issues { details.NewLength() }</button>
+			</div>
+			<div class="flex">
+				<button
+					:disabled="page == 1"
+					:class="page == 1 ? 'px-4 py-2 text-sm border rounded-lg flex items-center border-gray-200 cursor-not-allowed opacity-60 bg-gray-100 hover:bg-gray-100' : 'px-4 cursor-pointer py-2 text-sm border rounded-lg hover:bg-gray-50 flex items-center border-gray-300'"
+					@click="paginatePrev()"
+					class="px-4 cursor-pointer py-2 text-sm border rounded-lg hover:bg-gray-50 flex items-center border-gray-300"
+				>
+					<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+					</svg>
+				</button>
+				<button
+					:disabled="issueListCount < 5"
+					:class="issueListCount < 5 ? 'px-4 py-2 text-sm border rounded-lg flex items-center border-gray-200 cursor-not-allowed opacity-60 bg-gray-100 hover:bg-gray-100' : 'px-4 cursor-pointer py-2 text-sm border rounded-lg hover:bg-gray-50 flex items-center ml-2 border-gray-300'"
+					@click="paginateNext()"
+					class="px-4 cursor-pointer py-2 text-sm border rounded-lg hover:bg-gray-50 flex items-center ml-2 border-gray-300"
+				>
+					<svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+					</svg>
+				</button>
+			</div>
 		</nav>
 		<div class="flex justify-between items-center mt-4">
 			@IssueListTable(details, isHtmx)

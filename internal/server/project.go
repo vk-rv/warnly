@@ -621,7 +621,7 @@ func (h *ProjectHandler) writeProjectDetails(
 ) {
 	outParam := r.URL.Query().Get("out")
 	isHtmx := r.Header.Get(htmxHeader) != ""
-	
+
 	if outParam == "table" && isHtmx {
 		w.Header().Add("Hx-Push-Url", r.URL.Path+"?"+r.URL.RawQuery)
 		if err := web.IssueListTable(details /* isHtmx call */, true).Render(ctx, w); err != nil {
@@ -629,7 +629,7 @@ func (h *ProjectHandler) writeProjectDetails(
 		}
 		return
 	}
-	
+
 	if isHtmx {
 		w.Header().Add("Hx-Push-Url", r.URL.Path+"?"+r.URL.RawQuery)
 		if outParam == "" {
