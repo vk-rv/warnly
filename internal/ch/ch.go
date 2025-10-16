@@ -89,7 +89,7 @@ func (s *ClickhouseStore) ListIssueMetrics(
 }
 
 // CountFields counts additional fields for a given issue and project within a specified time range.
-func (s *ClickhouseStore) CountFields(ctx context.Context, c warnly.EventDefCriteria) ([]warnly.FieldValueNum, error) {
+func (s *ClickhouseStore) CountFields(ctx context.Context, c *warnly.EventDefCriteria) ([]warnly.FieldValueNum, error) {
 	ctx, span := s.tracer.Start(ctx, "ClickhouseStore.CountFields")
 	defer span.End()
 
@@ -199,30 +199,52 @@ func (s *ClickhouseStore) StoreEvent(ctx context.Context, ev *warnly.EventClickh
 }
 
 // GetIssueEvent retrieves a single event associated with a specific issue and project within a given time range.
-func (s *ClickhouseStore) GetIssueEvent(ctx context.Context, c warnly.EventDefCriteria) (*warnly.IssueEvent, error) {
+func (s *ClickhouseStore) GetIssueEvent(ctx context.Context, c *warnly.EventDefCriteria) (*warnly.IssueEvent, error) {
 	ctx, span := s.tracer.Start(ctx, "ClickhouseStore.GetIssueEvent")
 	defer span.End()
 
-	const query = `SELECT replaceAll(toString(event_id), '-', '') AS event_id, 
-						  env, release,
-						  user, user_username, user_name, user_email, 
-						  tags.key, tags.value, message, 
-						  exception_frames.abs_path, exception_frames.colno, 
-						  exception_frames.function, exception_frames.lineno, 
-						  exception_frames.in_app 
-						  FROM event WHERE 
-						  deleted = 0
-						  AND created_at >= toDateTime(?, 'UTC')
-						  AND created_at < toDateTime(?, 'UTC')
-						  AND pid = ?
-						  AND gid = ?
-						  LIMIT 1`
+	var (
+		query string
+		args  []any
+	)
 
-	rows, err := s.conn.Query(ctx, query, c.From, c.To, c.ProjectID, c.GroupID)
+	if c.EventID != "" {
+		query = `SELECT replaceAll(toString(event_id), '-', '') AS event_id,
+			env, release,
+			user, user_username, user_name, user_email,
+			tags.key, tags.value, message,
+			exception_frames.abs_path, exception_frames.colno,
+			exception_frames.function, exception_frames.lineno,
+			exception_frames.in_app
+			FROM event WHERE
+			deleted = 0
+			AND event_id = ?
+			AND pid = ?
+			AND gid = ?
+			LIMIT 1`
+		args = []any{c.EventID, c.ProjectID, c.GroupID}
+	} else {
+		query = `SELECT replaceAll(toString(event_id), '-', '') AS event_id,
+			env, release,
+			user, user_username, user_name, user_email,
+			tags.key, tags.value, message,
+			exception_frames.abs_path, exception_frames.colno,
+			exception_frames.function, exception_frames.lineno,
+			exception_frames.in_app
+			FROM event WHERE
+			deleted = 0
+			AND created_at >= toDateTime(?, 'UTC')
+			AND created_at < toDateTime(?, 'UTC')
+			AND pid = ?
+			AND gid = ?
+			LIMIT 1`
+		args = []any{c.From, c.To, c.ProjectID, c.GroupID}
+	}
+
+	rows, err := s.conn.Query(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("clickhouse: get issue: %w", err)
 	}
-
 	defer func() {
 		if cerr := rows.Close(); cerr != nil && err == nil {
 			err = cerr
@@ -309,7 +331,7 @@ func (s *ClickhouseStore) CalculateFields(ctx context.Context, c warnly.FieldsCr
 
 // CalculateEventsPerDay calculates the number of events per day for a given group and project
 // within a specified time range.
-func (s *ClickhouseStore) CalculateEventsPerDay(ctx context.Context, c warnly.EventDefCriteria) ([]warnly.EventPerDay, error) {
+func (s *ClickhouseStore) CalculateEventsPerDay(ctx context.Context, c *warnly.EventDefCriteria) ([]warnly.EventPerDay, error) {
 	ctx, span := s.tracer.Start(ctx, "ClickhouseStore.CalculateEventsPerDay")
 	defer span.End()
 

@@ -84,7 +84,15 @@ templ Events(res *warnly.ListEventsResult) {
 					<tbody>
 						<template x-for="event in events" :key="event.id">
 							<tr class="border-b border-border hover:bg-gray-50">
-								<td @contextmenu.prevent="showContextMenu($event, 'event.id', event.id)" class="px-4 py-2 text-sm text-black cursor-pointer font-semibold" x-text="event.id"></td>
+								<td
+									@contextmenu.prevent="showContextMenu($event, 'event.id', event.id)"
+									@click="
+										navigateToEvent(event.full_id); 
+										activeTab = 'details';
+									"
+									class="px-4 py-2 text-sm text-black cursor-pointer font-semibold"
+									x-text="event.id"
+								></td>
 								<td @contextmenu.prevent="showContextMenu($event, 'timestamp', event.timestamp)" class="px-4 py-2 text-sm" x-text="event.timestamp"></td>
 								<td @contextmenu.prevent="showContextMenu($event, 'title', event.title)" class="px-4 py-2 text-sm" x-text="event.title"></td>
 								<td @contextmenu.prevent="showContextMenu($event, 'release', event.release)" class="px-4 py-2 text-sm text-black" x-text="event.release"></td>
@@ -139,8 +147,8 @@ func alpineData(res *warnly.ListEventsResult) string {
 			os = noValue
 		}
 		events[i] = fmt.Sprintf(
-			`{ id: '%s', timestamp: '%s', title: '%s', release: '%s', environment: '%s', user: '%s', os: '%s'}`,
-			event.EventID[:8], event.CreatedAt.Format("Jan 2, 2006 3:04:05 PM"), title, release, env, user, os,
+			`{ id: '%s', full_id: '%s', timestamp: '%s', title: '%s', release: '%s', environment: '%s', user: '%s', os: '%s'}`,
+			event.EventID[:8], event.EventID, event.CreatedAt.Format("Jan 2, 2006 3:04:05 PM"), title, release, env, user, os,
 		)
 	}
 
@@ -180,49 +188,59 @@ func alpineData(res *warnly.ListEventsResult) string {
 		hideContextMenu() {
 			this.contextMenu.show = false
 		},
+		navigateToEvent(eventId) {
+			const url = new URL('/projects/' + %s + '/issues/' + %s, window.location.origin);
+			url.searchParams.set('event_id', eventId);
+			url.searchParams.set('period', this.period);
+			url.searchParams.set('source', 'issue');
+			htmx.ajax('GET', url.toString(), {
+				target: '#issue_content',
+				swap: 'outerHTML settle:0',
+			});
+		},
 		offset: %d,
 		period: '14d',
 		eventCount: %d,
 		totalErrors: %d,
-		 paginatePrev(pid, issueID) {
-		 	if (this.offset <= 0) {
+		paginatePrev(pid, issueID) {
+			if (this.offset <= 0) {
 				this.offset = 0;
 				return;
 			}
-            this.offset = Math.max(0, this.offset - 50);
+			this.offset = Math.max(0, this.offset - 50);
 			const url = new URL('/projects/' + pid + '/issues/' + issueID + '/events', window.location.origin);
-            url.searchParams.set('offset', this.offset);
-            url.searchParams.set('period', this.period);
-            htmx.ajax('GET', url.toString(), {
-                target: '#issue_content',
-                swap: 'outerHTML settle:0',
-            }).then(() => {
+			url.searchParams.set('offset', this.offset);
+			url.searchParams.set('period', this.period);
+			htmx.ajax('GET', url.toString(), {
+				target: '#issue_content',
+				swap: 'outerHTML settle:0',
+			}).then(() => {
 				this.updateEventCount();
-            });
-        },
-        paginateNext(pid, issueID) {
+			});
+		},
+		paginateNext(pid, issueID) {
 			if (this.offset + 50 > this.totalErrors) {
 				return;
 			} else {
 				this.offset += 50;
 			}
 			const url = new URL('/projects/' + pid + '/issues/' + issueID + '/events', window.location.origin);
-            url.searchParams.set('offset', this.offset);
-            url.searchParams.set('period', this.period);
-            htmx.ajax('GET', url.toString(), {
-                target: '#issue_content',
-                swap: 'outerHTML settle:0',
-            }).then(() => {
+			url.searchParams.set('offset', this.offset);
+			url.searchParams.set('period', this.period);
+			htmx.ajax('GET', url.toString(), {
+				target: '#issue_content',
+				swap: 'outerHTML settle:0',
+			}).then(() => {
 				this.updateEventCount();
-            });
-        },
+			});
+		},
 		updateEventCount() {
 			const tableBody = document.querySelector('#eventtable tbody');
-            if (tableBody) {
-                this.eventCount = tableBody.rows.length;
-            }
+			if (tableBody) {
+				this.eventCount = tableBody.rows.length;
+			}
 		}
-	}`, strings.Join(events, ", "), res.Offset, len(res.Events), res.TotalEvents)
+	}`, strings.Join(events, ", "), strconv.Itoa(int(res.ProjectID)), strconv.Itoa(int(res.IssueID)), res.Offset, len(res.Events), res.TotalEvents)
 }
 
 func paginationSummary(res *warnly.ListEventsResult) string {

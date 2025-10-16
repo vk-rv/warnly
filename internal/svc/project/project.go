@@ -383,7 +383,7 @@ func (s *ProjectService) ListFields(ctx context.Context, req *warnly.ListFieldsR
 		fieldMap[fieldCount[i].Tag] = fieldCount[i].Count
 	}
 
-	fieldValue, err := s.analyticsStore.CountFields(ctx, warnly.EventDefCriteria{
+	fieldValue, err := s.analyticsStore.CountFields(ctx, &warnly.EventDefCriteria{
 		GroupID:   req.IssueID,
 		ProjectID: project.ID,
 		From:      issue.FirstSeen,
@@ -613,7 +613,7 @@ func (s *ProjectService) GetIssue(ctx context.Context, req *warnly.GetIssueReque
 
 	events, err := s.analyticsStore.CalculateEventsPerDay(
 		ctx,
-		warnly.EventDefCriteria{
+		&warnly.EventDefCriteria{
 			GroupID:   req.IssueID,
 			ProjectID: issue.ProjectID,
 			From:      to.Add(-30 * 24 * time.Hour),
@@ -632,13 +632,14 @@ func (s *ProjectService) GetIssue(ctx context.Context, req *warnly.GetIssueReque
 		return nil, err
 	}
 
-	lastEvent, err := s.analyticsStore.GetIssueEvent(
+	event, err := s.analyticsStore.GetIssueEvent(
 		ctx,
-		warnly.EventDefCriteria{
+		&warnly.EventDefCriteria{
 			GroupID:   req.IssueID,
 			ProjectID: project.ID,
 			From:      metric.LastSeen.Add(-1 * time.Minute),
 			To:        metric.LastSeen.Add(1 * time.Minute),
+			EventID:   req.EventID,
 		})
 	if err != nil {
 		return nil, err
@@ -669,7 +670,7 @@ func (s *ProjectService) GetIssue(ctx context.Context, req *warnly.GetIssueReque
 		ErrorType:     issue.ErrorType,
 		View:          issue.View,
 		ErrorValue:    issue.Message,
-		Message:       lastEvent.Message,
+		Message:       event.Message,
 		Priority:      issue.Priority,
 		IsNew:         isNew,
 		FirstSeen:     metric.FirstSeen,
@@ -680,12 +681,13 @@ func (s *ProjectService) GetIssue(ctx context.Context, req *warnly.GetIssueReque
 		Total24Hours:  total24Hours,
 		TagCount:      fieldCount,
 		TagValueNum:   fieldValue,
-		LastEvent:     lastEvent,
-		StackDetails:  warnly.GetStackDetails(lastEvent),
+		LastEvent:     event,
+		StackDetails:  warnly.GetStackDetails(event),
 		Platform:      project.Platform,
 		MessagesCount: messagesCount,
 		Assignments:   assignments,
 		Teammates:     teammates,
+		Request:       req,
 	}, nil
 }
 
@@ -948,7 +950,7 @@ func (s *ProjectService) calculateFieldMetrics(
 		fieldMap[field.Tag] = field.Count
 	}
 
-	fieldValue, err := s.analyticsStore.CountFields(ctx, warnly.EventDefCriteria{
+	fieldValue, err := s.analyticsStore.CountFields(ctx, &warnly.EventDefCriteria{
 		GroupID:   issueID,
 		ProjectID: projectID,
 		From:      from,

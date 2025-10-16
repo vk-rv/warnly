@@ -277,9 +277,17 @@ type DiscussionInfo struct {
 	IssueID        int
 }
 
+type GetIssueRequestSource string
+
+const (
+	GetIssueRequestSourceIssue GetIssueRequestSource = "issue"
+)
+
 type GetIssueRequest struct {
 	User      *User
 	Period    string
+	EventID   string
+	Source    GetIssueRequestSource
 	ProjectID int
 	IssueID   int
 }
@@ -307,6 +315,7 @@ type IssueDetails struct {
 	FirstSeen     time.Time
 	LastEvent     *IssueEvent
 	Assignments   *Assignments
+	Request       *GetIssueRequest
 	View          string
 	ErrorValue    string
 	Message       string

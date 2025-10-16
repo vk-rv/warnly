@@ -329,7 +329,9 @@ func (h *ProjectHandler) GetIssue(w http.ResponseWriter, r *http.Request) {
 		ProjectID: projectID,
 		IssueID:   issueID,
 		Period:    r.URL.Query().Get("period"),
+		EventID:   r.URL.Query().Get("event_id"),
 		User:      &user,
+		Source:    warnly.GetIssueRequestSource(r.URL.Query().Get("source")),
 	}
 
 	issue, err := h.svc.GetIssue(ctx, req)
@@ -599,6 +601,10 @@ func (h *ProjectHandler) writeIssue(
 	r *http.Request,
 	issue *warnly.IssueDetails, user *warnly.User,
 ) {
+	q := r.URL.Query()
+	q.Del("source")
+	q.Del("period")
+	w.Header().Add("Hx-Push-Url", r.URL.Path+"?"+q.Encode())
 	source := r.URL.Query().Get("source")
 	if r.Header.Get(htmxHeader) != "" {
 		if err := web.GetIssueHtmx(issue, user, source).Render(ctx, w); err != nil {

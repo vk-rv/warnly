@@ -18,14 +18,14 @@ type AnalyticsStore interface {
 	ListIssueMetrics(ctx context.Context, criteria *ListIssueMetricsCriteria) ([]IssueMetrics, error)
 	// CalculateEventsPerDay calculates the number of events per day for a given issue and project
 	// within a specified time range.
-	CalculateEventsPerDay(ctx context.Context, criteria EventDefCriteria) ([]EventPerDay, error)
+	CalculateEventsPerDay(ctx context.Context, criteria *EventDefCriteria) ([]EventPerDay, error)
 	// CountFields counts additional fields for a given issue and project within a specified time range.
-	CountFields(ctx context.Context, criteria EventDefCriteria) ([]FieldValueNum, error)
+	CountFields(ctx context.Context, criteria *EventDefCriteria) ([]FieldValueNum, error)
 	// CalculateFields calculates the number of occurrences of each field for a given group and project
 	// within a specified time range.
 	CalculateFields(ctx context.Context, criteria FieldsCriteria) ([]TagCount, error)
 	// GetIssueEvent retrieves a single event associated with a specific issue and project within a given time range.
-	GetIssueEvent(ctx context.Context, criteria EventDefCriteria) (*IssueEvent, error)
+	GetIssueEvent(ctx context.Context, criteria *EventDefCriteria) (*IssueEvent, error)
 	// CountEvents counts the number of events based on the given criteria.
 	CountEvents(ctx context.Context, criteria *EventCriteria) (uint64, error)
 	// ListEvents lists error events based on the given criteria.
@@ -44,6 +44,7 @@ type AnalyticsStore interface {
 type EventDefCriteria struct {
 	From      time.Time
 	To        time.Time
+	EventID   string
 	GroupID   int
 	ProjectID int
 }

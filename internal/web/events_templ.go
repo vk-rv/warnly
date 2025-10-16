@@ -88,7 +88,7 @@ func Events(res *warnly.ListEventsResult) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\" class=\"p-1 cursor-pointer rounded border border-border\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M9 5l7 7-7 7\"></path></svg></button></div></div><table id=\"eventtable\" class=\"w-full\"><thead><tr class=\"border-b border-border bg-gray-50\"><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">ID</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">CREATED</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">TITLE</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">RELEASE</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">ENVIRONMENT</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">USER</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">OS</th></tr></thead> <tbody><template x-for=\"event in events\" :key=\"event.id\"><tr class=\"border-b border-border hover:bg-gray-50\"><td @contextmenu.prevent=\"showContextMenu($event, 'event.id', event.id)\" class=\"px-4 py-2 text-sm text-black cursor-pointer font-semibold\" x-text=\"event.id\"></td><td @contextmenu.prevent=\"showContextMenu($event, 'timestamp', event.timestamp)\" class=\"px-4 py-2 text-sm\" x-text=\"event.timestamp\"></td><td @contextmenu.prevent=\"showContextMenu($event, 'title', event.title)\" class=\"px-4 py-2 text-sm\" x-text=\"event.title\"></td><td @contextmenu.prevent=\"showContextMenu($event, 'release', event.release)\" class=\"px-4 py-2 text-sm text-black\" x-text=\"event.release\"></td><td @contextmenu.prevent=\"showContextMenu($event, 'environment', event.environment)\" class=\"px-4 py-2 text-sm relative group\"><div class=\"flex items-center gap-1\"><span x-text=\"event.environment\"></span> <button @click=\"showContextMenu($event, 'environment', event.environment)\" class=\"opacity-0 group-hover:opacity-100 text-gray-400\">•••</button></div></td><td @contextmenu.prevent=\"showContextMenu($event, 'user', event.user)\" class=\"px-4 py-2 text-sm text-gray-500\" x-text=\"event.user\"></td><td @contextmenu.prevent=\"showContextMenu($event, 'os', event.os)\" class=\"px-4 py-2 text-sm text-gray-500\" x-text=\"event.os\"></td></tr></template></tbody></table></div></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\" class=\"p-1 cursor-pointer rounded border border-border\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M9 5l7 7-7 7\"></path></svg></button></div></div><table id=\"eventtable\" class=\"w-full\"><thead><tr class=\"border-b border-border bg-gray-50\"><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">ID</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">CREATED</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">TITLE</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">RELEASE</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">ENVIRONMENT</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">USER</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">OS</th></tr></thead> <tbody><template x-for=\"event in events\" :key=\"event.id\"><tr class=\"border-b border-border hover:bg-gray-50\"><td @contextmenu.prevent=\"showContextMenu($event, 'event.id', event.id)\" @click=\"\n\t\t\t\t\t\t\t\t\t\tnavigateToEvent(event.full_id); \n\t\t\t\t\t\t\t\t\t\tactiveTab = 'details';\n\t\t\t\t\t\t\t\t\t\" class=\"px-4 py-2 text-sm text-black cursor-pointer font-semibold\" x-text=\"event.id\"></td><td @contextmenu.prevent=\"showContextMenu($event, 'timestamp', event.timestamp)\" class=\"px-4 py-2 text-sm\" x-text=\"event.timestamp\"></td><td @contextmenu.prevent=\"showContextMenu($event, 'title', event.title)\" class=\"px-4 py-2 text-sm\" x-text=\"event.title\"></td><td @contextmenu.prevent=\"showContextMenu($event, 'release', event.release)\" class=\"px-4 py-2 text-sm text-black\" x-text=\"event.release\"></td><td @contextmenu.prevent=\"showContextMenu($event, 'environment', event.environment)\" class=\"px-4 py-2 text-sm relative group\"><div class=\"flex items-center gap-1\"><span x-text=\"event.environment\"></span> <button @click=\"showContextMenu($event, 'environment', event.environment)\" class=\"opacity-0 group-hover:opacity-100 text-gray-400\">•••</button></div></td><td @contextmenu.prevent=\"showContextMenu($event, 'user', event.user)\" class=\"px-4 py-2 text-sm text-gray-500\" x-text=\"event.user\"></td><td @contextmenu.prevent=\"showContextMenu($event, 'os', event.os)\" class=\"px-4 py-2 text-sm text-gray-500\" x-text=\"event.os\"></td></tr></template></tbody></table></div></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -130,8 +130,8 @@ func alpineData(res *warnly.ListEventsResult) string {
 			os = noValue
 		}
 		events[i] = fmt.Sprintf(
-			`{ id: '%s', timestamp: '%s', title: '%s', release: '%s', environment: '%s', user: '%s', os: '%s'}`,
-			event.EventID[:8], event.CreatedAt.Format("Jan 2, 2006 3:04:05 PM"), title, release, env, user, os,
+			`{ id: '%s', full_id: '%s', timestamp: '%s', title: '%s', release: '%s', environment: '%s', user: '%s', os: '%s'}`,
+			event.EventID[:8], event.EventID, event.CreatedAt.Format("Jan 2, 2006 3:04:05 PM"), title, release, env, user, os,
 		)
 	}
 
@@ -171,49 +171,59 @@ func alpineData(res *warnly.ListEventsResult) string {
 		hideContextMenu() {
 			this.contextMenu.show = false
 		},
+		navigateToEvent(eventId) {
+			const url = new URL('/projects/' + %s + '/issues/' + %s, window.location.origin);
+			url.searchParams.set('event_id', eventId);
+			url.searchParams.set('period', this.period);
+			url.searchParams.set('source', 'issue');
+			htmx.ajax('GET', url.toString(), {
+				target: '#issue_content',
+				swap: 'outerHTML settle:0',
+			});
+		},
 		offset: %d,
 		period: '14d',
 		eventCount: %d,
 		totalErrors: %d,
-		 paginatePrev(pid, issueID) {
-		 	if (this.offset <= 0) {
+		paginatePrev(pid, issueID) {
+			if (this.offset <= 0) {
 				this.offset = 0;
 				return;
 			}
-            this.offset = Math.max(0, this.offset - 50);
+			this.offset = Math.max(0, this.offset - 50);
 			const url = new URL('/projects/' + pid + '/issues/' + issueID + '/events', window.location.origin);
-            url.searchParams.set('offset', this.offset);
-            url.searchParams.set('period', this.period);
-            htmx.ajax('GET', url.toString(), {
-                target: '#issue_content',
-                swap: 'outerHTML settle:0',
-            }).then(() => {
+			url.searchParams.set('offset', this.offset);
+			url.searchParams.set('period', this.period);
+			htmx.ajax('GET', url.toString(), {
+				target: '#issue_content',
+				swap: 'outerHTML settle:0',
+			}).then(() => {
 				this.updateEventCount();
-            });
-        },
-        paginateNext(pid, issueID) {
+			});
+		},
+		paginateNext(pid, issueID) {
 			if (this.offset + 50 > this.totalErrors) {
 				return;
 			} else {
 				this.offset += 50;
 			}
 			const url = new URL('/projects/' + pid + '/issues/' + issueID + '/events', window.location.origin);
-            url.searchParams.set('offset', this.offset);
-            url.searchParams.set('period', this.period);
-            htmx.ajax('GET', url.toString(), {
-                target: '#issue_content',
-                swap: 'outerHTML settle:0',
-            }).then(() => {
+			url.searchParams.set('offset', this.offset);
+			url.searchParams.set('period', this.period);
+			htmx.ajax('GET', url.toString(), {
+				target: '#issue_content',
+				swap: 'outerHTML settle:0',
+			}).then(() => {
 				this.updateEventCount();
-            });
-        },
+			});
+		},
 		updateEventCount() {
 			const tableBody = document.querySelector('#eventtable tbody');
-            if (tableBody) {
-                this.eventCount = tableBody.rows.length;
-            }
+			if (tableBody) {
+				this.eventCount = tableBody.rows.length;
+			}
 		}
-	}`, strings.Join(events, ", "), res.Offset, len(res.Events), res.TotalEvents)
+	}`, strings.Join(events, ", "), strconv.Itoa(int(res.ProjectID)), strconv.Itoa(int(res.IssueID)), res.Offset, len(res.Events), res.TotalEvents)
 }
 
 func paginationSummary(res *warnly.ListEventsResult) string {
