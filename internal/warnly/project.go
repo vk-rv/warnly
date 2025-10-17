@@ -208,13 +208,16 @@ type ListIssuesRequest struct {
 	Query       string
 	ProjectName string
 	ProjectIDs  []int
+	Offset      int
 }
 
 type ListIssuesResult struct {
 	LastProject      *Project
+	Request          *ListIssuesRequest
 	RequestedProject string
 	Issues           []IssueEntry
 	Projects         []Project
+	TotalIssues      int
 }
 
 func (l *ListIssuesResult) NoIssues() bool {

@@ -11,6 +11,8 @@ import (
 	"github.com/vk-rv/warnly/internal/web"
 )
 
+const defaultPeriod = "14d"
+
 const (
 	// msgInvalidLoginCredentials is the message displayed on the login page when the user provides invalid credentials.
 	msgInvalidLoginCredentials = "Invalid login credentials."
@@ -20,6 +22,8 @@ const (
 
 // sessionHandler handles HTTP requests related to user sessions.
 type sessionHandler struct {
+	*BaseHandler
+
 	svc          warnly.SessionService
 	projectSvc   warnly.ProjectService
 	cookieStore  *session.CookieStore
@@ -36,6 +40,7 @@ func newSessionHandler(
 	logger *slog.Logger,
 ) *sessionHandler {
 	return &sessionHandler{
+		BaseHandler:  NewBaseHandler(logger),
 		svc:          sessionSvc,
 		projectSvc:   projectSvc,
 		rememberDays: rememberDays,
@@ -50,17 +55,27 @@ func (h *sessionHandler) index(w http.ResponseWriter, r *http.Request) {
 
 	user := getUser(ctx)
 
+	period := r.URL.Query().Get("period")
+	if period == "" {
+		period = defaultPeriod
+	}
+
+	offset, err := parseOffset(r.URL.Query().Get("offset"))
+	if err != nil {
+		h.writeError(ctx, w, http.StatusBadRequest, "list issues: parse offset", err)
+		return
+	}
+
 	req := &warnly.ListIssuesRequest{
-		User:   &user,
-		Period: "14d",
+		User:        &user,
+		Period:      period,
+		ProjectName: r.URL.Query().Get("project_name"),
+		Offset:      offset,
 	}
 
 	result, err := h.projectSvc.ListIssues(ctx, req)
 	if err != nil {
-		h.logger.Error("index: list issues", slog.Any("error", err))
-		if err = web.Hello("").Render(r.Context(), w); err != nil {
-			h.logger.Error("index: hello web render", slog.Any("error", err))
-		}
+		h.writeError(ctx, w, http.StatusInternalServerError, "index: list issues", err)
 		return
 	}
 

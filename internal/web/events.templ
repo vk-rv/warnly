@@ -243,6 +243,7 @@ func alpineData(res *warnly.ListEventsResult) string {
 	}`, strings.Join(events, ", "), strconv.Itoa(int(res.ProjectID)), strconv.Itoa(int(res.IssueID)), res.Offset, len(res.Events), res.TotalEvents)
 }
 
+// paginationSummary returns a summary string for the pagination status.
 func paginationSummary(res *warnly.ListEventsResult) string {
 	const limit = 50
 

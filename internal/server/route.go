@@ -94,11 +94,6 @@ func NewHandler(b *Backend) (*Handler, error) {
 		slog.String("handler", "project"),
 	))
 
-	issueHandler := newIssueHandler(b.ProjectService, b.CookieStore, b.Logger.With(
-		slog.String("handler", "issues"),
-	))
-	mux.HandleFunc("GET /issues", chain(issueHandler.listIssues))
-
 	mux.HandleFunc("GET /notready", chain(func(w http.ResponseWriter, r *http.Request) {
 		if err := web.InDevelopment().Render(r.Context(), w); err != nil {
 			b.Logger.Error("not ready web render", slog.Any("error", err))

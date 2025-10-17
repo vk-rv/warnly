@@ -526,6 +526,7 @@ func (s *ProjectService) ListIssues(ctx context.Context, req *warnly.ListIssuesR
 	}
 	if len(projects) == 0 {
 		return &warnly.ListIssuesResult{
+			Request:     req,
 			Issues:      nil,
 			LastProject: nil,
 		}, nil
@@ -547,12 +548,17 @@ func (s *ProjectService) ListIssues(ctx context.Context, req *warnly.ListIssuesR
 	if err != nil {
 		return nil, err
 	}
+
+	totalIssues := len(issues)
+
 	if len(issues) == 0 {
 		return &warnly.ListIssuesResult{
+			Request:          req,
 			Issues:           nil,
 			LastProject:      &lastProject,
 			Projects:         projects,
 			RequestedProject: req.ProjectName,
+			TotalIssues:      totalIssues,
 		}, nil
 	}
 
@@ -567,10 +573,12 @@ func (s *ProjectService) ListIssues(ctx context.Context, req *warnly.ListIssuesR
 	}
 
 	return &warnly.ListIssuesResult{
+		Request:          req,
 		Issues:           issueList,
 		LastProject:      &lastProject,
 		Projects:         projects,
 		RequestedProject: req.ProjectName,
+		TotalIssues:      totalIssues,
 	}, nil
 }
 
