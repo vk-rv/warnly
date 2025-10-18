@@ -261,8 +261,8 @@ func (s *EventService) storeIssue(ctx context.Context, issue *warnly.Issue) func
 
 // getProjectOptions retrieves project options such as event retention days from database.
 func (s *EventService) getProjectOptions(ctx context.Context, req warnly.IngestRequest) (*warnly.ProjectOptions, error) {
-	cacheKey := fmt.Sprintf("project_options:%d", req.ProjectID)
-	if opts, found := s.cache.Get(cacheKey); found {
+	key := fmt.Sprintf("project_options:%d:%s", req.ProjectID, req.ProjectKey)
+	if opts, found := s.cache.Get(key); found {
 		projOpts, ok := opts.(*warnly.ProjectOptions)
 		if !ok {
 			return nil, errors.New("event service get project options: cache project options type assertion")
@@ -276,7 +276,7 @@ func (s *EventService) getProjectOptions(ctx context.Context, req warnly.IngestR
 	}
 	opts.RetentionDays = 90
 
-	s.cache.Set(cacheKey, opts, time.Minute*10)
+	s.cache.Set(key, opts, time.Minute*10)
 
 	return opts, nil
 }
