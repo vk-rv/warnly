@@ -210,7 +210,7 @@ func issuesFiltersBar(res *warnly.ListIssuesResult) templ.Component {
 			templ_7745c5c3_Var6 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<div class=\"mb-6\"><div class=\"flex gap-2\"><div class=\"flex\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<div class=\"mb-6\"><div class=\"flex gap-2 mb-3\"><div class=\"flex\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -226,7 +226,7 @@ func issuesFiltersBar(res *warnly.ListIssuesResult) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "<div class=\"flex-1 relative\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</div><div class=\"relative\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -234,7 +234,7 @@ func issuesFiltersBar(res *warnly.ListIssuesResult) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</div></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -433,7 +433,7 @@ func searchBar(req *warnly.ListIssuesRequest) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "\" class=\"search-container\" @click.away=\"closeAllDropdowns()\"><div class=\"flex border rounded-lg overflow-hidden bg-white border-gray-300 h-10\"><div class=\"relative flex-1 flex items-center px-2 text-sm overflow-hidden\"><div class=\"text-purple-500 ml-2 mr-1 flex-shrink-0\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"black\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z\"></path></svg></div><div class=\"search-input-wrapper py-2 overflow-x-auto\" @click=\"focusInput()\"><template x-for=\"(token, index) in tokens\" :key=\"index\"><div class=\"tag-pill\"><template x-if=\"!token.isRawText\"><div class=\"flex items-center\"><span x-text=\"token.key\" class=\"text-gray-800\"></span> <span class=\"tag-pill-operator mx-1\" x-text=\"token.operator\" @click.stop=\"openOperatorDropdown(index, $event)\"></span> <span x-text=\"token.value\" class=\"text-gray-800\"></span></div></template><template x-if=\"token.isRawText\"><span x-text=\"token.value\" class=\"text-gray-800\"></span></template><button @click.stop=\"removeToken(index)\" class=\"ml-1 text-gray-500 hover:text-gray-700\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M6 18L18 6M6 6l12 12\"></path></svg></button></div></template><input x-ref=\"searchInput\" type=\"text\" x-model=\"inputValue\" :placeholder=\"tokens.length === 0 ? 'Search for issues, tags, and more' : ''\" class=\"search-input\" @click=\"handleInputClick()\" @focus=\"handleInputFocus()\" @keydown.enter=\"handleEnterKey()\" @keydown.backspace=\"handleBackspace()\" @input=\"handleInput()\"></div><button x-show=\"tokens.length > 0 || inputValue.length > 0\" @click.stop=\"clearAll()\" class=\"mr-4 text-gray-400 hover:text-gray-600\" x-cloak><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M6 18L18 6M6 6l12 12\"></path></svg></button></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "\" class=\"search-container\" @click.away=\"closeAllDropdowns()\"><div class=\"flex border rounded-lg bg-white border-gray-300 min-h-[2.5rem]\"><div class=\"relative flex-1 flex items-center px-2 text-sm\"><div class=\"text-purple-500 ml-2 mr-1 flex-shrink-0\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"black\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z\"></path></svg></div><div class=\"search-input-wrapper\" @click=\"focusInput()\"><template x-for=\"(token, index) in tokens\" :key=\"index\"><div class=\"tag-pill\"><template x-if=\"!token.isRawText\"><div class=\"flex items-center\"><span x-text=\"token.key\" class=\"text-gray-800\"></span> <span class=\"tag-pill-operator mx-1\" x-text=\"token.operator\" @click.stop=\"openOperatorDropdown(index, $event)\"></span> <span x-text=\"token.value\" class=\"text-gray-800\"></span></div></template><template x-if=\"token.isRawText\"><span x-text=\"token.value\" class=\"text-gray-800\"></span></template><button @click.stop=\"removeToken(index)\" class=\"ml-1 text-gray-500 hover:text-gray-700\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M6 18L18 6M6 6l12 12\"></path></svg></button></div></template><input x-ref=\"searchInput\" type=\"text\" x-model=\"inputValue\" :placeholder=\"tokens.length === 0 ? 'Search for issues, tags, and more' : ''\" class=\"search-input\" @click=\"handleInputClick()\" @focus=\"handleInputFocus()\" @keydown.enter=\"handleEnterKey()\" @keydown.backspace=\"handleBackspace()\" @input=\"handleInput()\"></div><button x-show=\"tokens.length > 0 || inputValue.length > 0\" @click.stop=\"clearAll()\" class=\"mr-4 text-gray-400 hover:text-gray-600\" x-cloak><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M6 18L18 6M6 6l12 12\"></path></svg></button></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
