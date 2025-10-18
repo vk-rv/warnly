@@ -205,10 +205,14 @@ type TeammateAssign struct {
 type ListIssuesRequest struct {
 	User        *User
 	Period      string
+	Start       string
+	End         string
 	Query       string
+	Filters     string
 	ProjectName string
 	ProjectIDs  []int
 	Offset      int
+	Limit       int
 }
 
 type ListIssuesResult struct {

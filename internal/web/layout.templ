@@ -52,10 +52,14 @@ templ htmlHeader(title string) {
 		<title>{ title } - { AppName }</title>
 		<link rel="icon" href="/static/favicon.svg" type="image/svg+xml"/>
 		<link href="/static/tailwind.css" rel="stylesheet"/>
-		<script src="/static/alpinejs@3.12.3.min.js" defer></script>
+		<link href="/static/issues.css" rel="stylesheet"/>
 		<script src="/static/htmx@2.0.4.min.js"></script>
 		<script src="/static/uPlot.iife.min.js"></script>
 		<link href="/static/uPlot.min.css" rel="stylesheet"/>
+		<script src="/static/issueFilters.js"></script>
+		<script src="/static/timePeriodSelector.js"></script>
+		<script src="/static/searchInput.js"></script>
+		<script src="/static/alpinejs@3.12.3.min.js" defer></script>
 		<style>
 		.warnly-preview .u-legend {
 			font-size: 13px;

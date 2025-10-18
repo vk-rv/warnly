@@ -14,6 +14,7 @@ import (
 	"time"
 )
 
+// Issues is the main template that includes filters header and issue list body
 func Issues(res *warnly.ListIssuesResult) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
@@ -43,22 +44,115 @@ func Issues(res *warnly.ListIssuesResult) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = issuesSearchBar(res.Projects, res.RequestedProject).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = IssuesFiltersAndBody(res).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+// IssuesFiltersAndBody contains the filters and the body - used for HTMX updates
+func IssuesFiltersAndBody(res *warnly.ListIssuesResult) templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var2 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var2 == nil {
+			templ_7745c5c3_Var2 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<div id=\"issues-container\" x-data=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var3 string
+		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(getIssuesAlpineData(res))
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 21, Col: 35}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = issuesFiltersBar(res).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if res.NoIssues() {
-			templ_7745c5c3_Err = gettingStarted(res.LastProject).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<span>No issues found</span>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		} else {
-			templ_7745c5c3_Err = issuesList(res).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = IssuesBody(res).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "</div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+// IssuesBody - the issues list and pagination that gets updated via HTMX
+func IssuesBody(res *warnly.ListIssuesResult) templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var4 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var4 == nil {
+			templ_7745c5c3_Var4 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<div id=\"issues-body\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = issuesTable(res).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = issuesPagination(res).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -82,12 +176,12 @@ func issuesHeader() templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var2 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var2 == nil {
-			templ_7745c5c3_Var2 = templ.NopComponent
+		templ_7745c5c3_Var5 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var5 == nil {
+			templ_7745c5c3_Var5 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<header class=\"mb-6\"><div class=\"flex items-center gap-2 mb-4\"><h1 class=\"text-xl font-semibold\">Issues</h1></div><nav class=\"border-b border-gray-300 border-[hsl(var(--border))]\"><ul class=\"flex gap-6\"><li class=\"border-b-2 border-black pb-2\"><a href=\"#\" class=\"text-sm font-medium\">All Issues</a></li></ul></nav></header>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<header class=\"mb-6\"><div class=\"flex items-center gap-2 mb-4\"><h1 class=\"text-xl font-semibold\">Issues</h1></div><nav class=\"border-b border-gray-300\"><ul class=\"flex gap-6\"><li class=\"border-b-2 border-black pb-2\"><a href=\"#\" class=\"text-sm font-medium\">All Issues</a></li></ul></nav></header>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -95,15 +189,7 @@ func issuesHeader() templ.Component {
 	})
 }
 
-func getSelectedProject(requestedProject string) string {
-	selected := "All Projects"
-	if requestedProject != "" {
-		selected = requestedProject
-	}
-	return fmt.Sprintf("{ open: false, selected: '%s' }", selected)
-}
-
-func issuesSearchBar(projects []warnly.Project, requestedProject string) templ.Component {
+func issuesFiltersBar(res *warnly.ListIssuesResult) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -119,262 +205,114 @@ func issuesSearchBar(projects []warnly.Project, requestedProject string) templ.C
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var3 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var3 == nil {
-			templ_7745c5c3_Var3 = templ.NopComponent
+		templ_7745c5c3_Var6 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var6 == nil {
+			templ_7745c5c3_Var6 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<div class=\"flex gap-2\"><div class=\"flex\"><div x-data=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<div class=\"mb-6 space-y-4\"><!-- Project Selector --><div class=\"flex gap-2 items-start\"><div class=\"flex-shrink-0\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var4 string
-		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(getSelectedProject(requestedProject))
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 47, Col: 53}
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
+		templ_7745c5c3_Err = projectSelector(res.Projects, res.RequestedProject).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\"><button @click=\"open = !open\" class=\"inline-flex cursor-pointer items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50\"><span x-text=\"selected\"></span> <svg class=\"ml-2 h-5 w-5 text-gray-400\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M19 9l-7 7-7-7\"></path></svg></button><div x-show=\"open\" @click.away=\"open = false\" class=\"absolute mt-2 w-48 rounded-md bg-white shadow-lg z-10\"><ul class=\"py-1 text-sm text-gray-700\"><li><a href=\"#\" @click.prevent=\"selected = 'All Projects'; open = false\" hx-get=\"/\" hx-target=\"#content\" hx-swap=\"outerHTML settle:0\" class=\"block px-4 py-2 hover:bg-gray-100\">All Projects</a></li>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</div><div class=\"flex-shrink-0\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = timePeriodSelectorWrapper(res.Request.Period).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</div></div><!-- Search Bar with Tags --><div class=\"relative\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = searchBar(res.Request).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</div></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+func projectSelector(projects []warnly.Project, requestedProject string) templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var7 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var7 == nil {
+			templ_7745c5c3_Var7 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<div x-data=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var8 string
+		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("{ open: false, selected: '%s' }", getSelectedProjectName(requestedProject)))
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 74, Col: 103}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "\"><button @click=\"open = !open\" class=\"inline-flex cursor-pointer items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50\"><span x-text=\"selected\"></span> <svg class=\"ml-2 h-5 w-5 text-gray-400\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M19 9l-7 7-7-7\"></path></svg></button><div x-show=\"open\" @click.away=\"open = false\" x-cloak class=\"absolute mt-2 w-48 rounded-md bg-white shadow-lg z-10\"><ul class=\"py-1 text-sm text-gray-700\"><li><a href=\"#\" @click.prevent=\"selected = 'All Projects'; $dispatch('project-changed', { project: '' }); open = false\" class=\"block px-4 py-2 hover:bg-gray-100\">All Projects</a></li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		for _, project := range projects {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<li><a href=\"#\" @click.prevent=\"")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			var templ_7745c5c3_Var5 string
-			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("selected = '%s'; open = false", project.Name))
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 75, Col: 84}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "\" hx-get=\"")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			var templ_7745c5c3_Var6 string
-			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/?project_name=%s", project.Name))
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 76, Col: 64}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "\" hx-target=\"#content\" hx-swap=\"outerHTML settle:0\" class=\"block px-4 py-2 hover:bg-gray-100\">")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			var templ_7745c5c3_Var7 string
-			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(project.Name)
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 81, Col: 23}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</a></li>")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</ul></div></div></div><style>\n    [x-cloak] { display: none !important; }\n    \n    .time-input {\n      position: relative;\n      display: inline-flex;\n      align-items: center;\n      padding: 0;\n      border: 1px solid #e2e8f0;\n      border-radius: 0.375rem;\n      background-color: white;\n      width: 100%;\n      height: 2.5rem;\n    }\n    \n    .time-input:focus-within {\n      border-color: #6366f1;\n      outline: 2px solid #c7d2fe;\n    }\n    \n    .time-part {\n      display: inline-block;\n      text-align: center;\n      padding: 0.25rem 0;\n      cursor: pointer;\n      user-select: none;\n    }\n    \n    .time-part:hover {\n      background-color: #f3f4f6;\n    }\n    \n    .time-part.selected {\n      background-color: #e0e7ff;\n    }\n    \n    .time-part.hour {\n      width: 2rem;\n      text-align: right;\n    }\n    \n    .time-part.minute {\n      width: 2rem;\n      text-align: left;\n    }\n    \n    .time-part.period {\n      width: 2.5rem;\n      text-align: center;\n    }\n    \n    .time-separator {\n      display: inline-block;\n      width: 0.5rem;\n      text-align: center;\n      user-select: none;\n    }\n  </style><div class=\"max-w-md mx-auto\" x-data=\"timePeriodSelector()\"><div class=\"flex border hover:bg-gray-50 border-gray-300 rounded-md overflow-hidden bg-white\"><button @click=\"toggleDropdown()\" class=\"flex cursor-pointer items-center px-4 py-2 text-sm\"><span x-text=\"displayLabel\"></span> <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4 ml-1\" viewBox=\"0 0 20 20\" fill=\"currentColor\" :class=\"{'transform rotate-180': isOpen}\"><path fill-rule=\"evenodd\" d=\"M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z\" clip-rule=\"evenodd\"></path></svg></button></div><div x-show=\"isOpen\" x-cloak @click.away=\"isOpen = false\" class=\"mt-1 bg-white border border-gray-200 rounded-md shadow-lg absolute z-10 w-full max-w-md\"><div x-show=\"!showCalendar\"><div class=\"p-4 border-b border-gray-200\"><h3 class=\"text-sm font-medium text-gray-800\">Filter Time Range</h3></div><div class=\"p-3\"><input type=\"text\" x-model=\"customRangeInput\" placeholder=\"Custom range: 2h, 4d, 8w...\" class=\"w-full p-2 border text-sm rounded-md focus:outline-none border-gray-300\" @keydown.enter=\"applyCustomRange()\" :class=\"{'border-red-500': customRangeError}\"><div x-show=\"customRangeError\" class=\"text-red-500 text-xs mt-1\" x-text=\"customRangeError\"></div></div><div class=\"py-2\"><template x-for=\"(preset, index) in presets\" :key=\"index\"><div @click=\"selectPreset(preset.value)\" class=\"flex text-sm items-center px-3 py-2 hover:bg-gray-50 cursor-pointer\"><div class=\"w-6\"><svg x-show=\"selectedPreset === preset.value\" xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5 text-black-500\" viewBox=\"0 0 20 20\" fill=\"currentColor\"><path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"></path></svg></div><span class=\"ml-2\" :class=\"{'text-black-600 font-medium': selectedPreset === preset.value}\" x-text=\"preset.label\"></span></div></template><div @click=\"openCalendar()\" class=\"flex items-center text-sm justify-between px-3 py-2 hover:bg-gray-50 cursor-pointer\"><div class=\"flex items-center\"><div class=\"w-6\"><svg x-show=\"selectedPreset === 'custom-range'\" xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5 text-indigo-500\" viewBox=\"0 0 20 20\" fill=\"currentColor\"><path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"></path></svg></div><span class=\"ml-2\" :class=\"{'text-indigo-600 font-medium': selectedPreset === 'custom-range'}\">Absolute date</span></div><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5 text-gray-500\" viewBox=\"0 0 20 20\" fill=\"currentColor\"><path fill-rule=\"evenodd\" d=\"M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z\" clip-rule=\"evenodd\"></path></svg></div></div></div><div x-show=\"showCalendar\" x-cloak><div class=\"p-4 border-b border-gray-200\"><h3 class=\"text-sm font-medium text-gray-800\">Filter Time Range</h3></div><div class=\"p-4 text-sm\"><div class=\"flex items-center justify-between mb-4\"><button @click=\"prevMonth()\" class=\"text-gray-600\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5\" viewBox=\"0 0 20 20\" fill=\"currentColor\"><path fill-rule=\"evenodd\" d=\"M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z\" clip-rule=\"evenodd\"></path></svg></button><div class=\"text-md font-medium text-gray-700\"><span x-text=\"monthNames[currentMonth]\"></span> <span x-text=\"currentYear\"></span></div><button @click=\"nextMonth()\" class=\"text-gray-600\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5\" viewBox=\"0 0 20 20\" fill=\"currentColor\"><path fill-rule=\"evenodd\" d=\"M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z\" clip-rule=\"evenodd\"></path></svg></button></div><div class=\"grid grid-cols-7 gap-1 text-center\"><template x-for=\"day in ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']\" :key=\"day\"><div class=\"text-xs font-medium text-gray-500 py-1\" x-text=\"day\"></div></template><template x-for=\"blank in firstDayOfMonth\" :key=\"'blank-' + blank\"><div class=\"h-10 w-10 rounded-full\"></div></template><template x-for=\"date in daysInMonth\" :key=\"date\"><div @click=\"selectDate(date)\" class=\"h-10 w-10 flex items-center justify-center rounded-full cursor-pointer\" :class=\"{\n                  'bg-gray-300 text-white': isSelectedDate(date),\n                  'hover:bg-gray-100': !isSelectedDate(date) && !isInDateRange(date),\n                  'bg-gray-100': isInDateRange(date) && !isSelectedDate(date),\n                  'text-gray-400': isDateDisabled(date),\n                  'text-gray-700': !isDateDisabled(date)\n                }\"><span x-text=\"date\"></span></div></template></div><div class=\"mt-6 text-sm flex space-x-4\"><div class=\"flex-1\"><div class=\"time-input\" :class=\"{'border-indigo-500': startTimeActive}\" @click=\"activateStartTime\" @keydown=\"handleTimeKeydown($event, true)\" tabindex=\"0\"><div class=\"time-part hour\" :class=\"{'selected': startSelectedPart === 'hour'}\" @click.stop=\"selectStartPart('hour')\" x-text=\"startHour.toString().padStart(2, '0')\"></div><div class=\"time-separator\">:</div><div class=\"time-part minute\" :class=\"{'selected': startSelectedPart === 'minute'}\" @click.stop=\"selectStartPart('minute')\" x-text=\"startMinute.toString().padStart(2, '0')\"></div><div class=\"time-separator\">&nbsp;</div><div class=\"time-part period\" :class=\"{'selected': startSelectedPart === 'period'}\" @click.stop=\"selectStartPart('period')\" x-text=\"startPeriod\"></div></div></div><div class=\"flex-1\"><div class=\"time-input\" :class=\"{'border-indigo-500': endTimeActive}\" @click=\"activateEndTime\" @keydown=\"handleTimeKeydown($event, false)\" tabindex=\"0\"><div class=\"time-part hour\" :class=\"{'selected': endSelectedPart === 'hour'}\" @click.stop=\"selectEndPart('hour')\" x-text=\"endHour.toString().padStart(2, '0')\"></div><div class=\"time-separator\">:</div><div class=\"time-part minute\" :class=\"{'selected': endSelectedPart === 'minute'}\" @click.stop=\"selectEndPart('minute')\" x-text=\"endMinute.toString().padStart(2, '0')\"></div><div class=\"time-separator\">&nbsp;</div><div class=\"time-part period\" :class=\"{'selected': endSelectedPart === 'period'}\" @click.stop=\"selectEndPart('period')\" x-text=\"endPeriod\"></div></div></div><div class=\"flex items-center\"><input type=\"checkbox\" id=\"utc\" x-model=\"useUTC\" class=\"h-5 w-5 text-black-600 rounded focus:ring-black-500\"> <label for=\"utc\" class=\"ml-2 text-gray-700\">UTC</label></div></div></div><div class=\"p-4 flex justify-between border-t border-gray-200\"><button @click=\"showCalendar = false\" class=\"px-4 py-2 text-gray-700 font-medium text-sm\">← Back</button> <button @click=\"applyDateRange()\" class=\"px-6 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 text-sm\">Apply</button></div></div></div></div><script>\n    function timePeriodSelector() {\n      return {\n        isOpen: false,\n        showCalendar: false,\n        selectedPreset: 'last24h',\n        customRangeInput: '',\n        customRangeError: null,\n        startDate: null,\n        endDate: null,\n        \n        startHour: 7,\n        startMinute: 22,\n        startPeriod: 'AM',\n        endHour: 1,\n        endMinute: 58,\n        endPeriod: 'AM',\n        \n        startTimeActive: false,\n        endTimeActive: false,\n        startSelectedPart: null,\n        endSelectedPart: null,\n        \n        useUTC: true,\n        currentMonth: new Date().getMonth(),\n        currentYear: new Date().getFullYear(),\n        selectionStart: null,\n        selectionEnd: null,\n        selectionInProgress: false,\n        \n        monthNames: [\n          'January', 'February', 'March', 'April', 'May', 'June', \n          'July', 'August', 'September', 'October', 'November', 'December'\n        ],\n        \n        presets: [\n          { label: 'Last hour', value: 'last1h' },\n          { label: 'Last 24 hours', value: 'last24h' },\n          { label: 'Last 7 days', value: 'last7d' },\n          { label: 'Last 14 days', value: 'last14d' },\n          { label: 'Last 30 days', value: 'last30d' },\n          { label: 'Last 90 days', value: 'last90d' }\n        ],\n        \n        get displayLabel() {\n          if (this.selectedPreset === 'custom-range' && this.selectionStart && this.selectionEnd) {\n            return this.formatDateRange(this.selectionStart, this.selectionEnd);\n          }\n          \n          if (this.selectedPreset === 'custom' && this.customRangeInput) {\n            return this.customRangeInput;\n          }\n          \n          const preset = this.presets.find(p => p.value === this.selectedPreset);\n          return preset ? preset.label : '24H';\n        },\n        \n        get daysInMonth() {\n          return new Date(this.currentYear, this.currentMonth + 1, 0).getDate();\n        },\n        \n        get firstDayOfMonth() {\n          return new Date(this.currentYear, this.currentMonth, 1).getDay();\n        },\n        \n        toggleDropdown() {\n          this.isOpen = !this.isOpen;\n          if (!this.isOpen) {\n            this.showCalendar = false;\n            this.startTimeActive = false;\n            this.endTimeActive = false;\n          }\n        },\n        \n        openCalendar() {\n          this.showCalendar = true;\n          \n          if (!this.selectionStart) {\n            const today = new Date();\n            this.currentMonth = today.getMonth();\n            this.currentYear = today.getFullYear();\n          }\n        },\n        \n        selectPreset(value) {\n          this.selectedPreset = value;\n          this.isOpen = false;\n          \n          this.selectionStart = null;\n          this.selectionEnd = null;\n        },\n        \n        validateCustomRange(input) {\n          this.customRangeError = null;\n          \n          input = input.trim();\n          \n          if (!input) {\n            this.customRangeError = \"Please enter a time range\";\n            return false;\n          }\n          \n          // Regex to validate format: number + unit (h, d, w, m, y)\n          const regex = /^(\\d+)(h|d|w|m|y)$/i;\n          const match = input.match(regex);\n          \n          if (!match) {\n            this.customRangeError = \"Invalid format. Use format like: 1h, 2d, 3w, 4m, 1y\";\n            return false;\n          }\n          \n          const value = parseInt(match[1]);\n          const unit = match[2].toLowerCase();\n          \n          if (value <= 0) {\n            this.customRangeError = \"Value must be positive\";\n            return false;\n          }\n          \n          const limits = {\n            'h': 720,    // Max 30 days in hours\n            'd': 365,    // Max 1 year in days\n            'w': 52,     // Max 1 year in weeks\n            'm': 60,     // Max 5 years in months\n            'y': 10      // Max 10 years\n          };\n          \n          if (value > limits[unit]) {\n            this.customRangeError = `Maximum value for ${unit} is ${limits[unit]}`;\n            return false;\n          }\n          \n          return true;\n        },\n        \n        applyCustomRange() {\n          if (this.validateCustomRange(this.customRangeInput)) {\n            this.selectedPreset = 'custom';\n            this.isOpen = false;\n            \n            this.selectionStart = null;\n            this.selectionEnd = null;\n          }\n        },\n        \n        prevMonth() {\n          if (this.currentMonth === 0) {\n            this.currentMonth = 11;\n            this.currentYear--;\n          } else {\n            this.currentMonth--;\n          }\n        },\n        \n        nextMonth() {\n          if (this.currentMonth === 11) {\n            this.currentMonth = 0;\n            this.currentYear++;\n          } else {\n            this.currentMonth++;\n          }\n        },\n        \n        selectDate(date) {\n          const selectedDate = new Date(this.currentYear, this.currentMonth, date);\n          \n          if (!this.selectionInProgress || !this.selectionStart) {\n\n            this.selectionStart = selectedDate;\n            this.selectionEnd = null;\n            this.selectionInProgress = true;\n          } else {\n            this.selectionInProgress = false;\n            \n            if (selectedDate < this.selectionStart) {\n              this.selectionEnd = this.selectionStart;\n              this.selectionStart = selectedDate;\n            } else {\n              this.selectionEnd = selectedDate;\n            }\n          }\n        },\n        \n        isSelectedDate(date) {\n          const currentDate = new Date(this.currentYear, this.currentMonth, date);\n          \n          if (!this.selectionStart && !this.selectionEnd) return false;\n          \n          if (this.selectionStart && !this.selectionEnd) {\n            return this.isSameDate(currentDate, this.selectionStart);\n          }\n          \n          return this.isSameDate(currentDate, this.selectionStart) || \n                 this.isSameDate(currentDate, this.selectionEnd);\n        },\n        \n        isInDateRange(date) {\n          if (!this.selectionStart || !this.selectionEnd) return false;\n          \n          const currentDate = new Date(this.currentYear, this.currentMonth, date);\n          return currentDate > this.selectionStart && currentDate < this.selectionEnd;\n        },\n        \n        isSameDate(date1, date2) {\n          return date1.getDate() === date2.getDate() && \n                 date1.getMonth() === date2.getMonth() && \n                 date1.getFullYear() === date2.getFullYear();\n        },\n        \n        isDateDisabled(date) {\n          return false;\n        },\n        \n        applyDateRange() {\n          if (this.selectionStart) {\n            this.selectedPreset = 'custom-range';\n            this.isOpen = false;\n            this.showCalendar = false;\n          }\n        },\n        \n        formatDate(date) {\n          if (!date) return '';\n          const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];\n          return `${monthNames[date.getMonth()]} ${date.getDate()}`;\n        },\n        \n        formatDateRange(start, end) {\n          if (!start || !end) return '';\n          \n          if (start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear()) {\n            return `${this.formatDate(start)} - ${end.getDate()}`;\n          }\n          \n          return `${this.formatDate(start)} - ${this.formatDate(end)}`;\n        },\n        \n        activateStartTime() {\n          this.startTimeActive = true;\n          this.endTimeActive = false;\n          if (!this.startSelectedPart) {\n            this.startSelectedPart = 'hour';\n          }\n        },\n        \n        activateEndTime() {\n          this.endTimeActive = true;\n          this.startTimeActive = false;\n          if (!this.endSelectedPart) {\n            this.endSelectedPart = 'hour';\n          }\n        },\n        \n        selectStartPart(part) {\n          this.startSelectedPart = part;\n          this.startTimeActive = true;\n          this.endTimeActive = false;\n        },\n        \n        selectEndPart(part) {\n          this.endSelectedPart = part;\n          this.endTimeActive = true;\n          this.startTimeActive = false;\n        },\n        \n        handleTimeKeydown(event, isStartTime) {\n          const selectedPart = isStartTime ? this.startSelectedPart : this.endSelectedPart;\n          \n          if (!selectedPart) {\n            if (isStartTime) {\n              this.startSelectedPart = 'hour';\n            } else {\n              this.endSelectedPart = 'hour';\n            }\n            return;\n          }\n          \n          if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {\n            event.preventDefault();\n            this.adjustTimePart(isStartTime, selectedPart, event.key === 'ArrowUp' ? 1 : -1);\n          }\n          else if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {\n            event.preventDefault();\n            this.navigateTimeParts(isStartTime, event.key === 'ArrowRight');\n          }\n          else if (/^\\d$/.test(event.key) && (selectedPart === 'hour' || selectedPart === 'minute')) {\n            event.preventDefault();\n            this.setTimePartDirectly(isStartTime, selectedPart, parseInt(event.key));\n          }\n          else if ((event.key.toLowerCase() === 'a' || event.key.toLowerCase() === 'p') && selectedPart === 'period') {\n            event.preventDefault();\n            const newPeriod = event.key.toLowerCase() === 'a' ? 'AM' : 'PM';\n            if (isStartTime) {\n              this.startPeriod = newPeriod;\n            } else {\n              this.endPeriod = newPeriod;\n            }\n          }\n        },\n        \n        adjustTimePart(isStartTime, part, direction) {\n          if (part === 'hour') {\n            if (isStartTime) {\n              this.startHour = this.adjustHour(this.startHour, direction);\n            } else {\n              this.endHour = this.adjustHour(this.endHour, direction);\n            }\n          } \n          else if (part === 'minute') {\n            if (isStartTime) {\n              this.startMinute = this.adjustMinute(this.startMinute, direction);\n            } else {\n              this.endMinute = this.adjustMinute(this.endMinute, direction);\n            }\n          }\n          else if (part === 'period') {\n            if (isStartTime) {\n              this.startPeriod = this.startPeriod === 'AM' ? 'PM' : 'AM';\n            } else {\n              this.endPeriod = this.endPeriod === 'AM' ? 'PM' : 'AM';\n            }\n          }\n        },\n        \n        adjustHour(hour, direction) {\n          // 12-hour format: 1-12\n          let newHour = hour + direction;\n          if (newHour > 12) newHour = 1;\n          if (newHour < 1) newHour = 12;\n          return newHour;\n        },\n        \n        adjustMinute(minute, direction) {\n          let newMinute = minute + direction;\n          if (newMinute > 59) newMinute = 0;\n          if (newMinute < 0) newMinute = 59;\n          return newMinute;\n        },\n        \n        navigateTimeParts(isStartTime, moveRight) {\n          const parts = ['hour', 'minute', 'period'];\n          let currentIndex;\n          \n          if (isStartTime) {\n            currentIndex = parts.indexOf(this.startSelectedPart);\n            if (currentIndex === -1) {\n              this.startSelectedPart = 'hour';\n              return;\n            }\n            \n            if (moveRight) {\n              currentIndex = (currentIndex + 1) % parts.length;\n            } else {\n              currentIndex = (currentIndex - 1 + parts.length) % parts.length;\n            }\n            \n            this.startSelectedPart = parts[currentIndex];\n          } else {\n            currentIndex = parts.indexOf(this.endSelectedPart);\n            if (currentIndex === -1) {\n              this.endSelectedPart = 'hour';\n              return;\n            }\n            \n            if (moveRight) {\n              currentIndex = (currentIndex + 1) % parts.length;\n            } else {\n              currentIndex = (currentIndex - 1 + parts.length) % parts.length;\n            }\n            \n            this.endSelectedPart = parts[currentIndex];\n          }\n        },\n        \n        setTimePartDirectly(isStartTime, part, digit) {\n          if (part === 'hour') {\n            if (isStartTime) {\n              if (this.startHour >= 10 || this.startHour === 0) {\n                this.startHour = digit === 0 ? 12 : digit;\n              } else {\n                const newHour = parseInt(`${this.startHour}${digit}`);\n                this.startHour = newHour > 12 ? digit : newHour;\n              }\n            } else {\n              if (this.endHour >= 10 || this.endHour === 0) {\n                this.endHour = digit === 0 ? 12 : digit;\n              } else {\n                const newHour = parseInt(`${this.endHour}${digit}`);\n                this.endHour = newHour > 12 ? digit : newHour;\n              }\n            }\n          } \n          else if (part === 'minute') {\n            if (isStartTime) {\n              if (this.startMinute >= 10) {\n                this.startMinute = digit;\n              } else {\n                const newMinute = parseInt(`${this.startMinute}${digit}`);\n                this.startMinute = newMinute > 59 ? digit : newMinute;\n              }\n            } else {\n              if (this.endMinute >= 10) {\n                this.endMinute = digit;\n              } else {\n                const newMinute = parseInt(`${this.endMinute}${digit}`);\n                this.endMinute = newMinute > 59 ? digit : newMinute;\n              }\n            }\n          }\n        }\n      };\n    }\n  </script><div class=\"flex-1 relative\"><style>\n        [x-cloak] { display: none !important; }\n        \n        .search-container {\n            position: relative;\n        }\n        \n        .tag-pill {\n            display: inline-flex;\n            align-items: center;\n            background-color: #f3f4f6;\n            border-radius: 0.25rem;\n            padding: 0.25rem 0.5rem;\n            margin-right: 0.5rem;\n            white-space: nowrap;\n        }\n        \n        .tag-pill-operator {\n            background-color: #e5e7eb;\n            cursor: pointer;\n        }\n        \n        .search-input-wrapper {\n            display: flex;\n            flex-wrap: wrap;\n            align-items: center;\n            width: 100%;\n        }\n        \n        .search-input {\n            background: transparent;\n            border: none;\n            outline: none;\n            flex: 1;\n            min-width: 100px;\n        }\n        \n        .dropdown-container {\n            position: absolute;\n            width: 100%;\n            z-index: 50;\n            border: 1px solid #e5e7eb;\n            border-top: none;\n            border-radius: 0 0 0.5rem 0.5rem;\n            background-color: white;\n            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);\n        }\n        \n        .operator-dropdown {\n            z-index: 60;\n            border: 1px solid #e5e7eb;\n            border-radius: 0.5rem;\n            background-color: white;\n            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);\n            min-width: 120px;\n        }\n        \n        .operator-option {\n            padding: 0.75rem 1rem;\n            cursor: pointer;\n            display: flex;\n            align-items: center;\n        }\n        \n        .operator-option:hover {\n            background-color: #f9fafb;\n        }\n        \n       \n    </style><div class=\"max-w-4xl mx-auto\"><div x-data=\"searchInput\" x-init=\"init()\" class=\"search-container\" @click.away=\"closeAllDropdowns()\"><div class=\"flex border rounded-lg overflow-hidden bg-white border-gray-300\"><div class=\"relative flex-1 flex items-center px-2 text-sm\"><div class=\"text-purple-500 ml-2 mr-1\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"black\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z\"></path></svg></div><div class=\"search-input-wrapper py-2\" @click=\"focusInput()\"><template x-for=\"(token, index) in tokens\" :key=\"index\"><div class=\"tag-pill\"><template x-if=\"!token.isRawText\"><div class=\"flex items-center\"><span x-text=\"token.key\" class=\"text-gray-800\"></span> <span class=\"tag-pill-operator mx-1\" x-text=\"token.operator\" @click.stop=\"openOperatorDropdown(index)\"></span> <span x-text=\"token.value\" class=\"text-gray-800\"></span></div></template><template x-if=\"token.isRawText\"><span x-text=\"token.value\" class=\"text-gray-800\"></span></template><button @click.stop=\"removeToken(index)\" class=\"ml-1 text-gray-500 hover:text-gray-700\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M6 18L18 6M6 6l12 12\"></path></svg></button></div></template><input x-ref=\"searchInput\" type=\"text\" x-model=\"inputValue\" :placeholder=\"tokens.length === 0 ? 'Search for events, users, tags, and more' : ''\" class=\"search-input\" @click=\"handleInputClick()\" @focus=\"handleInputFocus()\" @keydown.enter=\"handleEnterKey()\" @keydown.backspace=\"handleBackspace()\" @keydown.escape=\"closeAllDropdowns()\" @input=\"handleInput()\"></div><button x-show=\"tokens.length > 0 || inputValue.length > 0\" @click.stop=\"clearAll()\" class=\"mr-4 text-gray-400 hover:text-gray-600\" x-cloak><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M6 18L18 6M6 6l12 12\"></path></svg></button></div></div><div x-show=\"showOperatorDropdown\" class=\"operator-dropdown text-sm\" :style=\"`top: ${operatorDropdownPosition.top}px; left: ${operatorDropdownPosition.left}px;`\" x-cloak><div class=\"operator-option\" :class=\"{'selected': tokens[activeTokenIndex]?.operator === 'is'}\" @click=\"changeOperator(activeTokenIndex, 'is')\"><svg x-show=\"tokens[activeTokenIndex]?.operator === 'is'\" class=\"h-5 w-5 mr-2 text-black\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 20 20\" fill=\"currentColor\"><path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"></path></svg> <span x-show=\"tokens[activeTokenIndex]?.operator !== 'is'\" class=\"h-5 w-5 mr-2\"></span> <span>is</span></div><div class=\"operator-option\" :class=\"{'selected': tokens[activeTokenIndex]?.operator === 'is not'}\" @click=\"changeOperator(activeTokenIndex, 'is not')\"><svg x-show=\"tokens[activeTokenIndex]?.operator === 'is not'\" class=\"h-5 w-5 mr-2 text-black\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 20 20\" fill=\"currentColor\"><path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"></path></svg> <span x-show=\"tokens[activeTokenIndex]?.operator !== 'is not'\" class=\"h-5 w-5 mr-2\"></span> <span>is not</span></div></div><div x-show=\"showTagSuggestions\" class=\"dropdown-container text-sm\" x-cloak><div class=\"flex border-b border-gray-200 px-4 py-2 space-x-4\"><template x-for=\"(category, index) in filterCategories\" :key=\"index\"><button class=\"px-2 py-1 rounded\" :class=\"category.active ? 'bg-black text-white' : 'text-gray-600 hover:bg-gray-200'\" x-text=\"category.name\" @click=\"setActiveCategory(index)\"></button></template></div><div class=\"flex\"><div class=\"w-1/2 border-r border-gray-200 max-h-80 overflow-y-auto\"><template x-for=\"tag in filteredTags()\" :key=\"tag.key\"><div @click=\"selectTag(tag.key)\" class=\"px-4 py-3 hover:bg-gray-100 cursor-pointer\" :class=\"{'bg-gray-100': hoveredTag === tag.key}\" @mouseover=\"hoveredTag = tag.key\" x-text=\"tag.key\"></div></template></div><div class=\"w-1/2 p-4\"><template x-if=\"hoveredTag && getTagDetails(hoveredTag)\"><div><h3 class=\"text-lg font-medium text-gray-800\" x-text=\"hoveredTag\"></h3><p class=\"text-gray-600 mt-2\" x-text=\"getTagDetails(hoveredTag).description\"></p><div class=\"mt-4\"><span class=\"text-gray-700\">Type</span> <span class=\"ml-2 text-gray-600\" x-text=\"getTagDetails(hoveredTag).type || 'String'\"></span></div></div></template></div></div></div><div x-show=\"showTagValues\" class=\"dropdown-container text-sm\" x-cloak><div class=\"max-h-80 overflow-y-auto\"><template x-for=\"(item, index) in filteredTagValues()\" :key=\"index\"><div @click=\"selectTagValue(item.value)\" class=\"px-4 py-3 hover:bg-gray-100 cursor-pointer flex items-center justify-between\"><span x-text=\"item.value\"></span></div></template></div></div></div></div><script>\n      htmx.onLoad(function (target) {\n            Alpine.data('searchInput', () => ({\n          inputValue: '',\n          tokens: [],\n          rawText: '',\n          \n          showTagSuggestions: false,\n          showTagValues: false,\n          showOperatorDropdown: false,\n          operatorDropdownPosition: { top: 0, left: 0 },\n          activeTokenIndex: null,\n          \n          currentTag: null,\n          currentOperator: 'is',\n          multiSelectMode: false,\n          multiSelectedValues: [],\n          hoveredTag: null,\n          \n          operators: ['is', 'is not'],\n          \n          filterCategories: [\n              { name: 'All', active: true },\n              { name: 'Issues', active: false },\n              { name: 'Event Tags', active: false }\n          ],\n          \n          availableTags: [\n              { key: 'is', description: 'Filter by exact match', type: 'Operator', category: 'All' },\n              { key: 'level', description: 'Filter by log level', type: 'String', category: 'All' },\n              { key: 'url', description: 'URL of the request', type: 'String', category: 'All' },\n              \n              { key: 'issue.priority', description: 'Filter by issue priority', type: 'String', category: 'Issues' },\n              { key: 'issue.status', description: 'Filter by issue status', type: 'String', category: 'Issues' },\n              { key: 'issue.type', description: 'Filter by issue type', type: 'String', category: 'Issues' },\n              \n              { key: 'os.name', description: 'Name of the Operating System', type: 'String', category: 'Event Tags' },\n              { key: 'runtime', description: 'Runtime environment', type: 'String', category: 'Event Tags' },\n              { key: 'runtime.name', description: 'Name of the runtime', type: 'String', category: 'Event Tags' },\n              { key: 'server_name', description: 'Server identifier', type: 'String', category: 'Event Tags' },\n              { key: 'os', description: 'Operating system', type: 'String', category: 'Event Tags' },\n              { key: 'browser.name', description: 'Browser name', type: 'String', category: 'Event Tags' },\n              { key: 'logger', description: 'Filter by logger name', type: 'String', category: 'Event Tags' }\n          ],\n          \n          tagValues: {\n              'runtime': [\n            { value: 'go go1.24.0', description: 'Go version 1.24.0' },\n            { value: 'php 7.4.33', description: 'PHP version 7.4.33' },\n            { value: 'go go1.22.12', description: 'Go version 1.22.12' },\n            { value: 'php 8.2.28', description: 'PHP version 8.2.28' }\n              ],\n              'runtime.name': [\n            { value: 'go', description: 'Go runtime' },\n            { value: 'php', description: 'PHP runtime' },\n            { value: 'node', description: 'Node.js runtime' },\n            { value: 'python', description: 'Python runtime' }\n              ],\n              'server_name': [\n            { value: 'app-go-prod-5896566df9-ztjkc', description: 'Production Go server' },\n            { value: 'app-php-prod-3456789ab1-xyzab', description: 'Production PHP server' }\n              ],\n              'is': [\n            { value: 'true', description: 'Boolean true' },\n            { value: 'false', description: 'Boolean false' }\n              ],\n              'level': [\n            { value: 'error', description: 'Error level' },\n            { value: 'warning', description: 'Warning level' },\n            { value: 'info', description: 'Info level' },\n            { value: 'debug', description: 'Debug level' }\n              ],\n              'issue.priority': [\n            { value: 'high', description: 'High priority' },\n            { value: 'medium', description: 'Medium priority' },\n            { value: 'low', description: 'Low priority' }\n              ],\n              'issue.status': [\n            { value: 'open', description: 'Open issues' },\n            { value: 'resolved', description: 'Resolved issues' },\n            { value: 'ignored', description: 'Ignored issues' }\n              ],\n              'os.name': [\n            { value: 'Linux', description: 'Linux operating system' },\n            { value: 'Windows', description: 'Windows operating system' },\n            { value: 'macOS', description: 'macOS operating system' }\n              ],\n              'browser.name': [\n            { value: 'Chrome', description: 'Google Chrome' },\n            { value: 'Firefox', description: 'Mozilla Firefox' },\n            { value: 'Safari', description: 'Apple Safari' },\n            { value: 'Edge', description: 'Microsoft Edge' }\n              ]\n          },\n          \n          init() {\n              window.addEventListener('keydown', (e) => {\n            if (e.key === 'Meta' || e.key === 'Control') {\n                this.multiSelectMode = true;\n            }\n              });\n              \n              window.addEventListener('keyup', (e) => {\n            if (e.key === 'Meta' || e.key === 'Control') {\n                this.multiSelectMode = false;\n            }\n              });\n          },\n        \n          getTagDetails(key) {\n              return this.availableTags.find(tag => tag.key === key);\n          },\n          \n          getActiveCategory() {\n              const activeCategory = this.filterCategories.find(cat => cat.active);\n              return activeCategory ? activeCategory.name : 'All';\n          },\n          \n          filteredTags() {\n              const activeCategory = this.getActiveCategory();\n              let filteredByCategory;\n              \n              if (activeCategory === 'All') {\n            filteredByCategory = this.availableTags;\n              } else {\n            filteredByCategory = this.availableTags.filter(tag => \n                tag.category === activeCategory\n            );\n              }\n              \n              if (this.inputValue && !this.currentTag) {\n            const searchTerm = this.inputValue.toLowerCase();\n            return filteredByCategory.filter(tag => \n                tag.key.toLowerCase().includes(searchTerm)\n            );\n              }\n              \n              return filteredByCategory;\n          },\n          \n          filteredTagValues() {\n              if (!this.currentTag || !this.tagValues[this.currentTag]) {\n            return [];\n              }\n              \n              const searchTerm = this.inputValue.toLowerCase();\n              return this.tagValues[this.currentTag].filter(item => \n            item.value.toLowerCase().includes(searchTerm)\n              );\n          },\n          \n          setActiveCategory(index) {\n              this.filterCategories.forEach((category, i) => {\n            category.active = (i === index);\n              });\n          },\n          \n          handleInputClick() {\n              if (this.currentTag) {\n            this.showTagValues = true;\n            this.showTagSuggestions = false;\n              } else {\n            this.showTagSuggestions = true;\n            this.showTagValues = false;\n              }\n              this.showOperatorDropdown = false;\n          },\n          \n          handleInputFocus() {\n              this.handleInputClick();\n          },\n  \n          handleInput() {\n              if (this.currentTag) {\n            this.showTagValues = true;\n            this.showTagSuggestions = false;\n              } else {\n            this.showTagSuggestions = true;\n            this.showTagValues = false;\n              }\n              this.showOperatorDropdown = false;\n          },\n          \n          handleEnterKey() {\n              if (this.currentTag && this.inputValue) {\n            this.selectTagValue(this.inputValue);\n              } else if (this.inputValue && !this.currentTag) {\n            this.rawText = this.inputValue;\n            this.tokens.push({\n                key: '',\n                operator: '',\n                value: this.inputValue,\n                isRawText: true\n            });\n            this.inputValue = '';\n            this.closeAllDropdowns();\n              }\n          },\n          \n          handleBackspace() {\n              if (this.inputValue === '' && this.tokens.length > 0) {\n            if (this.currentTag) {\n                this.currentTag = null;\n                this.showTagValues = false;\n                this.showTagSuggestions = true;\n            } else {\n                this.tokens.pop();\n            }\n              }\n          },\n          \n          selectTag(tag) {\n              this.currentTag = tag;\n              this.inputValue = '';\n              this.showTagSuggestions = false;\n              this.showTagValues = true;\n              this.multiSelectedValues = [];\n              this.$nextTick(() => {\n            this.$refs.searchInput.focus();\n              });\n          },\n          \n          selectTagValue(value) {\n              if (this.multiSelectMode && this.multiSelectedValues.length > 0) {\n            this.multiSelectedValues.forEach(val => {\n                this.tokens.push({\n              key: this.currentTag,\n              operator: this.currentOperator,\n              value: val\n                });\n            });\n            this.multiSelectedValues = [];\n              } else {\n            this.tokens.push({\n                key: this.currentTag,\n                operator: this.currentOperator,\n                value: value\n            });\n              }\n              \n              this.currentTag = null;\n              this.inputValue = '';\n              this.closeAllDropdowns();\n              this.$nextTick(() => {\n            this.$refs.searchInput.focus();\n              });\n          },\n          \n          toggleMultiSelect(value) {\n              if (!this.multiSelectMode) {\n            this.selectTagValue(value);\n            return;\n              }\n              \n              const index = this.multiSelectedValues.indexOf(value);\n              if (index === -1) {\n            this.multiSelectedValues.push(value);\n              } else {\n            this.multiSelectedValues.splice(index, 1);\n              }\n          },\n          \n          isValueSelected(value) {\n              return this.multiSelectedValues.includes(value);\n          },\n          \n          openOperatorDropdown(tokenIndex) {\n              if (this.tokens[tokenIndex].isRawText) return;\n              \n              this.activeTokenIndex = tokenIndex;\n              \n              const operatorElement = event.target;\n              const rect = operatorElement.getBoundingClientRect();\n              \n              this.operatorDropdownPosition = {\n            top: rect.bottom + window.scrollY,\n            left: rect.left + window.scrollX\n              };\n              \n              this.showOperatorDropdown = true;\n              this.showTagSuggestions = false;\n              this.showTagValues = false;\n          },\n        \n          changeOperator(tokenIndex, newOperator) {\n              if (tokenIndex !== null && this.tokens[tokenIndex]) {\n            this.tokens[tokenIndex].operator = newOperator;\n              }\n              this.showOperatorDropdown = false;\n          },\n          \n          removeToken(index) {\n              this.tokens.splice(index, 1);\n          },\n        \n          clearAll() {\n              this.tokens = [];\n              this.inputValue = '';\n              this.rawText = '';\n              this.currentTag = null;\n              this.closeAllDropdowns();\n              this.$nextTick(() => {\n            this.$refs.searchInput.focus();\n              });\n          },\n          \n          closeAllDropdowns() {\n              this.showTagSuggestions = false;\n              this.showTagValues = false;\n              this.showOperatorDropdown = false;\n          },\n      \n          focusInput() {\n              this.$refs.searchInput.focus();\n          }\n            }));\n        });\n        document.addEventListener('alpine:init', () => {\n            Alpine.data('searchInput', () => ({\n          inputValue: '',\n          tokens: [],\n          rawText: '',\n          \n          showTagSuggestions: false,\n          showTagValues: false,\n          showOperatorDropdown: false,\n          operatorDropdownPosition: { top: 0, left: 0 },\n          activeTokenIndex: null,\n          \n          currentTag: null,\n          currentOperator: 'is',\n          multiSelectMode: false,\n          multiSelectedValues: [],\n          hoveredTag: null,\n          \n          operators: ['is', 'is not'],\n          \n          filterCategories: [\n              { name: 'All', active: true },\n              { name: 'Issues', active: false },\n              { name: 'Event Tags', active: false }\n          ],\n          \n          availableTags: [\n              { key: 'is', description: 'Filter by exact match', type: 'Operator', category: 'All' },\n              { key: 'level', description: 'Filter by log level', type: 'String', category: 'All' },\n              { key: 'url', description: 'URL of the request', type: 'String', category: 'All' },\n              \n              { key: 'issue.priority', description: 'Filter by issue priority', type: 'String', category: 'Issues' },\n              { key: 'issue.status', description: 'Filter by issue status', type: 'String', category: 'Issues' },\n              { key: 'issue.type', description: 'Filter by issue type', type: 'String', category: 'Issues' },\n              \n              { key: 'os.name', description: 'Name of the Operating System', type: 'String', category: 'Event Tags' },\n              { key: 'runtime', description: 'Runtime environment', type: 'String', category: 'Event Tags' },\n              { key: 'runtime.name', description: 'Name of the runtime', type: 'String', category: 'Event Tags' },\n              { key: 'server_name', description: 'Server identifier', type: 'String', category: 'Event Tags' },\n              { key: 'os', description: 'Operating system', type: 'String', category: 'Event Tags' },\n              { key: 'browser.name', description: 'Browser name', type: 'String', category: 'Event Tags' },\n              { key: 'logger', description: 'Filter by logger name', type: 'String', category: 'Event Tags' }\n          ],\n          \n          tagValues: {\n              'runtime': [\n            { value: 'go go1.24.0', description: 'Go version 1.24.0' },\n            { value: 'php 7.4.33', description: 'PHP version 7.4.33' },\n            { value: 'go go1.22.12', description: 'Go version 1.22.12' },\n            { value: 'php 8.2.28', description: 'PHP version 8.2.28' }\n              ],\n              'runtime.name': [\n            { value: 'go', description: 'Go runtime' },\n            { value: 'php', description: 'PHP runtime' },\n            { value: 'node', description: 'Node.js runtime' },\n            { value: 'python', description: 'Python runtime' }\n              ],\n              'server_name': [\n            { value: 'app-go-prod-5896566df9-ztjkc', description: 'Production Go server' },\n            { value: 'app-php-prod-3456789ab1-xyzab', description: 'Production PHP server' }\n              ],\n              'is': [\n            { value: 'true', description: 'Boolean true' },\n            { value: 'false', description: 'Boolean false' }\n              ],\n              'level': [\n            { value: 'error', description: 'Error level' },\n            { value: 'warning', description: 'Warning level' },\n            { value: 'info', description: 'Info level' },\n            { value: 'debug', description: 'Debug level' }\n              ],\n              'issue.priority': [\n            { value: 'high', description: 'High priority' },\n            { value: 'medium', description: 'Medium priority' },\n            { value: 'low', description: 'Low priority' }\n              ],\n              'issue.status': [\n            { value: 'open', description: 'Open issues' },\n            { value: 'resolved', description: 'Resolved issues' },\n            { value: 'ignored', description: 'Ignored issues' }\n              ],\n              'os.name': [\n            { value: 'Linux', description: 'Linux operating system' },\n            { value: 'Windows', description: 'Windows operating system' },\n            { value: 'macOS', description: 'macOS operating system' }\n              ],\n              'browser.name': [\n            { value: 'Chrome', description: 'Google Chrome' },\n            { value: 'Firefox', description: 'Mozilla Firefox' },\n            { value: 'Safari', description: 'Apple Safari' },\n            { value: 'Edge', description: 'Microsoft Edge' }\n              ]\n          },\n          \n          init() {\n              window.addEventListener('keydown', (e) => {\n            if (e.key === 'Meta' || e.key === 'Control') {\n                this.multiSelectMode = true;\n            }\n              });\n              \n              window.addEventListener('keyup', (e) => {\n            if (e.key === 'Meta' || e.key === 'Control') {\n                this.multiSelectMode = false;\n            }\n              });\n          },\n          \n          getTagDetails(key) {\n              return this.availableTags.find(tag => tag.key === key);\n          },\n          \n          getActiveCategory() {\n              const activeCategory = this.filterCategories.find(cat => cat.active);\n              return activeCategory ? activeCategory.name : 'All';\n          },\n          \n          filteredTags() {\n              const activeCategory = this.getActiveCategory();\n              let filteredByCategory;\n              \n              if (activeCategory === 'All') {\n            filteredByCategory = this.availableTags;\n              } else {\n            filteredByCategory = this.availableTags.filter(tag => \n                tag.category === activeCategory\n            );\n              }\n              \n              if (this.inputValue && !this.currentTag) {\n            const searchTerm = this.inputValue.toLowerCase();\n            return filteredByCategory.filter(tag => \n                tag.key.toLowerCase().includes(searchTerm)\n            );\n              }\n              \n              return filteredByCategory;\n          },\n          \n          filteredTagValues() {\n              if (!this.currentTag || !this.tagValues[this.currentTag]) {\n            return [];\n              }\n              \n              const searchTerm = this.inputValue.toLowerCase();\n              return this.tagValues[this.currentTag].filter(item => \n            item.value.toLowerCase().includes(searchTerm)\n              );\n          },\n          \n          setActiveCategory(index) {\n              this.filterCategories.forEach((category, i) => {\n            category.active = (i === index);\n              });\n          },\n          \n          handleInputClick() {\n              if (this.currentTag) {\n            this.showTagValues = true;\n            this.showTagSuggestions = false;\n              } else {\n            this.showTagSuggestions = true;\n            this.showTagValues = false;\n              }\n              this.showOperatorDropdown = false;\n          },\n          \n          handleInputFocus() {\n              this.handleInputClick();\n          },\n          \n          handleInput() {\n              if (this.currentTag) {\n            this.showTagValues = true;\n            this.showTagSuggestions = false;\n              } else {\n            this.showTagSuggestions = true;\n            this.showTagValues = false;\n              }\n              this.showOperatorDropdown = false;\n          },\n          \n          handleEnterKey() {\n              if (this.currentTag && this.inputValue) {\n            this.selectTagValue(this.inputValue);\n              } else if (this.inputValue && !this.currentTag) {\n            this.rawText = this.inputValue;\n            this.tokens.push({\n                key: '',\n                operator: '',\n                value: this.inputValue,\n                isRawText: true\n            });\n            this.inputValue = '';\n            this.closeAllDropdowns();\n              }\n          },\n          \n          handleBackspace() {\n              if (this.inputValue === '' && this.tokens.length > 0) {\n            if (this.currentTag) {\n                this.currentTag = null;\n                this.showTagValues = false;\n                this.showTagSuggestions = true;\n            } else {\n                this.tokens.pop();\n            }\n              }\n          },\n          \n          selectTag(tag) {\n              this.currentTag = tag;\n              this.inputValue = '';\n              this.showTagSuggestions = false;\n              this.showTagValues = true;\n              this.multiSelectedValues = [];\n              this.$nextTick(() => {\n            this.$refs.searchInput.focus();\n              });\n          },\n          \n          selectTagValue(value) {\n              if (this.multiSelectMode && this.multiSelectedValues.length > 0) {\n            this.multiSelectedValues.forEach(val => {\n                this.tokens.push({\n              key: this.currentTag,\n              operator: this.currentOperator,\n              value: val\n                });\n            });\n            this.multiSelectedValues = [];\n              } else {\n            this.tokens.push({\n                key: this.currentTag,\n                operator: this.currentOperator,\n                value: value\n            });\n              }\n              \n              this.currentTag = null;\n              this.inputValue = '';\n              this.closeAllDropdowns();\n              this.$nextTick(() => {\n            this.$refs.searchInput.focus();\n              });\n          },\n          \n          toggleMultiSelect(value) {\n              if (!this.multiSelectMode) {\n            this.selectTagValue(value);\n            return;\n              }\n              \n              const index = this.multiSelectedValues.indexOf(value);\n              if (index === -1) {\n            this.multiSelectedValues.push(value);\n              } else {\n            this.multiSelectedValues.splice(index, 1);\n              }\n          },\n          \n          isValueSelected(value) {\n              return this.multiSelectedValues.includes(value);\n          },\n          \n          openOperatorDropdown(tokenIndex) {\n              if (this.tokens[tokenIndex].isRawText) return;\n              \n              this.activeTokenIndex = tokenIndex;\n              \n              const operatorElement = event.target;\n              const rect = operatorElement.getBoundingClientRect();\n              \n              this.operatorDropdownPosition = {\n            top: rect.bottom + window.scrollY,\n            left: rect.left + window.scrollX\n              };\n              \n              this.showOperatorDropdown = true;\n              this.showTagSuggestions = false;\n              this.showTagValues = false;\n          },\n          \n          changeOperator(tokenIndex, newOperator) {\n              if (tokenIndex !== null && this.tokens[tokenIndex]) {\n            this.tokens[tokenIndex].operator = newOperator;\n              }\n              this.showOperatorDropdown = false;\n          },\n          \n          removeToken(index) {\n              this.tokens.splice(index, 1);\n          },\n          \n          clearAll() {\n              this.tokens = [];\n              this.inputValue = '';\n              this.rawText = '';\n              this.currentTag = null;\n              this.closeAllDropdowns();\n              this.$nextTick(() => {\n            this.$refs.searchInput.focus();\n              });\n          },\n          \n          closeAllDropdowns() {\n              this.showTagSuggestions = false;\n              this.showTagValues = false;\n              this.showOperatorDropdown = false;\n          },\n          \n          focusInput() {\n              this.$refs.searchInput.focus();\n          }\n            }));\n        });\n    </script></div></div>")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		return nil
-	})
-}
-
-func issuesList(res *warnly.ListIssuesResult) templ.Component {
-	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
-		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
-		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
-			return templ_7745c5c3_CtxErr
-		}
-		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
-		if !templ_7745c5c3_IsBuffer {
-			defer func() {
-				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err == nil {
-					templ_7745c5c3_Err = templ_7745c5c3_BufErr
-				}
-			}()
-		}
-		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var8 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var8 == nil {
-			templ_7745c5c3_Var8 = templ.NopComponent
-		}
-		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<main><div class=\"flex justify-between items-center mt-4\"><table class=\"min-w-full\"><thead><tr><th class=\"py-3 text-left text-xs font-medium text-gray-500 uppercase\">Issue</th><th class=\"py-3 text-center text-xs font-medium text-gray-500 uppercase\">Errors</th><th class=\"py-3 text-center text-xs font-medium text-gray-500 uppercase\">Users</th></tr></thead> <tbody class=\"bg-white divide-y divide-gray-200\">")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		for _, issue := range res.Issues {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "<tr class=\"hover:bg-gray-50 transition duration-150 ease-in-out\"><td class=\"py-4 px-6 w-1/2\"><div class=\"flex items-start cursor-pointer\"><a hx-get=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "<li><a href=\"#\" @click.prevent=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var9 string
-			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/projects/%d/issues/%d?period=14d", issue.ProjectID, issue.ID))
+			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("selected = '%s'; $dispatch('project-changed', { project: '%s' }); open = false", project.Name, project.Name))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 1654, Col: 96}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 104, Col: 145}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "\" hx-target=\"#main-content\" hx-swap=\"outerHTML settle:0\" hx-push-url=\"true\"><div class=\"flex items-center space-x-1\"><span class=\"text-vercel-blue font-semibold\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "\" class=\"block px-4 py-2 hover:bg-gray-100\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var10 string
-			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(issue.Type)
+			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(project.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 1656, Col: 68}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 107, Col: 21}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "</span> <span class=\"text-gray-600 text-sm truncate max-w-xs\" title=\"")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			var templ_7745c5c3_Var11 string
-			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(issue.View)
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 1657, Col: 83}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "\">")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			var templ_7745c5c3_Var12 string
-			templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(issue.View)
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 1657, Col: 98}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</span></div><div class=\"text-gray-600 text-sm mt-1\">")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			var templ_7745c5c3_Var13 string
-			templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(issue.Message)
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 1659, Col: 65}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "</div><div class=\"flex items-center space-x-2 mt-2\"><span class=\"text-gray-400 text-xs flex items-center\">Last Noticed: ")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			var templ_7745c5c3_Var14 string
-			templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.TimeAgo(time.Now, issue.LastSeen, true))
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 1662, Col: 74}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, " ago | First Noticed: ")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			var templ_7745c5c3_Var15 string
-			templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.TimeAgo(time.Now, issue.FirstSeen, true))
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 1662, Col: 147}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, " old ")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			if issue.MessagesCount > 0 {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "| <svg data-testid=\"geist-icon\" height=\"12\" stroke-linejoin=\"round\" style=\"color: currentcolor; vertical-align: middle; margin-left: 0.15rem;\" viewBox=\"0 0 16 16\" width=\"16\"><path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M2.8914 10.4028L2.98327 10.6318C3.22909 11.2445 3.5 12.1045 3.5 13C3.5 13.3588 3.4564 13.7131 3.38773 14.0495C3.69637 13.9446 4.01409 13.8159 4.32918 13.6584C4.87888 13.3835 5.33961 13.0611 5.70994 12.7521L6.22471 12.3226L6.88809 12.4196C7.24851 12.4724 7.61994 12.5 8 12.5C11.7843 12.5 14.5 9.85569 14.5 7C14.5 4.14431 11.7843 1.5 8 1.5C4.21574 1.5 1.5 4.14431 1.5 7C1.5 8.18175 1.94229 9.29322 2.73103 10.2153L2.8914 10.4028ZM2.8135 15.7653C1.76096 16 1 16 1 16C1 16 1.43322 15.3097 1.72937 14.4367C1.88317 13.9834 2 13.4808 2 13C2 12.3826 1.80733 11.7292 1.59114 11.1903C0.591845 10.0221 0 8.57152 0 7C0 3.13401 3.58172 0 8 0C12.4183 0 16 3.13401 16 7C16 10.866 12.4183 14 8 14C7.54721 14 7.10321 13.9671 6.67094 13.9038C6.22579 14.2753 5.66881 14.6656 5 15C4.23366 15.3832 3.46733 15.6195 2.8135 15.7653Z\" fill=\"currentColor\"></path></svg> ")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				var templ_7745c5c3_Var16 string
-				templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprint(issue.MessagesCount))
-				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 1665, Col: 46}
-				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "</span></div></a></div></td><td class=\"py-4 text-center font-semibold text-gray-700\">")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			var templ_7745c5c3_Var17 string
-			templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.NumFormatted(issue.TimesSeen))
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 1672, Col: 102}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "</td><td class=\"py-4 text-center font-semibold text-gray-700\">")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			var templ_7745c5c3_Var18 string
-			templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.NumFormatted(issue.UserCount))
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 1673, Col: 102}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "</td></tr>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "</a></li>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "</tbody></table></div><div class=\"flex justify-end mt-4 mr-5\"><span class=\"text-sm py-2 mr-4 text-gray-400\">")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		var templ_7745c5c3_Var19 string
-		templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(issuePaginationSummary(res))
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 1680, Col: 78}
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "</span> <button class=\"cursor-pointer px-4 py-2 text-sm border rounded-lg hover:bg-gray-50 flex items-center border-gray-300\"><svg class=\"w-4 h-4 mr-2\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M15 19l-7-7 7-7\"></path></svg></button> <button class=\"cursor-pointer px-4 py-2 text-sm border rounded-lg hover:bg-gray-50 flex items-center ml-2 border-gray-300\"><svg class=\"w-4 h-4 ml-2\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M9 5l7 7-7 7\"></path></svg></button></div></main>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "</ul></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -382,7 +320,7 @@ func issuesList(res *warnly.ListIssuesResult) templ.Component {
 	})
 }
 
-func gettingStarted(_ *warnly.Project) templ.Component {
+func timePeriodSelectorWrapper(initialPeriod string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -398,112 +336,33 @@ func gettingStarted(_ *warnly.Project) templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var20 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var20 == nil {
-			templ_7745c5c3_Var20 = templ.NopComponent
+		templ_7745c5c3_Var11 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var11 == nil {
+			templ_7745c5c3_Var11 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "<main><div class=\"rounded-lg mb-8\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "<div class=\"relative z-20\" x-data=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templ.Raw(`
-<p class="text-sm mt-4 mb-4">Verify Warnly captures a message:</p>
-
-<div x-data="{ active: 'example1' }" class="flex gap-2">
-	<button :class="{ 'bg-black text-white': active === 'example1' }" @click="active = 'example1'; showExample('example1')" class="px-3 text-xs py-1.5 border rounded-lg">slog</button>
-	<button :class="{ 'bg-black text-white': active === 'example2' }" @click="active = 'example2'; showExample('example2')" class="px-3 text-xs py-1.5 border rounded-lg">zap</button>
-	<button :class="{ 'bg-black text-white': active === 'example3' }" @click="active = 'example3'; showExample('example3')" class="px-3 text-xs py-1.5 border rounded-lg">zerolog</button>
-</div>
-
-<div id="example1" class="code-snippet text-xs">
-	<pre><code class="language-go">
-package main
-
-import (
-	"log"
-	"time"
-	"github.com/getsentry/sentry-go"
-)
-
-func main() {
-	err := sentry.Init(sentry.ClientOptions{
-			Dsn: "${SENTRY_DSN}",
-			TracesSampleRate: 1.0,
-	})
-	if err != nil {
-			log.Fatalf("sentry.Init: %s", err)
-	}
-	defer sentry.Flush(2 * time.Second)
-	
-	sentry.CaptureMessage("It works!")
-}
-	</code></pre>
-</div>
-
-<div id="example2" class="code-snippet text-xs hidden">
-	<pre><code class="language-go">
-package main
-
-import (
-	"log"
-	"time"
-	"github.com/getsentry/sentry-go"
-)
-
-func main() {
-	err := sentry.Init(sentry.ClientOptions{
-			Dsn: "${SENTRY_DSN}",
-			TracesSampleRate: 0.5,
-	})
-	if err != nil {
-			log.Fatalf("sentry.Init: %s", err)
-	}
-	defer sentry.Flush(2 * time.Second)
-
-	sentry.CaptureMessage("Example 2 works!")
-}
-	</code></pre>
-</div>
-
-<div id="example3" class="code-snippet text-xs hidden">
-	<pre><code class="language-go">
-package main
-
-import (
-	"log"
-	"time"
-	"github.com/getsentry/sentry-go"
-)
-
-func main() {
-	err := sentry.Init(sentry.ClientOptions{
-			Dsn: "${SENTRY_DSN}",
-			TracesSampleRate: 0.1,
-	})
-	if err != nil {
-			log.Fatalf("sentry.Init: %s", err)
-	}
-	defer sentry.Flush(2 * time.Second)
-
-	sentry.CaptureMessage("Example 3 works!")
-}
-	</code></pre>
-</div>
-
-<script>
-	hljs.highlightAll();
-
-	function showExample(exampleId) {
-		document.querySelectorAll('.code-snippet').forEach(el => el.classList.add('hidden'));
-		document.getElementById(exampleId).classList.remove('hidden');
-	}
-</script>
-`).Render(ctx, templ_7745c5c3_Buffer)
+		var templ_7745c5c3_Var12 string
+		templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("timePeriodSelector('%s')", getPeriodOrDefault(initialPeriod)))
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 117, Col: 111}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "</div></main>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "\"><div class=\"flex border hover:bg-gray-50 border-gray-300 rounded-md overflow-hidden bg-white\"><button @click=\"toggleDropdown()\" class=\"flex cursor-pointer items-center px-4 py-2 text-sm\"><span x-text=\"displayLabel\"></span> <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4 ml-1\" viewBox=\"0 0 20 20\" fill=\"currentColor\" :class=\"{'transform rotate-180': isOpen}\"><path fill-rule=\"evenodd\" d=\"M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z\" clip-rule=\"evenodd\"></path></svg></button></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = timePeriodDropdown().Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "</div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -511,18 +370,366 @@ func main() {
 	})
 }
 
-// issuePaginationSummary returns a summary string for the pagination status.
-func issuePaginationSummary(res *warnly.ListIssuesResult) string {
-	const limit = 25
+func timePeriodDropdown() templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var13 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var13 == nil {
+			templ_7745c5c3_Var13 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "<div x-show=\"isOpen\" x-cloak @click.away=\"isOpen = false\" class=\"mt-1 bg-white border border-gray-200 rounded-md shadow-lg absolute z-50\" style=\"left: 0; min-width: 400px; width: max-content;\"><!-- Presets --><div x-show=\"!showCalendar\"><div class=\"p-4 border-b border-gray-200\"><h3 class=\"text-sm font-medium text-gray-800\">Filter Time Range</h3></div><div class=\"p-3\"><input type=\"text\" x-model=\"customRangeInput\" placeholder=\"Custom range: 2h, 4d, 8w...\" class=\"w-full p-2 border text-sm rounded-md focus:outline-none border-gray-300\" @keydown.enter=\"applyCustomRange()\" :class=\"{'border-red-500': customRangeError}\"><div x-show=\"customRangeError\" class=\"text-red-500 text-xs mt-1\" x-text=\"customRangeError\"></div></div><div class=\"py-2\"><template x-for=\"(preset, index) in presets\" :key=\"index\"><div @click=\"selectPreset(preset.value)\" class=\"flex text-sm items-center px-3 py-2 hover:bg-gray-50 cursor-pointer\"><div class=\"w-6\"><svg x-show=\"selectedPreset === preset.value\" xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5 text-black-500\" viewBox=\"0 0 20 20\" fill=\"currentColor\"><path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"></path></svg></div><span class=\"ml-2\" :class=\"{'text-black-600 font-medium': selectedPreset === preset.value}\" x-text=\"preset.label\"></span></div></template><div @click=\"openCalendar()\" class=\"flex items-center text-sm justify-between px-3 py-2 hover:bg-gray-50 cursor-pointer\"><div class=\"flex items-center\"><div class=\"w-6\"><svg x-show=\"selectedPreset === 'custom-range'\" xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5 text-indigo-500\" viewBox=\"0 0 20 20\" fill=\"currentColor\"><path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"></path></svg></div><span class=\"ml-2\" :class=\"{'text-indigo-600 font-medium': selectedPreset === 'custom-range'}\">Absolute date</span></div><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5 text-gray-500\" viewBox=\"0 0 20 20\" fill=\"currentColor\"><path fill-rule=\"evenodd\" d=\"M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z\" clip-rule=\"evenodd\"></path></svg></div></div></div><!-- Calendar view --><div x-show=\"showCalendar\" x-cloak style=\"min-width: 600px; width: max-content;\"><div class=\"p-4 border-b border-gray-200 flex items-center justify-between\"><button @click=\"closeCalendar()\" class=\"text-gray-600 hover:text-gray-900\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5\" viewBox=\"0 0 20 20\" fill=\"currentColor\"><path fill-rule=\"evenodd\" d=\"M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z\" clip-rule=\"evenodd\"></path></svg></button><h3 class=\"text-sm font-medium text-gray-800\">Select Date Range</h3><div></div></div><div class=\"p-4 grid grid-cols-2 gap-6\"><!-- Start Date --><div><label class=\"block text-xs font-medium text-gray-700 mb-2\">Start Date & Time</label> <input type=\"date\" x-model=\"startDate\" class=\"w-full p-2 border border-gray-300 rounded text-sm\"><div class=\"mt-2 flex gap-2 items-center text-sm\"><input type=\"number\" x-model=\"startHour\" min=\"1\" max=\"12\" class=\"w-16 p-1 border border-gray-300 rounded text-center\"> <span>:</span> <input type=\"number\" x-model=\"startMinute\" min=\"0\" max=\"59\" class=\"w-16 p-1 border border-gray-300 rounded text-center\"> <select x-model=\"startPeriod\" class=\"p-1 border border-gray-300 rounded\"><option value=\"AM\">AM</option> <option value=\"PM\">PM</option></select></div></div><!-- End Date --><div><label class=\"block text-xs font-medium text-gray-700 mb-2\">End Date & Time</label> <input type=\"date\" x-model=\"endDate\" class=\"w-full p-2 border border-gray-300 rounded text-sm\"><div class=\"mt-2 flex gap-2 items-center text-sm\"><input type=\"number\" x-model=\"endHour\" min=\"1\" max=\"12\" class=\"w-16 p-1 border border-gray-300 rounded text-center\"> <span>:</span> <input type=\"number\" x-model=\"endMinute\" min=\"0\" max=\"59\" class=\"w-16 p-1 border border-gray-300 rounded text-center\"> <select x-model=\"endPeriod\" class=\"p-1 border border-gray-300 rounded\"><option value=\"AM\">AM</option> <option value=\"PM\">PM</option></select></div></div></div><div class=\"p-4 border-t border-gray-200 flex justify-end gap-2\"><button @click=\"closeCalendar()\" class=\"px-4 py-2 text-sm border border-gray-300 rounded hover:bg-gray-50\">Cancel</button> <button @click=\"applyAbsoluteRange()\" class=\"px-4 py-2 text-sm bg-black text-white rounded hover:bg-gray-800\">Apply</button></div></div></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
 
-	if res.TotalIssues == 0 {
-		return "0 of 0"
+func searchBar(req *warnly.ListIssuesRequest) templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var14 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var14 == nil {
+			templ_7745c5c3_Var14 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "<div x-data=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var15 string
+		templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("searchInput(%s)", getSearchTokens(req)))
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 301, Col: 63}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "\" class=\"search-container\" @click.away=\"closeAllDropdowns()\"><div class=\"flex border rounded-lg overflow-hidden bg-white border-gray-300\"><div class=\"relative flex-1 flex items-center px-2 text-sm\"><div class=\"text-purple-500 ml-2 mr-1\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"black\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z\"></path></svg></div><div class=\"search-input-wrapper py-2\" @click=\"focusInput()\"><template x-for=\"(token, index) in tokens\" :key=\"index\"><div class=\"tag-pill\"><template x-if=\"!token.isRawText\"><div class=\"flex items-center\"><span x-text=\"token.key\" class=\"text-gray-800\"></span> <span class=\"tag-pill-operator mx-1\" x-text=\"token.operator\" @click.stop=\"openOperatorDropdown(index, $event)\"></span> <span x-text=\"token.value\" class=\"text-gray-800\"></span></div></template><template x-if=\"token.isRawText\"><span x-text=\"token.value\" class=\"text-gray-800\"></span></template><button @click.stop=\"removeToken(index)\" class=\"ml-1 text-gray-500 hover:text-gray-700\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M6 18L18 6M6 6l12 12\"></path></svg></button></div></template><input x-ref=\"searchInput\" type=\"text\" x-model=\"inputValue\" :placeholder=\"tokens.length === 0 ? 'Search for issues, tags, and more' : ''\" class=\"search-input\" @click=\"handleInputClick()\" @focus=\"handleInputFocus()\" @keydown.enter=\"handleEnterKey()\" @keydown.backspace=\"handleBackspace()\" @input=\"handleInput()\"></div><button x-show=\"tokens.length > 0 || inputValue.length > 0\" @click.stop=\"clearAll()\" class=\"mr-4 text-gray-400 hover:text-gray-600\" x-cloak><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M6 18L18 6M6 6l12 12\"></path></svg></button></div></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = searchSuggestions().Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = operatorDropdown().Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "</div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+func searchSuggestions() templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var16 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var16 == nil {
+			templ_7745c5c3_Var16 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "<div x-show=\"showTagSuggestions\" class=\"dropdown-container text-sm\" x-cloak><div class=\"flex border-b border-gray-200 px-4 py-2 space-x-4\"><template x-for=\"(category, index) in filterCategories\" :key=\"index\"><button class=\"px-2 py-1 rounded\" :class=\"category.active ? 'bg-black text-white' : 'text-gray-600 hover:bg-gray-200'\" x-text=\"category.name\" @click=\"setActiveCategory(index)\"></button></template></div><div class=\"py-2\"><template x-for=\"category in filterCategories\" :key=\"category.name\"><template x-if=\"category.active\"><div><template x-for=\"item in category.items\" :key=\"item.value\"><div @click=\"addFilterFromCategory(item)\" class=\"px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm\"><span class=\"font-medium\" x-text=\"item.key + ':'\"></span> <span x-text=\"item.value\"></span></div></template></div></template></template></div></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+func operatorDropdown() templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var17 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var17 == nil {
+			templ_7745c5c3_Var17 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "<div x-show=\"showOperatorDropdown\" class=\"operator-dropdown text-sm\" :style=\"`top: ${operatorDropdownPosition.top}px; left: ${operatorDropdownPosition.left}px;`\" x-cloak><div class=\"operator-option\" :class=\"{'selected': tokens[activeTokenIndex]?.operator === 'is'}\" @click=\"changeOperator(activeTokenIndex, 'is')\"><svg x-show=\"tokens[activeTokenIndex]?.operator === 'is'\" class=\"h-5 w-5 mr-2 text-black\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 20 20\" fill=\"currentColor\"><path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"></path></svg> <span x-show=\"tokens[activeTokenIndex]?.operator !== 'is'\" class=\"h-5 w-5 mr-2\"></span> <span>is</span></div><div class=\"operator-option\" :class=\"{'selected': tokens[activeTokenIndex]?.operator === 'is not'}\" @click=\"changeOperator(activeTokenIndex, 'is not')\"><svg x-show=\"tokens[activeTokenIndex]?.operator === 'is not'\" class=\"h-5 w-5 mr-2 text-black\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 20 20\" fill=\"currentColor\"><path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"></path></svg> <span x-show=\"tokens[activeTokenIndex]?.operator !== 'is not'\" class=\"h-5 w-5 mr-2\"></span> <span>is not</span></div></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+func issuesPagination(_ *warnly.ListIssuesResult) templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var18 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var18 == nil {
+			templ_7745c5c3_Var18 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "<div class=\"p-4 border-t border-border flex items-center justify-between text-sm text-gray-600\"><span x-text=\"getPaginationSummary()\" class=\"font-medium\"></span><div class=\"flex gap-3\"><button @click=\"paginatePrev()\" :disabled=\"!canGoPrev()\" class=\"px-4 py-2 cursor-pointer rounded-md border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white transition-colors flex items-center gap-2\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M15 19l-7-7 7-7\"></path></svg> <span class=\"font-medium\">Previous</span></button> <button @click=\"paginateNext()\" :disabled=\"!canGoNext()\" class=\"px-4 py-2 cursor-pointer rounded-md border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white transition-colors flex items-center gap-2\"><span class=\"font-medium\">Next</span> <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M9 5l7 7-7 7\"></path></svg></button></div></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+func issuesTable(res *warnly.ListIssuesResult) templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var19 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var19 == nil {
+			templ_7745c5c3_Var19 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "<div class=\"overflow-x-auto border border-border rounded-lg\"><table class=\"w-full\"><thead><tr class=\"border-b border-border bg-gray-50\"><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">ISSUE</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">PROJECT</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">EVENTS</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">USERS</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">FIRST SEEN</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">LAST SEEN</th></tr></thead> <tbody>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		for _, issue := range res.Issues {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "<tr class=\"border-b border-border hover:bg-gray-50\"><td class=\"px-4 py-3\"><a hx-get=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var20 string
+			templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/projects/%d/issues/%d?period=14d", issue.ProjectID, issue.ID))
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 480, Col: 92}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 32, "\" hx-target=\"#main-content\" hx-swap=\"outerHTML settle:0\" hx-push-url=\"true\" class=\"cursor-pointer block\"><div class=\"flex items-center gap-2\"><span class=\"text-sm font-medium text-gray-900\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var21 string
+			templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(issue.Type)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 487, Col: 69}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 33, "</span></div><div class=\"text-xs text-gray-500 mt-1\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var22 string
+			templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(issue.Message)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 489, Col: 63}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 34, "</div></a></td><td class=\"px-4 py-3 text-sm text-gray-700\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var23 string
+			templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(getProjectName(res.Projects, issue.ProjectID))
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 493, Col: 54}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 35, "</td><td class=\"px-4 py-3 text-sm text-gray-900 font-medium\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var24 string
+			templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.NumFormatted(issue.TimesSeen))
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 496, Col: 45}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var24))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 36, "</td><td class=\"px-4 py-3 text-sm text-gray-900\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var25 string
+			templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.NumFormatted(issue.UserCount))
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 499, Col: 45}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var25))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "</td><td class=\"px-4 py-3 text-sm text-gray-500\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var26 string
+			templ_7745c5c3_Var26, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.TimeAgo(func() time.Time { return time.Now() }, issue.FirstSeen, false))
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 502, Col: 87}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var26))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 38, "</td><td class=\"px-4 py-3 text-sm text-gray-500\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var27 string
+			templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.TimeAgo(func() time.Time { return time.Now() }, issue.LastSeen, false))
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 505, Col: 86}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var27))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 39, "</td></tr>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 40, "</tbody></table></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+// Helper functions
+func getIssuesAlpineData(res *warnly.ListIssuesResult) string {
+	period := "14d"
+	if res.Request.Period != "" {
+		period = res.Request.Period
 	}
 
-	start := res.Request.Offset + 1
-	end := res.Request.Offset + len(res.Issues)
+	filters := "[]"
+	if res.Request.Query != "" {
+		filters = "[]"
+	}
 
-	return fmt.Sprintf("%d-%d of %d", start, end, res.TotalIssues)
+	return fmt.Sprintf(`issueFilters({
+		filters: %s,
+		searchQuery: '%s',
+		period: '%s',
+		projectName: '%s',
+		offset: %d,
+		totalIssues: %d
+	})`, filters, res.Request.Query, period, res.RequestedProject, res.Request.Offset, res.TotalIssues)
+}
+
+func getSelectedProjectName(requestedProject string) string {
+	if requestedProject == "" {
+		return "All Projects"
+	}
+	return requestedProject
+}
+
+func getPeriodOrDefault(period string) string {
+	if period == "" {
+		return "14d"
+	}
+	return period
+}
+
+func getSearchTokens(req *warnly.ListIssuesRequest) string {
+	return "[]"
+}
+
+func getProjectName(projects []warnly.Project, projectID int) string {
+	for _, p := range projects {
+		if p.ID == projectID {
+			return p.Name
+		}
+	}
+	return "Unknown"
 }
 
 var _ = templruntime.GeneratedTemplate

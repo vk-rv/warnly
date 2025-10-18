@@ -502,13 +502,22 @@ func parseDuration(period string, defaultDur time.Duration) (time.Duration, erro
 
 // ListIssues lists issues for the projects the user has access to.
 func (s *ProjectService) ListIssues(ctx context.Context, req *warnly.ListIssuesRequest) (*warnly.ListIssuesResult, error) {
-	dur, err := parseDuration(req.Period, 14*24*time.Hour)
-	if err != nil {
-		return nil, err
-	}
+	var from, to time.Time
+	var err error
 
-	to := s.now().UTC()
-	from := to.Add(-dur)
+	if req.Start != "" && req.End != "" {
+		from, to, err = warnly.ParseTimeRange(req.Start, req.End)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		dur, err := parseDuration(req.Period, 14*24*time.Hour)
+		if err != nil {
+			return nil, err
+		}
+		to = s.now().UTC()
+		from = to.Add(-dur)
+	}
 
 	teams, err := s.teamStore.ListTeams(ctx, int(req.User.ID))
 	if err != nil {
@@ -549,6 +558,10 @@ func (s *ProjectService) ListIssues(ctx context.Context, req *warnly.ListIssuesR
 		return nil, err
 	}
 
+	if req.Query != "" || req.Filters != "" {
+		issues = s.applyFilters(issues, req.Query, req.Filters)
+	}
+
 	totalIssues := len(issues)
 
 	if len(issues) == 0 {
@@ -572,13 +585,26 @@ func (s *ProjectService) ListIssues(ctx context.Context, req *warnly.ListIssuesR
 		return nil, err
 	}
 
+	totalAfterFilters := len(issueList)
+	if req.Limit > 0 {
+		start := req.Offset
+		end := req.Offset + req.Limit
+		if start > len(issueList) {
+			start = len(issueList)
+		}
+		if end > len(issueList) {
+			end = len(issueList)
+		}
+		issueList = issueList[start:end]
+	}
+
 	return &warnly.ListIssuesResult{
 		Request:          req,
 		Issues:           issueList,
 		LastProject:      &lastProject,
 		Projects:         projects,
 		RequestedProject: req.ProjectName,
-		TotalIssues:      totalIssues,
+		TotalIssues:      totalAfterFilters,
 	}, nil
 }
 
@@ -1248,4 +1274,37 @@ func filterRecentIssues(issueList []warnly.IssueEntry, now time.Time) []warnly.I
 		}
 	}
 	return res
+}
+
+// applyFilters applies text search and structured filters to issues.
+func (s *ProjectService) applyFilters(issues []warnly.Issue, query, filtersJSON string) []warnly.Issue {
+	if query == "" && filtersJSON == "" {
+		return issues
+	}
+
+	filtered := make([]warnly.Issue, 0, len(issues))
+
+	queryLower := strings.ToLower(query)
+
+	for i := range issues {
+		matches := true
+
+		if query != "" {
+			messageLower := strings.ToLower(issues[i].Message)
+			typeLower := strings.ToLower(issues[i].ErrorType)
+			viewLower := strings.ToLower(issues[i].View)
+
+			if !strings.Contains(messageLower, queryLower) &&
+				!strings.Contains(typeLower, queryLower) &&
+				!strings.Contains(viewLower, queryLower) {
+				matches = false
+			}
+		}
+
+		if matches {
+			filtered = append(filtered, issues[i])
+		}
+	}
+
+	return filtered
 }

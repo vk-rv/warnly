@@ -69,8 +69,13 @@ func (h *sessionHandler) index(w http.ResponseWriter, r *http.Request) {
 	req := &warnly.ListIssuesRequest{
 		User:        &user,
 		Period:      period,
+		Start:       r.URL.Query().Get("start"),
+		End:         r.URL.Query().Get("end"),
+		Query:       r.URL.Query().Get("query"),
+		Filters:     r.URL.Query().Get("filters"),
 		ProjectName: r.URL.Query().Get("project_name"),
 		Offset:      offset,
+		Limit:       50,
 	}
 
 	result, err := h.projectSvc.ListIssues(ctx, req)
@@ -84,12 +89,22 @@ func (h *sessionHandler) index(w http.ResponseWriter, r *http.Request) {
 
 // writeIndex writes the index page to the response writer.
 func (h *sessionHandler) writeIndex(w http.ResponseWriter, r *http.Request, res *warnly.ListIssuesResult, user *warnly.User) {
-	if r.Header.Get(htmxHeader) != "" {
-		if err := web.IssuesHtmx(res).Render(r.Context(), w); err != nil {
-			h.logger.Error("print index web render", slog.Any("error", err))
+	ctx := r.Context()
+
+	target := r.Header.Get("Hx-Target")
+	partial := r.URL.Query().Get("partial")
+
+	switch {
+	case partial == "body":
+		if err := web.IssuesBody(res).Render(ctx, w); err != nil {
+			h.logger.Error("print index body web render", slog.Any("error", err))
 		}
-	} else {
-		if err := web.Index(res, user).Render(r.Context(), w); err != nil {
+	case partial == "filters" || (target == "issues-container" && partial != ""):
+		if err := web.IssuesFiltersAndBody(res).Render(ctx, w); err != nil {
+			h.logger.Error("print index filters web render", slog.Any("error", err))
+		}
+	default:
+		if err := web.Index(res, user).Render(ctx, w); err != nil {
 			h.logger.Error("print index web render", slog.Any("error", err))
 		}
 	}
