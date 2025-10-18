@@ -8,7 +8,7 @@ import (
 
 // Issues is the main template that includes filters header and issue list body
 templ Issues(res *warnly.ListIssuesResult) {
-	<div id="content" class="max-w-7xl bg-white mx-auto p-6">
+	<div class="max-w-7xl bg-white mx-auto p-6">
 		@issuesHeader()
 		@IssuesFiltersAndBody(res)
 	</div>

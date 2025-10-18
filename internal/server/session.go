@@ -103,6 +103,10 @@ func (h *sessionHandler) writeIndex(w http.ResponseWriter, r *http.Request, res 
 		if err := web.IssuesFiltersAndBody(res).Render(ctx, w); err != nil {
 			h.logger.Error("print index filters web render", slog.Any("error", err))
 		}
+	case target == "content":
+		if err := web.IssuesHtmx(res).Render(ctx, w); err != nil {
+			h.logger.Error("print index htmx web render", slog.Any("error", err))
+		}
 	default:
 		if err := web.Index(res, user).Render(ctx, w); err != nil {
 			h.logger.Error("print index web render", slog.Any("error", err))
