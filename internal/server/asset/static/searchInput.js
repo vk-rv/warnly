@@ -9,17 +9,8 @@ window.searchInput = function(initialTokens) {
 
     filterCategories: [
       {
-        name: 'Status',
+        name: 'Fields',
         active: true,
-        items: [
-          { key: 'is', value: 'unresolved' },
-          { key: 'is', value: 'resolved' },
-          { key: 'is', value: 'ignored' }
-        ]
-      },
-      {
-        name: 'Environment',
-        active: false,
         items: [
           { key: 'environment', value: 'production' },
           { key: 'environment', value: 'staging' },
