@@ -42,7 +42,7 @@ templ issuesHeader() {
 		<div class="flex items-center gap-2 mb-4">
 			<h1 class="text-xl font-semibold">Issues</h1>
 		</div>
-		<nav class="border-b border-gray-300">
+		<nav class="border-b border-gray-300 border-[hsl(var(--border))]">
 			<ul class="flex gap-6">
 				<li class="border-b-2 border-black pb-2">
 					<a href="#" class="text-sm font-medium">All Issues</a>
@@ -53,19 +53,15 @@ templ issuesHeader() {
 }
 
 templ issuesFiltersBar(res *warnly.ListIssuesResult) {
-	<div class="mb-6 space-y-4">
-		<!-- Project Selector -->
-		<div class="flex gap-2 items-start">
-			<div class="flex-shrink-0">
+	<div class="mb-6">
+		<div class="flex gap-2">
+			<div class="flex">
 				@projectSelector(res.Projects, res.RequestedProject)
 			</div>
-			<div class="flex-shrink-0">
-				@timePeriodSelectorWrapper(res.Request.Period)
+			@timePeriodSelectorWrapper(res.Request.Period)
+			<div class="flex-1 relative">
+				@searchBar(res.Request)
 			</div>
-		</div>
-		<!-- Search Bar with Tags -->
-		<div class="relative">
-			@searchBar(res.Request)
 		</div>
 	</div>
 }
@@ -302,14 +298,14 @@ templ searchBar(req *warnly.ListIssuesRequest) {
 		class="search-container"
 		@click.away="closeAllDropdowns()"
 	>
-		<div class="flex border rounded-lg overflow-hidden bg-white border-gray-300">
-			<div class="relative flex-1 flex items-center px-2 text-sm">
-				<div class="text-purple-500 ml-2 mr-1">
+		<div class="flex border rounded-lg overflow-hidden bg-white border-gray-300 h-10">
+			<div class="relative flex-1 flex items-center px-2 text-sm overflow-hidden">
+				<div class="text-purple-500 ml-2 mr-1 flex-shrink-0">
 					<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="black">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
 					</svg>
 				</div>
-				<div class="search-input-wrapper py-2" @click="focusInput()">
+				<div class="search-input-wrapper py-2 overflow-x-auto" @click="focusInput()">
 					<template x-for="(token, index) in tokens" :key="index">
 						<div class="tag-pill">
 							<template x-if="!token.isRawText">

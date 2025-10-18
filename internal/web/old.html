@@ -1,0 +1,1245 @@
+<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Issues - Warnly</title><link rel="icon" href="/static/favicon.svg" type="image/svg+xml"><link href="/static/tailwind.css" rel="stylesheet"><script src="/static/alpinejs@3.12.3.min.js" defer></script><script src="/static/htmx@2.0.4.min.js"></script><script src="/static/uPlot.iife.min.js"></script><link href="/static/uPlot.min.css" rel="stylesheet"><style>
+		.warnly-preview .u-legend {
+			font-size: 13px;
+		}
+		</style><style>
+		.toast-container {
+			position: fixed;
+			bottom: 20px;
+			left: 50%;
+			transform: translateX(-50%);
+			z-index: 1000;
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+			pointer-events: none;
+		}
+
+		.toast-message {
+			background: rgba(35, 39, 47, 0.92);
+			color: #fff;
+			padding: 8px 16px;
+			border-radius: 8px;
+			box-shadow: 0 4px 16px rgba(16,24,40,0.12), 0 1px 2px rgba(0,0,0,0.08);
+			opacity: 0;
+			transition: opacity 0.25s cubic-bezier(.4,0,.2,1), transform 0.25s cubic-bezier(.4,0,.2,1);
+			transform: translateY(12px) scale(0.97);
+			min-width: 160px;
+			max-width: 90vw;
+			text-align: center;
+			font-size: 0.75rem;
+			font-weight: 500;
+			letter-spacing: 0.01em;
+			border: 1px solid #23272f;
+			pointer-events: auto;
+			backdrop-filter: blur(3px);
+		}
+
+		.toast-message.show {
+			opacity: 1;
+			transform: translateY(0) scale(1);
+		}
+
+		.toast-message.hide {
+			opacity: 0;
+			transform: translateY(12px) scale(0.97);
+		}
+</style></head><body><aside id="sidebar" class="sidebar" x-data="{ activePage: &#39;/&#39; }"><a href="" hx-get="/" hx-target="#content" hx-swap="outerHTML settle:0" hx-push-url="true" @click="activePage = '/'" class="p-4 flex items-center gap-2 cursor-pointer"><svg data-testid="geist-icon" class="h-6 w-6 text-blue-500" stroke-linejoin="round" style="color: currentcolor;" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.50008 6.59197L7.06075 7.03131L4.30811 9.78395C5.10528 10.7976 6.43586 11.5 8.00001 11.5C10.6108 11.5 12.5 9.58894 12.5 7.5L12.5 6L12.5 4.98248C12.4906 3.60983 11.375 2.5 10.0001 2.5C8.61937 2.5 7.50008 3.61929 7.50008 5V5.97065V6.59197ZM13.8741 4C13.43 2.27477 11.8639 1 10.0001 1C7.79095 1 6.00008 2.79086 6.00008 5V5.96858L0.0596924 11.909L1.12036 12.9697L3.24058 10.8494C4.33746 12.1572 6.06137 13 8.00001 13H8.00003V15H9.50003V12.8267C12.0879 12.2161 14 10.0628 14 7.5H14.0001V6.99991L16 4H13.8741ZM10 6C10.5523 6 11 5.55228 11 5C11 4.44772 10.5523 4 10 4C9.44774 4 9.00003 4.44772 9.00003 5C9.00003 5.55228 9.44774 6 10 6Z" fill="currentColor"></path></svg> <span class="text-xl font-bold sidebar-text">Warnly</span></a><div class="border-t border-gray-200"></div><div class="p-4"><div class="mb-4"><p class="text-xs font-semibold text-gray-500 uppercase mb-2 sidebar-text">Navigation</p><ul class="space-y-1"><li><a href="" hx-get="/" hx-target="#content" hx-swap="outerHTML settle:0" hx-push-url="true" @click="activePage = '/'" class="flex items-center gap-2 p-2 rounded-md text-gray-700 hover:bg-gray-100 font-medium text-sm" :class="{'flex items-center gap-2 p-2 rounded-md text-blue-600 bg-blue-50 font-medium text-sm': activePage === '/', 'flex items-center gap-2 p-2 rounded-md text-gray-700 hover:bg-gray-100 font-medium text-sm': activePage !== '/'}"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path> <polyline points="9 22 9 12 15 12 15 22"></polyline></svg> <span class="sidebar-text">Dashboard</span></a></li><li><a href="" hx-get="/projects" hx-target="#content" hx-swap="outerHTML settle:0" hx-push-url="true" @click="activePage = '/projects'" class="flex items-center gap-2 p-2 rounded-md text-gray-700 hover:bg-gray-100 font-medium text-sm" :class="{'flex items-center gap-2 p-2 rounded-md text-blue-600 bg-blue-50 font-medium text-sm': activePage === '/projects', 'flex items-center gap-2 p-2 rounded-md text-gray-700 hover:bg-gray-100 font-medium text-sm': activePage !== '/projects'}"><svg data-testid="geist-icon" stroke-linejoin="round" viewBox="0 0 16 16" class="h-4 w-4"><path fill-rule="evenodd" clip-rule="evenodd" d="M1.80808 4.44191L2.25003 4.88386L3.13391 3.99997L2.69196 3.55803L1.63391 2.49997L2.69197 1.44191L3.13391 0.999972L2.25003 0.116089L1.80808 0.558031L0.484858 1.88126C0.143149 2.22296 0.143149 2.77698 0.484859 3.11869L1.80808 4.44191ZM12 0.999972H11.25V2.49997H12H13.5V11.75C13.5 12.7165 12.7165 13.5 11.75 13.5H4.25002C3.28353 13.5 2.50003 12.7165 2.50003 11.75V6.99997V6.24997H1.00003V6.99997V11.75C1.00003 13.5449 2.4551 15 4.25002 15H11.75C13.545 15 15 13.5449 15 11.75V1.74997V0.999972H14.25H12ZM7.75003 4.88386L8.19197 4.44191L9.51519 3.11869C9.8569 2.77698 9.8569 2.22296 9.51519 1.88126L8.19196 0.55803L7.75002 0.116089L6.86614 0.999973L7.30808 1.44191L8.36614 2.49997L7.30809 3.55803L6.86615 3.99997L7.75003 4.88386ZM4.13155 3.89688L4.02847 4.51535L5.26541 4.7215L5.36848 4.10303L5.86848 1.10303L5.97156 0.484566L4.73462 0.278409L4.63155 0.896878L4.13155 3.89688Z" fill="currentColor"></path></svg> <span class="sidebar-text">Services</span></a></li><li><a href="" @click="activePage = '/oncall'" hx-get="/oncall" hx-target="#content" hx-swap="outerHTML settle:0" hx-push-url="true" class="flex items-center gap-2 p-2 rounded-md text-gray-700 hover:bg-gray-100 font-medium text-sm" :class="{'flex items-center gap-2 p-2 rounded-md text-blue-600 bg-blue-50 font-medium text-sm': activePage === '/oncall', 'flex items-center gap-2 p-2 rounded-md text-gray-700 hover:bg-gray-100 font-medium text-sm': activePage !== '/oncall'}"><svg data-testid="geist-icon" class="h-4 w-4" stroke-linejoin="round" viewBox="0 0 16 16"><path fill-rule="evenodd" clip-rule="evenodd" d="M7.9925 0C4.95079 0 2.485 2.46579 2.485 5.5075V8.22669C2.485 8.77318 2.21321 9.28388 1.75992 9.58912L1.33108 9.8779L1 10.1009V10.5V11.25V12H1.75H14.25H15V11.25V10.5V10.0986L14.666 9.87596L14.2306 9.58565C13.7741 9.28137 13.5 8.76913 13.5 8.22059V5.5075C13.5 2.46579 11.0342 0 7.9925 0ZM3.985 5.5075C3.985 3.29422 5.77922 1.5 7.9925 1.5C10.2058 1.5 12 3.29422 12 5.5075V8.22059C12 9.09029 12.36 9.91233 12.9801 10.5H3.01224C3.62799 9.91235 3.985 9.09303 3.985 8.22669V5.5075ZM10.7486 13.5H9.16778L9.16337 13.5133C9.09591 13.716 8.94546 13.9098 8.72067 14.0501C8.52343 14.1732 8.27577 14.25 8.00002 14.25C7.72426 14.25 7.47661 14.1732 7.27936 14.0501C7.05458 13.9098 6.90412 13.716 6.83666 13.5133L6.83225 13.5H5.25143L5.41335 13.9867C5.60126 14.5516 5.99263 15.0152 6.48523 15.3226C6.92164 15.5949 7.44461 15.75 8.00002 15.75C8.55542 15.75 9.07839 15.5949 9.5148 15.3226C10.0074 15.0152 10.3988 14.5516 10.5867 13.9867L10.7486 13.5Z" fill="currentColor"></path></svg> <span class="sidebar-text">OnCall</span></a></li><li><a href="" @click="activePage = '/analytics'" hx-get="/analytics" hx-target="#content" hx-swap="outerHTML settle:0" hx-push-url="true" class="flex items-center gap-2 p-2 rounded-md text-gray-700 hover:bg-gray-100 font-medium text-sm" :class="{'flex items-center gap-2 p-2 rounded-md text-blue-600 bg-blue-50 font-medium text-sm': activePage === '/analytics', 'flex items-center gap-2 p-2 rounded-md text-gray-700 hover:bg-gray-100 font-medium text-sm': activePage !== '/analytics'}"><svg data-testid="geist-icon" stroke-linejoin="round" viewBox="0 0 16 16" class="h-4 w-4"><path fill-rule="evenodd" clip-rule="evenodd" d="M1 1V12.75C1 13.9926 2.00736 15 3.25 15H15V13.5H3.25C2.83579 13.5 2.5 13.1642 2.5 12.75V1H1ZM14.2971 6.01303L14.8101 5.46596L13.716 4.43989L13.2029 4.98697L9.98259 8.42099L7.707 6.14629C7.31646 5.75589 6.6834 5.75595 6.29293 6.14642L4.21967 8.21967L3.68934 8.75L4.75 9.81066L5.28033 9.28033L7.0001 7.56057L9.28723 9.84681C9.68667 10.2461 10.3373 10.2356 10.7236 9.82361L14.2971 6.01303Z" fill="currentColor"></path></svg> <span class="sidebar-text">Reports</span></a></li><li><a href="" @click="activePage = '/system'" hx-get="/system" hx-target="#content" hx-swap="outerHTML settle:0" hx-push-url="true" class="flex items-center gap-2 p-2 rounded-md text-gray-700 hover:bg-gray-100 font-medium text-sm" :class="{'flex items-center gap-2 p-2 rounded-md text-blue-600 bg-blue-50 font-medium text-sm': activePage === '/system', 'flex items-center gap-2 p-2 rounded-md text-gray-700 hover:bg-gray-100 font-medium text-sm': activePage !== '/system'}"><svg class="h-4 w-4" data-testid="geist-icon" stroke-linejoin="round" viewBox="0 0 16 16"><path fill-rule="evenodd" clip-rule="evenodd" d="M13.5 4.72094V13.5C13.5 14.0523 13.0523 14.5 12.5 14.5H11.5V11C11.5 10.4477 11.0523 10 10.5 10H5.5C4.94772 10 4.5 10.4477 4.5 11V14.5H3.5C2.94772 14.5 2.5 14.0523 2.5 13.5V1.5H5V3.25V4H6.5V3.25V1.5H9.47383L13.5 4.72094ZM6 14.5H10V11.5H6V14.5ZM4.5 16H3.5C2.11929 16 1 14.8807 1 13.5V1.5V0H2.5H9.64922C9.87629 0 10.0966 0.0772807 10.2739 0.219131L14.6247 3.69976C14.8619 3.88953 15 4.17684 15 4.48062V13.5C15 14.8807 13.8807 16 12.5 16H11.5H10H6H4.5Z" fill="currentColor"></path></svg> <span class="sidebar-text">System</span></a></li></ul></div><div class="mb-4"><p class="text-xs font-semibold text-gray-500 uppercase mb-2 sidebar-text">Settings</p><ul class="space-y-1"><li><a href="" @click="activePage = '/settings'" hx-get="/settings" hx-target="#content" hx-swap="outerHTML settle:0" hx-push-url="true" class="flex items-center gap-2 p-2 rounded-md text-gray-700 hover:bg-gray-100 font-medium text-sm" :class="{'flex items-center gap-2 p-2 rounded-md text-blue-600 bg-blue-50 font-medium text-sm': activePage === '/settings', 'flex items-center gap-2 p-2 rounded-md text-gray-700 hover:bg-gray-100 font-medium text-sm': activePage !== '/settings'}"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path> <circle cx="12" cy="12" r="3"></circle></svg> <span class="sidebar-text">Settings</span></a></li><li><a href="https://github.com/vk-rv/warnly" target="_blank" class="flex items-center gap-2 p-2 rounded-md text-gray-700 hover:bg-gray-100 font-medium text-sm" data-page="help"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle> <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path> <line x1="12" y1="17" x2="12.01" y2="17"></line></svg> <span class="sidebar-text">Help & Support</span></a></li></ul></div></div><div class="absolute bottom-0 left-0 right-0 border-t border-gray-200"><div class="flex items-center justify-between p-4"><div class="flex items-center gap-2"><div class="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center"><span class="text-sm font-medium">JD</span></div><div class="sidebar-text"><p class="text-sm font-medium">John Doe</p><p class="text-xs text-gray-500">admin</p></div></div><button class="btn-icon cursor-pointer text-gray-500 hover:text-gray-700 sidebar-text" onclick="deleteSession()"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path> <polyline points="16 17 21 12 16 7"></polyline> <line x1="21" y1="12" x2="9" y2="12"></line></svg></button><script>
+				 document.body.addEventListener('htmx:beforeSwap', function(evt) {
+    if(evt.detail.xhr.status === 400 || evt.detail.xhr.status === 500) {
+        evt.detail.shouldSwap = true;
+        evt.detail.isError = false;
+    }
+});
+				function deleteSession() {
+					fetch('/session', {
+						method: 'DELETE',
+						redirect: 'follow',
+					})
+					.then(response => {
+						if (response.ok) {
+							window.location.href = '/';
+						} else if (response.redirected) {
+							window.location.href = response.url;
+						}
+					})
+					.catch(error => console.error('Error:', error));
+				}
+				</script></div></div></aside><div id="main-content" class="main-content"><title>Issues - Warnly</title><div id="content" class="flex-grow overflow-y-auto h-screen"><div id="content" class="max-w-7xl bg-white mx-auto p-6"><header class="mb-6"><div class="flex items-center gap-2 mb-4"><h1 class="text-xl font-semibold">Issues</h1></div><nav class="border-b border-gray-300 border-[hsl(var(--border))]"><ul class="flex gap-6"><li class="border-b-2 border-black pb-2"><a href="#" class="text-sm font-medium">All Issues</a></li></ul></nav></header><div class="flex gap-2"><div class="flex"><div x-data="{ open: false, selected: &#39;All Projects&#39; }"><button @click="open = !open" class="inline-flex cursor-pointer items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"><span x-text="selected"></span> <svg class="ml-2 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></button><div x-show="open" @click.away="open = false" class="absolute mt-2 w-48 rounded-md bg-white shadow-lg z-10"><ul class="py-1 text-sm text-gray-700"><li><a href="#" @click.prevent="selected = 'All Projects'; open = false" hx-get="/" hx-target="#content" hx-swap="outerHTML settle:0" class="block px-4 py-2 hover:bg-gray-100">All Projects</a></li><li><a href="#" @click.prevent="selected = &#39;go&#39;; open = false" hx-get="/?project_name=go" hx-target="#content" hx-swap="outerHTML settle:0" class="block px-4 py-2 hover:bg-gray-100">go</a></li><li><a href="#" @click.prevent="selected = &#39;go2&#39;; open = false" hx-get="/?project_name=go2" hx-target="#content" hx-swap="outerHTML settle:0" class="block px-4 py-2 hover:bg-gray-100">go2</a></li><li><a href="#" @click.prevent="selected = &#39;pp&#39;; open = false" hx-get="/?project_name=pp" hx-target="#content" hx-swap="outerHTML settle:0" class="block px-4 py-2 hover:bg-gray-100">pp</a></li></ul></div></div></div><style>
+    [x-cloak] { display: none !important; }
+    
+    .time-input {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      padding: 0;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.375rem;
+      background-color: white;
+      width: 100%;
+      height: 2.5rem;
+    }
+    
+    .time-input:focus-within {
+      border-color: #6366f1;
+      outline: 2px solid #c7d2fe;
+    }
+    
+    .time-part {
+      display: inline-block;
+      text-align: center;
+      padding: 0.25rem 0;
+      cursor: pointer;
+      user-select: none;
+    }
+    
+    .time-part:hover {
+      background-color: #f3f4f6;
+    }
+    
+    .time-part.selected {
+      background-color: #e0e7ff;
+    }
+    
+    .time-part.hour {
+      width: 2rem;
+      text-align: right;
+    }
+    
+    .time-part.minute {
+      width: 2rem;
+      text-align: left;
+    }
+    
+    .time-part.period {
+      width: 2.5rem;
+      text-align: center;
+    }
+    
+    .time-separator {
+      display: inline-block;
+      width: 0.5rem;
+      text-align: center;
+      user-select: none;
+    }
+  </style><div class="max-w-md mx-auto" x-data="timePeriodSelector()"><div class="flex border hover:bg-gray-50 border-gray-300 rounded-md overflow-hidden bg-white"><button @click="toggleDropdown()" class="flex cursor-pointer items-center px-4 py-2 text-sm"><span x-text="displayLabel"></span> <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor" :class="{'transform rotate-180': isOpen}"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg></button></div><div x-show="isOpen" x-cloak @click.away="isOpen = false" class="mt-1 bg-white border border-gray-200 rounded-md shadow-lg absolute z-10 w-full max-w-md"><div x-show="!showCalendar"><div class="p-4 border-b border-gray-200"><h3 class="text-sm font-medium text-gray-800">Filter Time Range</h3></div><div class="p-3"><input type="text" x-model="customRangeInput" placeholder="Custom range: 2h, 4d, 8w..." class="w-full p-2 border text-sm rounded-md focus:outline-none border-gray-300" @keydown.enter="applyCustomRange()" :class="{'border-red-500': customRangeError}"><div x-show="customRangeError" class="text-red-500 text-xs mt-1" x-text="customRangeError"></div></div><div class="py-2"><template x-for="(preset, index) in presets" :key="index"><div @click="selectPreset(preset.value)" class="flex text-sm items-center px-3 py-2 hover:bg-gray-50 cursor-pointer"><div class="w-6"><svg x-show="selectedPreset === preset.value" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-black-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg></div><span class="ml-2" :class="{'text-black-600 font-medium': selectedPreset === preset.value}" x-text="preset.label"></span></div></template><div @click="openCalendar()" class="flex items-center text-sm justify-between px-3 py-2 hover:bg-gray-50 cursor-pointer"><div class="flex items-center"><div class="w-6"><svg x-show="selectedPreset === 'custom-range'" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg></div><span class="ml-2" :class="{'text-indigo-600 font-medium': selectedPreset === 'custom-range'}">Absolute date</span></div><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg></div></div></div><div x-show="showCalendar" x-cloak><div class="p-4 border-b border-gray-200"><h3 class="text-sm font-medium text-gray-800">Filter Time Range</h3></div><div class="p-4 text-sm"><div class="flex items-center justify-between mb-4"><button @click="prevMonth()" class="text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg></button><div class="text-md font-medium text-gray-700"><span x-text="monthNames[currentMonth]"></span> <span x-text="currentYear"></span></div><button @click="nextMonth()" class="text-gray-600"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg></button></div><div class="grid grid-cols-7 gap-1 text-center"><template x-for="day in ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']" :key="day"><div class="text-xs font-medium text-gray-500 py-1" x-text="day"></div></template><template x-for="blank in firstDayOfMonth" :key="'blank-' + blank"><div class="h-10 w-10 rounded-full"></div></template><template x-for="date in daysInMonth" :key="date"><div @click="selectDate(date)" class="h-10 w-10 flex items-center justify-center rounded-full cursor-pointer" :class="{
+                  'bg-gray-300 text-white': isSelectedDate(date),
+                  'hover:bg-gray-100': !isSelectedDate(date) && !isInDateRange(date),
+                  'bg-gray-100': isInDateRange(date) && !isSelectedDate(date),
+                  'text-gray-400': isDateDisabled(date),
+                  'text-gray-700': !isDateDisabled(date)
+                }"><span x-text="date"></span></div></template></div><div class="mt-6 text-sm flex space-x-4"><div class="flex-1"><div class="time-input" :class="{'border-indigo-500': startTimeActive}" @click="activateStartTime" @keydown="handleTimeKeydown($event, true)" tabindex="0"><div class="time-part hour" :class="{'selected': startSelectedPart === 'hour'}" @click.stop="selectStartPart('hour')" x-text="startHour.toString().padStart(2, '0')"></div><div class="time-separator">:</div><div class="time-part minute" :class="{'selected': startSelectedPart === 'minute'}" @click.stop="selectStartPart('minute')" x-text="startMinute.toString().padStart(2, '0')"></div><div class="time-separator">&nbsp;</div><div class="time-part period" :class="{'selected': startSelectedPart === 'period'}" @click.stop="selectStartPart('period')" x-text="startPeriod"></div></div></div><div class="flex-1"><div class="time-input" :class="{'border-indigo-500': endTimeActive}" @click="activateEndTime" @keydown="handleTimeKeydown($event, false)" tabindex="0"><div class="time-part hour" :class="{'selected': endSelectedPart === 'hour'}" @click.stop="selectEndPart('hour')" x-text="endHour.toString().padStart(2, '0')"></div><div class="time-separator">:</div><div class="time-part minute" :class="{'selected': endSelectedPart === 'minute'}" @click.stop="selectEndPart('minute')" x-text="endMinute.toString().padStart(2, '0')"></div><div class="time-separator">&nbsp;</div><div class="time-part period" :class="{'selected': endSelectedPart === 'period'}" @click.stop="selectEndPart('period')" x-text="endPeriod"></div></div></div><div class="flex items-center"><input type="checkbox" id="utc" x-model="useUTC" class="h-5 w-5 text-black-600 rounded focus:ring-black-500"> <label for="utc" class="ml-2 text-gray-700">UTC</label></div></div></div><div class="p-4 flex justify-between border-t border-gray-200"><button @click="showCalendar = false" class="px-4 py-2 text-gray-700 font-medium text-sm">← Back</button> <button @click="applyDateRange()" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 text-sm">Apply</button></div></div></div></div><script>
+    function timePeriodSelector() {
+      return {
+        isOpen: false,
+        showCalendar: false,
+        selectedPreset: 'last24h',
+        customRangeInput: '',
+        customRangeError: null,
+        startDate: null,
+        endDate: null,
+        
+        startHour: 7,
+        startMinute: 22,
+        startPeriod: 'AM',
+        endHour: 1,
+        endMinute: 58,
+        endPeriod: 'AM',
+        
+        startTimeActive: false,
+        endTimeActive: false,
+        startSelectedPart: null,
+        endSelectedPart: null,
+        
+        useUTC: true,
+        currentMonth: new Date().getMonth(),
+        currentYear: new Date().getFullYear(),
+        selectionStart: null,
+        selectionEnd: null,
+        selectionInProgress: false,
+        
+        monthNames: [
+          'January', 'February', 'March', 'April', 'May', 'June', 
+          'July', 'August', 'September', 'October', 'November', 'December'
+        ],
+        
+        presets: [
+          { label: 'Last hour', value: 'last1h' },
+          { label: 'Last 24 hours', value: 'last24h' },
+          { label: 'Last 7 days', value: 'last7d' },
+          { label: 'Last 14 days', value: 'last14d' },
+          { label: 'Last 30 days', value: 'last30d' },
+          { label: 'Last 90 days', value: 'last90d' }
+        ],
+        
+        get displayLabel() {
+          if (this.selectedPreset === 'custom-range' && this.selectionStart && this.selectionEnd) {
+            return this.formatDateRange(this.selectionStart, this.selectionEnd);
+          }
+          
+          if (this.selectedPreset === 'custom' && this.customRangeInput) {
+            return this.customRangeInput;
+          }
+          
+          const preset = this.presets.find(p => p.value === this.selectedPreset);
+          return preset ? preset.label : '24H';
+        },
+        
+        get daysInMonth() {
+          return new Date(this.currentYear, this.currentMonth + 1, 0).getDate();
+        },
+        
+        get firstDayOfMonth() {
+          return new Date(this.currentYear, this.currentMonth, 1).getDay();
+        },
+        
+        toggleDropdown() {
+          this.isOpen = !this.isOpen;
+          if (!this.isOpen) {
+            this.showCalendar = false;
+            this.startTimeActive = false;
+            this.endTimeActive = false;
+          }
+        },
+        
+        openCalendar() {
+          this.showCalendar = true;
+          
+          if (!this.selectionStart) {
+            const today = new Date();
+            this.currentMonth = today.getMonth();
+            this.currentYear = today.getFullYear();
+          }
+        },
+        
+        selectPreset(value) {
+          this.selectedPreset = value;
+          this.isOpen = false;
+          
+          this.selectionStart = null;
+          this.selectionEnd = null;
+        },
+        
+        validateCustomRange(input) {
+          this.customRangeError = null;
+          
+          input = input.trim();
+          
+          if (!input) {
+            this.customRangeError = "Please enter a time range";
+            return false;
+          }
+          
+          // Regex to validate format: number + unit (h, d, w, m, y)
+          const regex = /^(\d+)(h|d|w|m|y)$/i;
+          const match = input.match(regex);
+          
+          if (!match) {
+            this.customRangeError = "Invalid format. Use format like: 1h, 2d, 3w, 4m, 1y";
+            return false;
+          }
+          
+          const value = parseInt(match[1]);
+          const unit = match[2].toLowerCase();
+          
+          if (value <= 0) {
+            this.customRangeError = "Value must be positive";
+            return false;
+          }
+          
+          const limits = {
+            'h': 720,    // Max 30 days in hours
+            'd': 365,    // Max 1 year in days
+            'w': 52,     // Max 1 year in weeks
+            'm': 60,     // Max 5 years in months
+            'y': 10      // Max 10 years
+          };
+          
+          if (value > limits[unit]) {
+            this.customRangeError = `Maximum value for ${unit} is ${limits[unit]}`;
+            return false;
+          }
+          
+          return true;
+        },
+        
+        applyCustomRange() {
+          if (this.validateCustomRange(this.customRangeInput)) {
+            this.selectedPreset = 'custom';
+            this.isOpen = false;
+            
+            this.selectionStart = null;
+            this.selectionEnd = null;
+          }
+        },
+        
+        prevMonth() {
+          if (this.currentMonth === 0) {
+            this.currentMonth = 11;
+            this.currentYear--;
+          } else {
+            this.currentMonth--;
+          }
+        },
+        
+        nextMonth() {
+          if (this.currentMonth === 11) {
+            this.currentMonth = 0;
+            this.currentYear++;
+          } else {
+            this.currentMonth++;
+          }
+        },
+        
+        selectDate(date) {
+          const selectedDate = new Date(this.currentYear, this.currentMonth, date);
+          
+          if (!this.selectionInProgress || !this.selectionStart) {
+
+            this.selectionStart = selectedDate;
+            this.selectionEnd = null;
+            this.selectionInProgress = true;
+          } else {
+            this.selectionInProgress = false;
+            
+            if (selectedDate < this.selectionStart) {
+              this.selectionEnd = this.selectionStart;
+              this.selectionStart = selectedDate;
+            } else {
+              this.selectionEnd = selectedDate;
+            }
+          }
+        },
+        
+        isSelectedDate(date) {
+          const currentDate = new Date(this.currentYear, this.currentMonth, date);
+          
+          if (!this.selectionStart && !this.selectionEnd) return false;
+          
+          if (this.selectionStart && !this.selectionEnd) {
+            return this.isSameDate(currentDate, this.selectionStart);
+          }
+          
+          return this.isSameDate(currentDate, this.selectionStart) || 
+                 this.isSameDate(currentDate, this.selectionEnd);
+        },
+        
+        isInDateRange(date) {
+          if (!this.selectionStart || !this.selectionEnd) return false;
+          
+          const currentDate = new Date(this.currentYear, this.currentMonth, date);
+          return currentDate > this.selectionStart && currentDate < this.selectionEnd;
+        },
+        
+        isSameDate(date1, date2) {
+          return date1.getDate() === date2.getDate() && 
+                 date1.getMonth() === date2.getMonth() && 
+                 date1.getFullYear() === date2.getFullYear();
+        },
+        
+        isDateDisabled(date) {
+          return false;
+        },
+        
+        applyDateRange() {
+          if (this.selectionStart) {
+            this.selectedPreset = 'custom-range';
+            this.isOpen = false;
+            this.showCalendar = false;
+          }
+        },
+        
+        formatDate(date) {
+          if (!date) return '';
+          const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+          return `${monthNames[date.getMonth()]} ${date.getDate()}`;
+        },
+        
+        formatDateRange(start, end) {
+          if (!start || !end) return '';
+          
+          if (start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear()) {
+            return `${this.formatDate(start)} - ${end.getDate()}`;
+          }
+          
+          return `${this.formatDate(start)} - ${this.formatDate(end)}`;
+        },
+        
+        activateStartTime() {
+          this.startTimeActive = true;
+          this.endTimeActive = false;
+          if (!this.startSelectedPart) {
+            this.startSelectedPart = 'hour';
+          }
+        },
+        
+        activateEndTime() {
+          this.endTimeActive = true;
+          this.startTimeActive = false;
+          if (!this.endSelectedPart) {
+            this.endSelectedPart = 'hour';
+          }
+        },
+        
+        selectStartPart(part) {
+          this.startSelectedPart = part;
+          this.startTimeActive = true;
+          this.endTimeActive = false;
+        },
+        
+        selectEndPart(part) {
+          this.endSelectedPart = part;
+          this.endTimeActive = true;
+          this.startTimeActive = false;
+        },
+        
+        handleTimeKeydown(event, isStartTime) {
+          const selectedPart = isStartTime ? this.startSelectedPart : this.endSelectedPart;
+          
+          if (!selectedPart) {
+            if (isStartTime) {
+              this.startSelectedPart = 'hour';
+            } else {
+              this.endSelectedPart = 'hour';
+            }
+            return;
+          }
+          
+          if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+            event.preventDefault();
+            this.adjustTimePart(isStartTime, selectedPart, event.key === 'ArrowUp' ? 1 : -1);
+          }
+          else if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+            event.preventDefault();
+            this.navigateTimeParts(isStartTime, event.key === 'ArrowRight');
+          }
+          else if (/^\d$/.test(event.key) && (selectedPart === 'hour' || selectedPart === 'minute')) {
+            event.preventDefault();
+            this.setTimePartDirectly(isStartTime, selectedPart, parseInt(event.key));
+          }
+          else if ((event.key.toLowerCase() === 'a' || event.key.toLowerCase() === 'p') && selectedPart === 'period') {
+            event.preventDefault();
+            const newPeriod = event.key.toLowerCase() === 'a' ? 'AM' : 'PM';
+            if (isStartTime) {
+              this.startPeriod = newPeriod;
+            } else {
+              this.endPeriod = newPeriod;
+            }
+          }
+        },
+        
+        adjustTimePart(isStartTime, part, direction) {
+          if (part === 'hour') {
+            if (isStartTime) {
+              this.startHour = this.adjustHour(this.startHour, direction);
+            } else {
+              this.endHour = this.adjustHour(this.endHour, direction);
+            }
+          } 
+          else if (part === 'minute') {
+            if (isStartTime) {
+              this.startMinute = this.adjustMinute(this.startMinute, direction);
+            } else {
+              this.endMinute = this.adjustMinute(this.endMinute, direction);
+            }
+          }
+          else if (part === 'period') {
+            if (isStartTime) {
+              this.startPeriod = this.startPeriod === 'AM' ? 'PM' : 'AM';
+            } else {
+              this.endPeriod = this.endPeriod === 'AM' ? 'PM' : 'AM';
+            }
+          }
+        },
+        
+        adjustHour(hour, direction) {
+          // 12-hour format: 1-12
+          let newHour = hour + direction;
+          if (newHour > 12) newHour = 1;
+          if (newHour < 1) newHour = 12;
+          return newHour;
+        },
+        
+        adjustMinute(minute, direction) {
+          let newMinute = minute + direction;
+          if (newMinute > 59) newMinute = 0;
+          if (newMinute < 0) newMinute = 59;
+          return newMinute;
+        },
+        
+        navigateTimeParts(isStartTime, moveRight) {
+          const parts = ['hour', 'minute', 'period'];
+          let currentIndex;
+          
+          if (isStartTime) {
+            currentIndex = parts.indexOf(this.startSelectedPart);
+            if (currentIndex === -1) {
+              this.startSelectedPart = 'hour';
+              return;
+            }
+            
+            if (moveRight) {
+              currentIndex = (currentIndex + 1) % parts.length;
+            } else {
+              currentIndex = (currentIndex - 1 + parts.length) % parts.length;
+            }
+            
+            this.startSelectedPart = parts[currentIndex];
+          } else {
+            currentIndex = parts.indexOf(this.endSelectedPart);
+            if (currentIndex === -1) {
+              this.endSelectedPart = 'hour';
+              return;
+            }
+            
+            if (moveRight) {
+              currentIndex = (currentIndex + 1) % parts.length;
+            } else {
+              currentIndex = (currentIndex - 1 + parts.length) % parts.length;
+            }
+            
+            this.endSelectedPart = parts[currentIndex];
+          }
+        },
+        
+        setTimePartDirectly(isStartTime, part, digit) {
+          if (part === 'hour') {
+            if (isStartTime) {
+              if (this.startHour >= 10 || this.startHour === 0) {
+                this.startHour = digit === 0 ? 12 : digit;
+              } else {
+                const newHour = parseInt(`${this.startHour}${digit}`);
+                this.startHour = newHour > 12 ? digit : newHour;
+              }
+            } else {
+              if (this.endHour >= 10 || this.endHour === 0) {
+                this.endHour = digit === 0 ? 12 : digit;
+              } else {
+                const newHour = parseInt(`${this.endHour}${digit}`);
+                this.endHour = newHour > 12 ? digit : newHour;
+              }
+            }
+          } 
+          else if (part === 'minute') {
+            if (isStartTime) {
+              if (this.startMinute >= 10) {
+                this.startMinute = digit;
+              } else {
+                const newMinute = parseInt(`${this.startMinute}${digit}`);
+                this.startMinute = newMinute > 59 ? digit : newMinute;
+              }
+            } else {
+              if (this.endMinute >= 10) {
+                this.endMinute = digit;
+              } else {
+                const newMinute = parseInt(`${this.endMinute}${digit}`);
+                this.endMinute = newMinute > 59 ? digit : newMinute;
+              }
+            }
+          }
+        }
+      };
+    }
+  </script><div class="flex-1 relative"><style>
+        [x-cloak] { display: none !important; }
+        
+        .search-container {
+            position: relative;
+        }
+        
+        .tag-pill {
+            display: inline-flex;
+            align-items: center;
+            background-color: #f3f4f6;
+            border-radius: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            margin-right: 0.5rem;
+            white-space: nowrap;
+        }
+        
+        .tag-pill-operator {
+            background-color: #e5e7eb;
+            cursor: pointer;
+        }
+        
+        .search-input-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            width: 100%;
+        }
+        
+        .search-input {
+            background: transparent;
+            border: none;
+            outline: none;
+            flex: 1;
+            min-width: 100px;
+        }
+        
+        .dropdown-container {
+            position: absolute;
+            width: 100%;
+            z-index: 50;
+            border: 1px solid #e5e7eb;
+            border-top: none;
+            border-radius: 0 0 0.5rem 0.5rem;
+            background-color: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        .operator-dropdown {
+            z-index: 60;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            background-color: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            min-width: 120px;
+        }
+        
+        .operator-option {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+        
+        .operator-option:hover {
+            background-color: #f9fafb;
+        }
+        
+       
+    </style><div class="max-w-4xl mx-auto"><div x-data="searchInput" x-init="init()" class="search-container" @click.away="closeAllDropdowns()"><div class="flex border rounded-lg overflow-hidden bg-white border-gray-300"><div class="relative flex-1 flex items-center px-2 text-sm"><div class="text-purple-500 ml-2 mr-1"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="black"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg></div><div class="search-input-wrapper py-2" @click="focusInput()"><template x-for="(token, index) in tokens" :key="index"><div class="tag-pill"><template x-if="!token.isRawText"><div class="flex items-center"><span x-text="token.key" class="text-gray-800"></span> <span class="tag-pill-operator mx-1" x-text="token.operator" @click.stop="openOperatorDropdown(index)"></span> <span x-text="token.value" class="text-gray-800"></span></div></template><template x-if="token.isRawText"><span x-text="token.value" class="text-gray-800"></span></template><button @click.stop="removeToken(index)" class="ml-1 text-gray-500 hover:text-gray-700"><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button></div></template><input x-ref="searchInput" type="text" x-model="inputValue" :placeholder="tokens.length === 0 ? 'Search for events, users, tags, and more' : ''" class="search-input" @click="handleInputClick()" @focus="handleInputFocus()" @keydown.enter="handleEnterKey()" @keydown.backspace="handleBackspace()" @keydown.escape="closeAllDropdowns()" @input="handleInput()"></div><button x-show="tokens.length > 0 || inputValue.length > 0" @click.stop="clearAll()" class="mr-4 text-gray-400 hover:text-gray-600" x-cloak><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button></div></div><div x-show="showOperatorDropdown" class="operator-dropdown text-sm" :style="`top: ${operatorDropdownPosition.top}px; left: ${operatorDropdownPosition.left}px;`" x-cloak><div class="operator-option" :class="{'selected': tokens[activeTokenIndex]?.operator === 'is'}" @click="changeOperator(activeTokenIndex, 'is')"><svg x-show="tokens[activeTokenIndex]?.operator === 'is'" class="h-5 w-5 mr-2 text-black" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg> <span x-show="tokens[activeTokenIndex]?.operator !== 'is'" class="h-5 w-5 mr-2"></span> <span>is</span></div><div class="operator-option" :class="{'selected': tokens[activeTokenIndex]?.operator === 'is not'}" @click="changeOperator(activeTokenIndex, 'is not')"><svg x-show="tokens[activeTokenIndex]?.operator === 'is not'" class="h-5 w-5 mr-2 text-black" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg> <span x-show="tokens[activeTokenIndex]?.operator !== 'is not'" class="h-5 w-5 mr-2"></span> <span>is not</span></div></div><div x-show="showTagSuggestions" class="dropdown-container text-sm" x-cloak><div class="flex border-b border-gray-200 px-4 py-2 space-x-4"><template x-for="(category, index) in filterCategories" :key="index"><button class="px-2 py-1 rounded" :class="category.active ? 'bg-black text-white' : 'text-gray-600 hover:bg-gray-200'" x-text="category.name" @click="setActiveCategory(index)"></button></template></div><div class="flex"><div class="w-1/2 border-r border-gray-200 max-h-80 overflow-y-auto"><template x-for="tag in filteredTags()" :key="tag.key"><div @click="selectTag(tag.key)" class="px-4 py-3 hover:bg-gray-100 cursor-pointer" :class="{'bg-gray-100': hoveredTag === tag.key}" @mouseover="hoveredTag = tag.key" x-text="tag.key"></div></template></div><div class="w-1/2 p-4"><template x-if="hoveredTag && getTagDetails(hoveredTag)"><div><h3 class="text-lg font-medium text-gray-800" x-text="hoveredTag"></h3><p class="text-gray-600 mt-2" x-text="getTagDetails(hoveredTag).description"></p><div class="mt-4"><span class="text-gray-700">Type</span> <span class="ml-2 text-gray-600" x-text="getTagDetails(hoveredTag).type || 'String'"></span></div></div></template></div></div></div><div x-show="showTagValues" class="dropdown-container text-sm" x-cloak><div class="max-h-80 overflow-y-auto"><template x-for="(item, index) in filteredTagValues()" :key="index"><div @click="selectTagValue(item.value)" class="px-4 py-3 hover:bg-gray-100 cursor-pointer flex items-center justify-between"><span x-text="item.value"></span></div></template></div></div></div></div><script>
+      htmx.onLoad(function (target) {
+            Alpine.data('searchInput', () => ({
+          inputValue: '',
+          tokens: [],
+          rawText: '',
+          
+          showTagSuggestions: false,
+          showTagValues: false,
+          showOperatorDropdown: false,
+          operatorDropdownPosition: { top: 0, left: 0 },
+          activeTokenIndex: null,
+          
+          currentTag: null,
+          currentOperator: 'is',
+          multiSelectMode: false,
+          multiSelectedValues: [],
+          hoveredTag: null,
+          
+          operators: ['is', 'is not'],
+          
+          filterCategories: [
+              { name: 'All', active: true },
+              { name: 'Issues', active: false },
+              { name: 'Event Tags', active: false }
+          ],
+          
+          availableTags: [
+              { key: 'is', description: 'Filter by exact match', type: 'Operator', category: 'All' },
+              { key: 'level', description: 'Filter by log level', type: 'String', category: 'All' },
+              { key: 'url', description: 'URL of the request', type: 'String', category: 'All' },
+              
+              { key: 'issue.priority', description: 'Filter by issue priority', type: 'String', category: 'Issues' },
+              { key: 'issue.status', description: 'Filter by issue status', type: 'String', category: 'Issues' },
+              { key: 'issue.type', description: 'Filter by issue type', type: 'String', category: 'Issues' },
+              
+              { key: 'os.name', description: 'Name of the Operating System', type: 'String', category: 'Event Tags' },
+              { key: 'runtime', description: 'Runtime environment', type: 'String', category: 'Event Tags' },
+              { key: 'runtime.name', description: 'Name of the runtime', type: 'String', category: 'Event Tags' },
+              { key: 'server_name', description: 'Server identifier', type: 'String', category: 'Event Tags' },
+              { key: 'os', description: 'Operating system', type: 'String', category: 'Event Tags' },
+              { key: 'browser.name', description: 'Browser name', type: 'String', category: 'Event Tags' },
+              { key: 'logger', description: 'Filter by logger name', type: 'String', category: 'Event Tags' }
+          ],
+          
+          tagValues: {
+              'runtime': [
+            { value: 'go go1.24.0', description: 'Go version 1.24.0' },
+            { value: 'php 7.4.33', description: 'PHP version 7.4.33' },
+            { value: 'go go1.22.12', description: 'Go version 1.22.12' },
+            { value: 'php 8.2.28', description: 'PHP version 8.2.28' }
+              ],
+              'runtime.name': [
+            { value: 'go', description: 'Go runtime' },
+            { value: 'php', description: 'PHP runtime' },
+            { value: 'node', description: 'Node.js runtime' },
+            { value: 'python', description: 'Python runtime' }
+              ],
+              'server_name': [
+            { value: 'app-go-prod-5896566df9-ztjkc', description: 'Production Go server' },
+            { value: 'app-php-prod-3456789ab1-xyzab', description: 'Production PHP server' }
+              ],
+              'is': [
+            { value: 'true', description: 'Boolean true' },
+            { value: 'false', description: 'Boolean false' }
+              ],
+              'level': [
+            { value: 'error', description: 'Error level' },
+            { value: 'warning', description: 'Warning level' },
+            { value: 'info', description: 'Info level' },
+            { value: 'debug', description: 'Debug level' }
+              ],
+              'issue.priority': [
+            { value: 'high', description: 'High priority' },
+            { value: 'medium', description: 'Medium priority' },
+            { value: 'low', description: 'Low priority' }
+              ],
+              'issue.status': [
+            { value: 'open', description: 'Open issues' },
+            { value: 'resolved', description: 'Resolved issues' },
+            { value: 'ignored', description: 'Ignored issues' }
+              ],
+              'os.name': [
+            { value: 'Linux', description: 'Linux operating system' },
+            { value: 'Windows', description: 'Windows operating system' },
+            { value: 'macOS', description: 'macOS operating system' }
+              ],
+              'browser.name': [
+            { value: 'Chrome', description: 'Google Chrome' },
+            { value: 'Firefox', description: 'Mozilla Firefox' },
+            { value: 'Safari', description: 'Apple Safari' },
+            { value: 'Edge', description: 'Microsoft Edge' }
+              ]
+          },
+          
+          init() {
+              window.addEventListener('keydown', (e) => {
+            if (e.key === 'Meta' || e.key === 'Control') {
+                this.multiSelectMode = true;
+            }
+              });
+              
+              window.addEventListener('keyup', (e) => {
+            if (e.key === 'Meta' || e.key === 'Control') {
+                this.multiSelectMode = false;
+            }
+              });
+          },
+        
+          getTagDetails(key) {
+              return this.availableTags.find(tag => tag.key === key);
+          },
+          
+          getActiveCategory() {
+              const activeCategory = this.filterCategories.find(cat => cat.active);
+              return activeCategory ? activeCategory.name : 'All';
+          },
+          
+          filteredTags() {
+              const activeCategory = this.getActiveCategory();
+              let filteredByCategory;
+              
+              if (activeCategory === 'All') {
+            filteredByCategory = this.availableTags;
+              } else {
+            filteredByCategory = this.availableTags.filter(tag => 
+                tag.category === activeCategory
+            );
+              }
+              
+              if (this.inputValue && !this.currentTag) {
+            const searchTerm = this.inputValue.toLowerCase();
+            return filteredByCategory.filter(tag => 
+                tag.key.toLowerCase().includes(searchTerm)
+            );
+              }
+              
+              return filteredByCategory;
+          },
+          
+          filteredTagValues() {
+              if (!this.currentTag || !this.tagValues[this.currentTag]) {
+            return [];
+              }
+              
+              const searchTerm = this.inputValue.toLowerCase();
+              return this.tagValues[this.currentTag].filter(item => 
+            item.value.toLowerCase().includes(searchTerm)
+              );
+          },
+          
+          setActiveCategory(index) {
+              this.filterCategories.forEach((category, i) => {
+            category.active = (i === index);
+              });
+          },
+          
+          handleInputClick() {
+              if (this.currentTag) {
+            this.showTagValues = true;
+            this.showTagSuggestions = false;
+              } else {
+            this.showTagSuggestions = true;
+            this.showTagValues = false;
+              }
+              this.showOperatorDropdown = false;
+          },
+          
+          handleInputFocus() {
+              this.handleInputClick();
+          },
+  
+          handleInput() {
+              if (this.currentTag) {
+            this.showTagValues = true;
+            this.showTagSuggestions = false;
+              } else {
+            this.showTagSuggestions = true;
+            this.showTagValues = false;
+              }
+              this.showOperatorDropdown = false;
+          },
+          
+          handleEnterKey() {
+              if (this.currentTag && this.inputValue) {
+            this.selectTagValue(this.inputValue);
+              } else if (this.inputValue && !this.currentTag) {
+            this.rawText = this.inputValue;
+            this.tokens.push({
+                key: '',
+                operator: '',
+                value: this.inputValue,
+                isRawText: true
+            });
+            this.inputValue = '';
+            this.closeAllDropdowns();
+              }
+          },
+          
+          handleBackspace() {
+              if (this.inputValue === '' && this.tokens.length > 0) {
+            if (this.currentTag) {
+                this.currentTag = null;
+                this.showTagValues = false;
+                this.showTagSuggestions = true;
+            } else {
+                this.tokens.pop();
+            }
+              }
+          },
+          
+          selectTag(tag) {
+              this.currentTag = tag;
+              this.inputValue = '';
+              this.showTagSuggestions = false;
+              this.showTagValues = true;
+              this.multiSelectedValues = [];
+              this.$nextTick(() => {
+            this.$refs.searchInput.focus();
+              });
+          },
+          
+          selectTagValue(value) {
+              if (this.multiSelectMode && this.multiSelectedValues.length > 0) {
+            this.multiSelectedValues.forEach(val => {
+                this.tokens.push({
+              key: this.currentTag,
+              operator: this.currentOperator,
+              value: val
+                });
+            });
+            this.multiSelectedValues = [];
+              } else {
+            this.tokens.push({
+                key: this.currentTag,
+                operator: this.currentOperator,
+                value: value
+            });
+              }
+              
+              this.currentTag = null;
+              this.inputValue = '';
+              this.closeAllDropdowns();
+              this.$nextTick(() => {
+            this.$refs.searchInput.focus();
+              });
+          },
+          
+          toggleMultiSelect(value) {
+              if (!this.multiSelectMode) {
+            this.selectTagValue(value);
+            return;
+              }
+              
+              const index = this.multiSelectedValues.indexOf(value);
+              if (index === -1) {
+            this.multiSelectedValues.push(value);
+              } else {
+            this.multiSelectedValues.splice(index, 1);
+              }
+          },
+          
+          isValueSelected(value) {
+              return this.multiSelectedValues.includes(value);
+          },
+          
+          openOperatorDropdown(tokenIndex) {
+              if (this.tokens[tokenIndex].isRawText) return;
+              
+              this.activeTokenIndex = tokenIndex;
+              
+              const operatorElement = event.target;
+              const rect = operatorElement.getBoundingClientRect();
+              
+              this.operatorDropdownPosition = {
+            top: rect.bottom + window.scrollY,
+            left: rect.left + window.scrollX
+              };
+              
+              this.showOperatorDropdown = true;
+              this.showTagSuggestions = false;
+              this.showTagValues = false;
+          },
+        
+          changeOperator(tokenIndex, newOperator) {
+              if (tokenIndex !== null && this.tokens[tokenIndex]) {
+            this.tokens[tokenIndex].operator = newOperator;
+              }
+              this.showOperatorDropdown = false;
+          },
+          
+          removeToken(index) {
+              this.tokens.splice(index, 1);
+          },
+        
+          clearAll() {
+              this.tokens = [];
+              this.inputValue = '';
+              this.rawText = '';
+              this.currentTag = null;
+              this.closeAllDropdowns();
+              this.$nextTick(() => {
+            this.$refs.searchInput.focus();
+              });
+          },
+          
+          closeAllDropdowns() {
+              this.showTagSuggestions = false;
+              this.showTagValues = false;
+              this.showOperatorDropdown = false;
+          },
+      
+          focusInput() {
+              this.$refs.searchInput.focus();
+          }
+            }));
+        });
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('searchInput', () => ({
+          inputValue: '',
+          tokens: [],
+          rawText: '',
+          
+          showTagSuggestions: false,
+          showTagValues: false,
+          showOperatorDropdown: false,
+          operatorDropdownPosition: { top: 0, left: 0 },
+          activeTokenIndex: null,
+          
+          currentTag: null,
+          currentOperator: 'is',
+          multiSelectMode: false,
+          multiSelectedValues: [],
+          hoveredTag: null,
+          
+          operators: ['is', 'is not'],
+          
+          filterCategories: [
+              { name: 'All', active: true },
+              { name: 'Issues', active: false },
+              { name: 'Event Tags', active: false }
+          ],
+          
+          availableTags: [
+              { key: 'is', description: 'Filter by exact match', type: 'Operator', category: 'All' },
+              { key: 'level', description: 'Filter by log level', type: 'String', category: 'All' },
+              { key: 'url', description: 'URL of the request', type: 'String', category: 'All' },
+              
+              { key: 'issue.priority', description: 'Filter by issue priority', type: 'String', category: 'Issues' },
+              { key: 'issue.status', description: 'Filter by issue status', type: 'String', category: 'Issues' },
+              { key: 'issue.type', description: 'Filter by issue type', type: 'String', category: 'Issues' },
+              
+              { key: 'os.name', description: 'Name of the Operating System', type: 'String', category: 'Event Tags' },
+              { key: 'runtime', description: 'Runtime environment', type: 'String', category: 'Event Tags' },
+              { key: 'runtime.name', description: 'Name of the runtime', type: 'String', category: 'Event Tags' },
+              { key: 'server_name', description: 'Server identifier', type: 'String', category: 'Event Tags' },
+              { key: 'os', description: 'Operating system', type: 'String', category: 'Event Tags' },
+              { key: 'browser.name', description: 'Browser name', type: 'String', category: 'Event Tags' },
+              { key: 'logger', description: 'Filter by logger name', type: 'String', category: 'Event Tags' }
+          ],
+          
+          tagValues: {
+              'runtime': [
+            { value: 'go go1.24.0', description: 'Go version 1.24.0' },
+            { value: 'php 7.4.33', description: 'PHP version 7.4.33' },
+            { value: 'go go1.22.12', description: 'Go version 1.22.12' },
+            { value: 'php 8.2.28', description: 'PHP version 8.2.28' }
+              ],
+              'runtime.name': [
+            { value: 'go', description: 'Go runtime' },
+            { value: 'php', description: 'PHP runtime' },
+            { value: 'node', description: 'Node.js runtime' },
+            { value: 'python', description: 'Python runtime' }
+              ],
+              'server_name': [
+            { value: 'app-go-prod-5896566df9-ztjkc', description: 'Production Go server' },
+            { value: 'app-php-prod-3456789ab1-xyzab', description: 'Production PHP server' }
+              ],
+              'is': [
+            { value: 'true', description: 'Boolean true' },
+            { value: 'false', description: 'Boolean false' }
+              ],
+              'level': [
+            { value: 'error', description: 'Error level' },
+            { value: 'warning', description: 'Warning level' },
+            { value: 'info', description: 'Info level' },
+            { value: 'debug', description: 'Debug level' }
+              ],
+              'issue.priority': [
+            { value: 'high', description: 'High priority' },
+            { value: 'medium', description: 'Medium priority' },
+            { value: 'low', description: 'Low priority' }
+              ],
+              'issue.status': [
+            { value: 'open', description: 'Open issues' },
+            { value: 'resolved', description: 'Resolved issues' },
+            { value: 'ignored', description: 'Ignored issues' }
+              ],
+              'os.name': [
+            { value: 'Linux', description: 'Linux operating system' },
+            { value: 'Windows', description: 'Windows operating system' },
+            { value: 'macOS', description: 'macOS operating system' }
+              ],
+              'browser.name': [
+            { value: 'Chrome', description: 'Google Chrome' },
+            { value: 'Firefox', description: 'Mozilla Firefox' },
+            { value: 'Safari', description: 'Apple Safari' },
+            { value: 'Edge', description: 'Microsoft Edge' }
+              ]
+          },
+          
+          init() {
+              window.addEventListener('keydown', (e) => {
+            if (e.key === 'Meta' || e.key === 'Control') {
+                this.multiSelectMode = true;
+            }
+              });
+              
+              window.addEventListener('keyup', (e) => {
+            if (e.key === 'Meta' || e.key === 'Control') {
+                this.multiSelectMode = false;
+            }
+              });
+          },
+          
+          getTagDetails(key) {
+              return this.availableTags.find(tag => tag.key === key);
+          },
+          
+          getActiveCategory() {
+              const activeCategory = this.filterCategories.find(cat => cat.active);
+              return activeCategory ? activeCategory.name : 'All';
+          },
+          
+          filteredTags() {
+              const activeCategory = this.getActiveCategory();
+              let filteredByCategory;
+              
+              if (activeCategory === 'All') {
+            filteredByCategory = this.availableTags;
+              } else {
+            filteredByCategory = this.availableTags.filter(tag => 
+                tag.category === activeCategory
+            );
+              }
+              
+              if (this.inputValue && !this.currentTag) {
+            const searchTerm = this.inputValue.toLowerCase();
+            return filteredByCategory.filter(tag => 
+                tag.key.toLowerCase().includes(searchTerm)
+            );
+              }
+              
+              return filteredByCategory;
+          },
+          
+          filteredTagValues() {
+              if (!this.currentTag || !this.tagValues[this.currentTag]) {
+            return [];
+              }
+              
+              const searchTerm = this.inputValue.toLowerCase();
+              return this.tagValues[this.currentTag].filter(item => 
+            item.value.toLowerCase().includes(searchTerm)
+              );
+          },
+          
+          setActiveCategory(index) {
+              this.filterCategories.forEach((category, i) => {
+            category.active = (i === index);
+              });
+          },
+          
+          handleInputClick() {
+              if (this.currentTag) {
+            this.showTagValues = true;
+            this.showTagSuggestions = false;
+              } else {
+            this.showTagSuggestions = true;
+            this.showTagValues = false;
+              }
+              this.showOperatorDropdown = false;
+          },
+          
+          handleInputFocus() {
+              this.handleInputClick();
+          },
+          
+          handleInput() {
+              if (this.currentTag) {
+            this.showTagValues = true;
+            this.showTagSuggestions = false;
+              } else {
+            this.showTagSuggestions = true;
+            this.showTagValues = false;
+              }
+              this.showOperatorDropdown = false;
+          },
+          
+          handleEnterKey() {
+              if (this.currentTag && this.inputValue) {
+            this.selectTagValue(this.inputValue);
+              } else if (this.inputValue && !this.currentTag) {
+            this.rawText = this.inputValue;
+            this.tokens.push({
+                key: '',
+                operator: '',
+                value: this.inputValue,
+                isRawText: true
+            });
+            this.inputValue = '';
+            this.closeAllDropdowns();
+              }
+          },
+          
+          handleBackspace() {
+              if (this.inputValue === '' && this.tokens.length > 0) {
+            if (this.currentTag) {
+                this.currentTag = null;
+                this.showTagValues = false;
+                this.showTagSuggestions = true;
+            } else {
+                this.tokens.pop();
+            }
+              }
+          },
+          
+          selectTag(tag) {
+              this.currentTag = tag;
+              this.inputValue = '';
+              this.showTagSuggestions = false;
+              this.showTagValues = true;
+              this.multiSelectedValues = [];
+              this.$nextTick(() => {
+            this.$refs.searchInput.focus();
+              });
+          },
+          
+          selectTagValue(value) {
+              if (this.multiSelectMode && this.multiSelectedValues.length > 0) {
+            this.multiSelectedValues.forEach(val => {
+                this.tokens.push({
+              key: this.currentTag,
+              operator: this.currentOperator,
+              value: val
+                });
+            });
+            this.multiSelectedValues = [];
+              } else {
+            this.tokens.push({
+                key: this.currentTag,
+                operator: this.currentOperator,
+                value: value
+            });
+              }
+              
+              this.currentTag = null;
+              this.inputValue = '';
+              this.closeAllDropdowns();
+              this.$nextTick(() => {
+            this.$refs.searchInput.focus();
+              });
+          },
+          
+          toggleMultiSelect(value) {
+              if (!this.multiSelectMode) {
+            this.selectTagValue(value);
+            return;
+              }
+              
+              const index = this.multiSelectedValues.indexOf(value);
+              if (index === -1) {
+            this.multiSelectedValues.push(value);
+              } else {
+            this.multiSelectedValues.splice(index, 1);
+              }
+          },
+          
+          isValueSelected(value) {
+              return this.multiSelectedValues.includes(value);
+          },
+          
+          openOperatorDropdown(tokenIndex) {
+              if (this.tokens[tokenIndex].isRawText) return;
+              
+              this.activeTokenIndex = tokenIndex;
+              
+              const operatorElement = event.target;
+              const rect = operatorElement.getBoundingClientRect();
+              
+              this.operatorDropdownPosition = {
+            top: rect.bottom + window.scrollY,
+            left: rect.left + window.scrollX
+              };
+              
+              this.showOperatorDropdown = true;
+              this.showTagSuggestions = false;
+              this.showTagValues = false;
+          },
+          
+          changeOperator(tokenIndex, newOperator) {
+              if (tokenIndex !== null && this.tokens[tokenIndex]) {
+            this.tokens[tokenIndex].operator = newOperator;
+              }
+              this.showOperatorDropdown = false;
+          },
+          
+          removeToken(index) {
+              this.tokens.splice(index, 1);
+          },
+          
+          clearAll() {
+              this.tokens = [];
+              this.inputValue = '';
+              this.rawText = '';
+              this.currentTag = null;
+              this.closeAllDropdowns();
+              this.$nextTick(() => {
+            this.$refs.searchInput.focus();
+              });
+          },
+          
+          closeAllDropdowns() {
+              this.showTagSuggestions = false;
+              this.showTagValues = false;
+              this.showOperatorDropdown = false;
+          },
+          
+          focusInput() {
+              this.$refs.searchInput.focus();
+          }
+            }));
+        });
+    </script></div></div><main><div class="flex justify-between items-center mt-4"><table class="min-w-full"><thead><tr><th class="py-3 text-left text-xs font-medium text-gray-500 uppercase">Issue</th><th class="py-3 text-center text-xs font-medium text-gray-500 uppercase">Errors</th><th class="py-3 text-center text-xs font-medium text-gray-500 uppercase">Users</th></tr></thead> <tbody class="bg-white divide-y divide-gray-200"><tr class="hover:bg-gray-50 transition duration-150 ease-in-out"><td class="py-4 px-6 w-1/2"><div class="flex items-start cursor-pointer"><a hx-get="/projects/32/issues/26?period=14d" hx-target="#main-content" hx-swap="outerHTML settle:0" hx-push-url="true"><div class="flex items-center space-x-1"><span class="text-vercel-blue font-semibold">my loop msg</span> <span class="text-gray-600 text-sm truncate max-w-xs" title=""></span></div><div class="text-gray-600 text-sm mt-1">(No error message)</div><div class="flex items-center space-x-2 mt-2"><span class="text-gray-400 text-xs flex items-center">Last Noticed: 3d ago | First Noticed: 4d old </span></div></a></div></td><td class="py-4 text-center font-semibold text-gray-700">1.1k</td><td class="py-4 text-center font-semibold text-gray-700">0</td></tr><tr class="hover:bg-gray-50 transition duration-150 ease-in-out"><td class="py-4 px-6 w-1/2"><div class="flex items-start cursor-pointer"><a hx-get="/projects/2/issues/20?period=14d" hx-target="#main-content" hx-swap="outerHTML settle:0" hx-push-url="true"><div class="flex items-center space-x-1"><span class="text-vercel-blue font-semibold">Hor error</span> <span class="text-gray-600 text-sm truncate max-w-xs" title=""></span></div><div class="text-gray-600 text-sm mt-1">(No error message)</div><div class="flex items-center space-x-2 mt-2"><span class="text-gray-400 text-xs flex items-center">Last Noticed: 6d ago | First Noticed: 6d old </span></div></a></div></td><td class="py-4 text-center font-semibold text-gray-700">171</td><td class="py-4 text-center font-semibold text-gray-700">1</td></tr><tr class="hover:bg-gray-50 transition duration-150 ease-in-out"><td class="py-4 px-6 w-1/2"><div class="flex items-start cursor-pointer"><a hx-get="/projects/2/issues/23?period=14d" hx-target="#main-content" hx-swap="outerHTML settle:0" hx-push-url="true"><div class="flex items-center space-x-1"><span class="text-vercel-blue font-semibold">Error</span> <span class="text-gray-600 text-sm truncate max-w-xs" title="main in run">main in run</span></div><div class="text-gray-600 text-sm mt-1">an example error occurred at 2025-10-12T00:50:58+03:00</div><div class="flex items-center space-x-2 mt-2"><span class="text-gray-400 text-xs flex items-center">Last Noticed: 6d ago | First Noticed: 6d old </span></div></a></div></td><td class="py-4 text-center font-semibold text-gray-700">90</td><td class="py-4 text-center font-semibold text-gray-700">1</td></tr><tr class="hover:bg-gray-50 transition duration-150 ease-in-out"><td class="py-4 px-6 w-1/2"><div class="flex items-start cursor-pointer"><a hx-get="/projects/2/issues/19?period=14d" hx-target="#main-content" hx-swap="outerHTML settle:0" hx-push-url="true"><div class="flex items-center space-x-1"><span class="text-vercel-blue font-semibold">Error</span> <span class="text-gray-600 text-sm truncate max-w-xs" title="main in run">main in run</span></div><div class="text-gray-600 text-sm mt-1">an example error occurred at 2025-10-11T22:11:48+03:00</div><div class="flex items-center space-x-2 mt-2"><span class="text-gray-400 text-xs flex items-center">Last Noticed: 6d ago | First Noticed: 6d old </span></div></a></div></td><td class="py-4 text-center font-semibold text-gray-700">65</td><td class="py-4 text-center font-semibold text-gray-700">1</td></tr><tr class="hover:bg-gray-50 transition duration-150 ease-in-out"><td class="py-4 px-6 w-1/2"><div class="flex items-start cursor-pointer"><a hx-get="/projects/2/issues/24?period=14d" hx-target="#main-content" hx-swap="outerHTML settle:0" hx-push-url="true"><div class="flex items-center space-x-1"><span class="text-vercel-blue font-semibold">slog example error</span> <span class="text-gray-600 text-sm truncate max-w-xs" title=""></span></div><div class="text-gray-600 text-sm mt-1">(No error message)</div><div class="flex items-center space-x-2 mt-2"><span class="text-gray-400 text-xs flex items-center">Last Noticed: 6d ago | First Noticed: 6d old </span></div></a></div></td><td class="py-4 text-center font-semibold text-gray-700">49</td><td class="py-4 text-center font-semibold text-gray-700">0</td></tr><tr class="hover:bg-gray-50 transition duration-150 ease-in-out"><td class="py-4 px-6 w-1/2"><div class="flex items-start cursor-pointer"><a hx-get="/projects/2/issues/22?period=14d" hx-target="#main-content" hx-swap="outerHTML settle:0" hx-push-url="true"><div class="flex items-center space-x-1"><span class="text-vercel-blue font-semibold">Tor error</span> <span class="text-gray-600 text-sm truncate max-w-xs" title=""></span></div><div class="text-gray-600 text-sm mt-1">(No error message)</div><div class="flex items-center space-x-2 mt-2"><span class="text-gray-400 text-xs flex items-center">Last Noticed: 6d ago | First Noticed: 6d old </span></div></a></div></td><td class="py-4 text-center font-semibold text-gray-700">6</td><td class="py-4 text-center font-semibold text-gray-700">1</td></tr><tr class="hover:bg-gray-50 transition duration-150 ease-in-out"><td class="py-4 px-6 w-1/2"><div class="flex items-start cursor-pointer"><a hx-get="/projects/32/issues/25?period=14d" hx-target="#main-content" hx-swap="outerHTML settle:0" hx-push-url="true"><div class="flex items-center space-x-1"><span class="text-vercel-blue font-semibold">test error message for sentry</span> <span class="text-gray-600 text-sm truncate max-w-xs" title=""></span></div><div class="text-gray-600 text-sm mt-1">(No error message)</div><div class="flex items-center space-x-2 mt-2"><span class="text-gray-400 text-xs flex items-center">Last Noticed: 4d ago | First Noticed: 4d old </span></div></a></div></td><td class="py-4 text-center font-semibold text-gray-700">4</td><td class="py-4 text-center font-semibold text-gray-700">0</td></tr><tr class="hover:bg-gray-50 transition duration-150 ease-in-out"><td class="py-4 px-6 w-1/2"><div class="flex items-start cursor-pointer"><a hx-get="/projects/2/issues/21?period=14d" hx-target="#main-content" hx-swap="outerHTML settle:0" hx-push-url="true"><div class="flex items-center space-x-1"><span class="text-vercel-blue font-semibold">Dvor error</span> <span class="text-gray-600 text-sm truncate max-w-xs" title=""></span></div><div class="text-gray-600 text-sm mt-1">(No error message)</div><div class="flex items-center space-x-2 mt-2"><span class="text-gray-400 text-xs flex items-center">Last Noticed: 6d ago | First Noticed: 6d old </span></div></a></div></td><td class="py-4 text-center font-semibold text-gray-700">4</td><td class="py-4 text-center font-semibold text-gray-700">1</td></tr></tbody></table></div><div class="flex justify-end mt-4 mr-5"><span class="text-sm py-2 mr-4 text-gray-400">1-8 of 8</span> <button class="cursor-pointer px-4 py-2 text-sm border rounded-lg hover:bg-gray-50 flex items-center border-gray-300"><svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg></button> <button class="cursor-pointer px-4 py-2 text-sm border rounded-lg hover:bg-gray-50 flex items-center ml-2 border-gray-300"><svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></button></div></main></div></div></div></body></html>

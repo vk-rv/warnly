@@ -38,9 +38,11 @@
 
 .search-input-wrapper {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   width: 100%;
+  min-height: 0;
+  height: 100%;
 }
 
 .search-input {
