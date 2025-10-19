@@ -59,8 +59,11 @@ window.issueFilters = function(initialData) {
           queryParts.push(`${token.key}${token.operator}${token.value}`);
         }
       });
-      this.searchQuery = queryParts.join(' ');
-      this.applyFilters();
+      const newQuery = queryParts.join(' ');
+      if (this.searchQuery !== newQuery) {
+        this.searchQuery = newQuery;
+        this.applyFilters();
+      }
     },
 
     addFilter(key, operator, value) {
