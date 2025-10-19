@@ -1,4 +1,4 @@
-window.searchInput = function(initialTokens) {
+window.searchInput = function(initialTokens, filterCategories) {
   return {
     tokens: initialTokens || [],
     inputValue: '',
@@ -7,25 +7,7 @@ window.searchInput = function(initialTokens) {
     activeTokenIndex: -1,
     operatorDropdownPosition: { top: 0, left: 0 },
 
-    filterCategories: [
-      {
-        name: 'Fields',
-        active: true,
-        items: [
-          { key: 'is', value: 'unresolved' },
-          { key: 'is', value: 'resolved' },
-          { key: 'is', value: 'ignored' }
-        ]
-      },
-      {
-        name: 'Assigned',
-        active: false,
-        items: [
-          { key: 'assigned', value: 'me' },
-          { key: 'assigned', value: 'unassigned' }
-        ]
-      }
-    ],
+    filterCategories: filterCategories || [],
     
     init() {
       this.$watch('tokens', () => {

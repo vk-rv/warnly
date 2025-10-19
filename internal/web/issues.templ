@@ -1,6 +1,7 @@
 package web
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/vk-rv/warnly/internal/warnly"
 	"time"
@@ -61,7 +62,7 @@ templ issuesFiltersBar(res *warnly.ListIssuesResult) {
 			@timePeriodSelectorWrapper(res.Request.Period)
 		</div>
 		<div class="relative">
-			@searchBar(res.Request)
+			@searchBar(res)
 		</div>
 	</div>
 }
@@ -292,9 +293,9 @@ templ timePeriodDropdown() {
 	</div>
 }
 
-templ searchBar(req *warnly.ListIssuesRequest) {
+templ searchBar(res *warnly.ListIssuesResult) {
 	<div
-		x-data={ fmt.Sprintf("searchInput(%s)", getSearchTokens(req)) }
+		x-data={ fmt.Sprintf("searchInput(%s, %s)", getSearchTokens(res.Request), getFilterCategories(res.Filters)) }
 		class="search-container"
 		@click.away="closeAllDropdowns()"
 	>
@@ -545,6 +546,44 @@ func getPeriodOrDefault(period string) string {
 
 func getSearchTokens(req *warnly.ListIssuesRequest) string {
 	return "[]"
+}
+
+func getFilterCategories(filters warnly.IssueFilters) string {
+	categories := []map[string]any{}
+
+	if len(filters.Fields) > 0 {
+		items := []map[string]string{}
+		for _, f := range filters.Fields {
+			items = append(items, map[string]string{
+				"key":   f.Key,
+				"value": f.Value,
+			})
+		}
+		categories = append(categories, map[string]any{
+			"name":   "Fields",
+			"active": true,
+			"items":  items,
+		})
+	}
+
+	if len(filters.Assignments) > 0 {
+		items := []map[string]string{}
+		for _, f := range filters.Assignments {
+			items = append(items, map[string]string{
+				"key":   f.Key,
+				"value": f.Value,
+			})
+		}
+		categories = append(categories, map[string]any{
+			"name":   "Assigned",
+			"active": false,
+			"items":  items,
+		})
+	}
+
+	jsonBytes, _ := json.Marshal(categories)
+
+	return string(jsonBytes)
 }
 
 func getProjectName(projects []warnly.Project, projectID int) string {

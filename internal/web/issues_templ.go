@@ -9,6 +9,7 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/vk-rv/warnly/internal/warnly"
 	"time"
@@ -85,7 +86,7 @@ func IssuesFiltersAndBody(res *warnly.ListIssuesResult) templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(getIssuesAlpineData(res))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 21, Col: 35}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 22, Col: 35}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -230,7 +231,7 @@ func issuesFiltersBar(res *warnly.ListIssuesResult) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = searchBar(res.Request).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = searchBar(res).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -270,7 +271,7 @@ func projectSelector(projects []warnly.Project, requestedProject string) templ.C
 		var templ_7745c5c3_Var8 string
 		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("{ open: false, selected: '%s' }", getSelectedProjectName(requestedProject)))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 70, Col: 103}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 71, Col: 103}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 		if templ_7745c5c3_Err != nil {
@@ -288,7 +289,7 @@ func projectSelector(projects []warnly.Project, requestedProject string) templ.C
 			var templ_7745c5c3_Var9 string
 			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("selected = '%s'; $dispatch('project-changed', { project: '%s' }); open = false", project.Name, project.Name))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 100, Col: 145}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 101, Col: 145}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 			if templ_7745c5c3_Err != nil {
@@ -301,7 +302,7 @@ func projectSelector(projects []warnly.Project, requestedProject string) templ.C
 			var templ_7745c5c3_Var10 string
 			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(project.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 103, Col: 21}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 104, Col: 21}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 			if templ_7745c5c3_Err != nil {
@@ -348,7 +349,7 @@ func timePeriodSelectorWrapper(initialPeriod string) templ.Component {
 		var templ_7745c5c3_Var12 string
 		templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("timePeriodSelector('%s')", getPeriodOrDefault(initialPeriod)))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 113, Col: 111}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 114, Col: 111}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 		if templ_7745c5c3_Err != nil {
@@ -399,7 +400,7 @@ func timePeriodDropdown() templ.Component {
 	})
 }
 
-func searchBar(req *warnly.ListIssuesRequest) templ.Component {
+func searchBar(res *warnly.ListIssuesResult) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -425,9 +426,9 @@ func searchBar(req *warnly.ListIssuesRequest) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var15 string
-		templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("searchInput(%s)", getSearchTokens(req)))
+		templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("searchInput(%s, %s)", getSearchTokens(res.Request), getFilterCategories(res.Filters)))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 297, Col: 63}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 298, Col: 109}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 		if templ_7745c5c3_Err != nil {
@@ -573,7 +574,7 @@ func issuesTable(res *warnly.ListIssuesResult) templ.Component {
 			var templ_7745c5c3_Var20 string
 			templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/projects/%d/issues/%d?period=14d", issue.ProjectID, issue.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 476, Col: 92}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 477, Col: 92}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 			if templ_7745c5c3_Err != nil {
@@ -586,7 +587,7 @@ func issuesTable(res *warnly.ListIssuesResult) templ.Component {
 			var templ_7745c5c3_Var21 string
 			templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(issue.Type)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 483, Col: 69}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 484, Col: 69}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 			if templ_7745c5c3_Err != nil {
@@ -599,7 +600,7 @@ func issuesTable(res *warnly.ListIssuesResult) templ.Component {
 			var templ_7745c5c3_Var22 string
 			templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(issue.Message)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 485, Col: 63}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 486, Col: 63}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
 			if templ_7745c5c3_Err != nil {
@@ -612,7 +613,7 @@ func issuesTable(res *warnly.ListIssuesResult) templ.Component {
 			var templ_7745c5c3_Var23 string
 			templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(getProjectName(res.Projects, issue.ProjectID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 489, Col: 54}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 490, Col: 54}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
 			if templ_7745c5c3_Err != nil {
@@ -625,7 +626,7 @@ func issuesTable(res *warnly.ListIssuesResult) templ.Component {
 			var templ_7745c5c3_Var24 string
 			templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.NumFormatted(issue.TimesSeen))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 492, Col: 45}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 493, Col: 45}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var24))
 			if templ_7745c5c3_Err != nil {
@@ -638,7 +639,7 @@ func issuesTable(res *warnly.ListIssuesResult) templ.Component {
 			var templ_7745c5c3_Var25 string
 			templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.NumFormatted(issue.UserCount))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 495, Col: 45}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 496, Col: 45}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var25))
 			if templ_7745c5c3_Err != nil {
@@ -651,7 +652,7 @@ func issuesTable(res *warnly.ListIssuesResult) templ.Component {
 			var templ_7745c5c3_Var26 string
 			templ_7745c5c3_Var26, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.TimeAgo(func() time.Time { return time.Now() }, issue.FirstSeen, false))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 498, Col: 87}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 499, Col: 87}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var26))
 			if templ_7745c5c3_Err != nil {
@@ -664,7 +665,7 @@ func issuesTable(res *warnly.ListIssuesResult) templ.Component {
 			var templ_7745c5c3_Var27 string
 			templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.TimeAgo(func() time.Time { return time.Now() }, issue.LastSeen, false))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 501, Col: 86}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 502, Col: 86}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var27))
 			if templ_7745c5c3_Err != nil {
@@ -721,6 +722,44 @@ func getPeriodOrDefault(period string) string {
 
 func getSearchTokens(req *warnly.ListIssuesRequest) string {
 	return "[]"
+}
+
+func getFilterCategories(filters warnly.IssueFilters) string {
+	categories := []map[string]any{}
+
+	if len(filters.Fields) > 0 {
+		items := []map[string]string{}
+		for _, f := range filters.Fields {
+			items = append(items, map[string]string{
+				"key":   f.Key,
+				"value": f.Value,
+			})
+		}
+		categories = append(categories, map[string]any{
+			"name":   "Fields",
+			"active": true,
+			"items":  items,
+		})
+	}
+
+	if len(filters.Assignments) > 0 {
+		items := []map[string]string{}
+		for _, f := range filters.Assignments {
+			items = append(items, map[string]string{
+				"key":   f.Key,
+				"value": f.Value,
+			})
+		}
+		categories = append(categories, map[string]any{
+			"name":   "Assigned",
+			"active": false,
+			"items":  items,
+		})
+	}
+
+	jsonBytes, _ := json.Marshal(categories)
+
+	return string(jsonBytes)
 }
 
 func getProjectName(projects []warnly.Project, projectID int) string {
