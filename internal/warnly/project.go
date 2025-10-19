@@ -162,6 +162,10 @@ type ProjectService interface {
 
 	// SearchProject searches for projects by name. Returns ErrProjectNotFound if no project is found.
 	SearchProject(ctx context.Context, name string, user *User) (*Project, error)
+	// ListPopularTags lists popular tag keys for search suggestions.
+	ListPopularTags(ctx context.Context, req *ListPopularTagsRequest) ([]TagCount, error)
+	// ListTagValues lists popular values for a given tag.
+	ListTagValues(ctx context.Context, req *ListTagValuesRequest) ([]TagValueCount, error)
 }
 
 type DeleteMessageRequest struct {
@@ -169,6 +173,21 @@ type DeleteMessageRequest struct {
 	MessageID int
 	ProjectID int
 	IssueID   int
+}
+
+type ListPopularTagsRequest struct {
+	User        *User
+	ProjectName string
+	Period      string
+	Limit       int
+}
+
+type ListTagValuesRequest struct {
+	User        *User
+	Tag         string
+	ProjectName string
+	Period      string
+	Limit       int
 }
 
 // ListTeammatesRequest is a request to list teammates for a project.
@@ -222,6 +241,7 @@ type ListIssuesResult struct {
 	Issues           []IssueEntry
 	Projects         []Project
 	Filters          IssueFilters
+	PopularTags      []TagCount
 	TotalIssues      int
 }
 
@@ -237,6 +257,26 @@ type IssueFilters struct {
 type Filter struct {
 	Key   string
 	Value string
+}
+
+type TagValueCount struct {
+	Value string `json:"value"`
+	Count uint64 `json:"count"`
+}
+
+type ListPopularTagsCriteria struct {
+	From       time.Time
+	To         time.Time
+	ProjectIDs []int
+	Limit      int
+}
+
+type ListTagValuesCriteria struct {
+	From       time.Time
+	To         time.Time
+	Tag        string
+	ProjectIDs []int
+	Limit      int
 }
 
 func (l *ListIssuesResult) NoIssues() bool {

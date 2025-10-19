@@ -500,23 +500,25 @@ func parseDuration(period string, defaultDur time.Duration) (time.Duration, erro
 	return dur, nil
 }
 
+func getListIssuesTimeRange(s *ProjectService, req *warnly.ListIssuesRequest) (time.Time, time.Time, error) {
+	if req.Start != "" && req.End != "" {
+		from, to, err := warnly.ParseTimeRange(req.Start, req.End)
+		return from, to, err
+	}
+	dur, err := parseDuration(req.Period, 14*24*time.Hour)
+	if err != nil {
+		return time.Time{}, time.Time{}, err
+	}
+	to := s.now().UTC()
+	from := to.Add(-dur)
+	return from, to, nil
+}
+
 // ListIssues lists issues for the projects the user has access to.
 func (s *ProjectService) ListIssues(ctx context.Context, req *warnly.ListIssuesRequest) (*warnly.ListIssuesResult, error) {
-	var from, to time.Time
-	var err error
-
-	if req.Start != "" && req.End != "" {
-		from, to, err = warnly.ParseTimeRange(req.Start, req.End)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		dur, err := parseDuration(req.Period, 14*24*time.Hour)
-		if err != nil {
-			return nil, err
-		}
-		to = s.now().UTC()
-		from = to.Add(-dur)
+	from, to, err := getListIssuesTimeRange(s, req)
+	if err != nil {
+		return nil, err
 	}
 
 	teams, err := s.teamStore.ListTeams(ctx, int(req.User.ID))
@@ -538,6 +540,7 @@ func (s *ProjectService) ListIssues(ctx context.Context, req *warnly.ListIssuesR
 			Request:     req,
 			Issues:      nil,
 			LastProject: nil,
+			PopularTags: []warnly.TagCount{},
 		}, nil
 	}
 
@@ -548,6 +551,17 @@ func (s *ProjectService) ListIssues(ctx context.Context, req *warnly.ListIssuesR
 	})
 
 	projectIDS := extractProjectIDs(projects, req.ProjectName)
+
+	popularTagsReq := &warnly.ListPopularTagsRequest{
+		User:        req.User,
+		ProjectName: req.ProjectName,
+		Period:      req.Period,
+		Limit:       1000,
+	}
+	popularTags, err := s.ListPopularTags(ctx, popularTagsReq)
+	if err != nil {
+		return nil, err
+	}
 
 	issues, err := s.issueStore.ListIssues(ctx, warnly.ListIssuesCriteria{
 		ProjectIDs: projectIDS,
@@ -571,6 +585,7 @@ func (s *ProjectService) ListIssues(ctx context.Context, req *warnly.ListIssuesR
 			LastProject:      &lastProject,
 			Projects:         projects,
 			RequestedProject: req.ProjectName,
+			PopularTags:      popularTags,
 			TotalIssues:      totalIssues,
 		}, nil
 	}
@@ -622,6 +637,7 @@ func (s *ProjectService) ListIssues(ctx context.Context, req *warnly.ListIssuesR
 		LastProject:      &lastProject,
 		Projects:         projects,
 		RequestedProject: req.ProjectName,
+		PopularTags:      popularTags,
 		TotalIssues:      totalAfterFilters,
 		Filters: warnly.IssueFilters{
 			Fields:      fields,
@@ -938,6 +954,51 @@ func (s *ProjectService) AssignIssue(ctx context.Context, req *warnly.AssignIssu
 	}
 
 	return s.assingmentStore.CreateAssingment(ctx, assign)
+}
+
+// ListPopularTags lists popular tag keys for search suggestions.
+func (s *ProjectService) ListPopularTags(ctx context.Context, req *warnly.ListPopularTagsRequest) ([]warnly.TagCount, error) {
+	projectIDs, err := s.getProjectIDs(ctx, req.User, req.ProjectName)
+	if err != nil {
+		return nil, err
+	}
+
+	from, to, err := s.getTimeRangeFromPeriod(req.Period)
+	if err != nil {
+		return nil, err
+	}
+
+	criteria := &warnly.ListPopularTagsCriteria{
+		ProjectIDs: projectIDs,
+		From:       from,
+		To:         to,
+		Limit:      req.Limit,
+	}
+
+	return s.analyticsStore.ListPopularTags(ctx, criteria)
+}
+
+// ListTagValues lists popular values for a given tag.
+func (s *ProjectService) ListTagValues(ctx context.Context, req *warnly.ListTagValuesRequest) ([]warnly.TagValueCount, error) {
+	projectIDs, err := s.getProjectIDs(ctx, req.User, req.ProjectName)
+	if err != nil {
+		return nil, err
+	}
+
+	from, to, err := s.getTimeRangeFromPeriod(req.Period)
+	if err != nil {
+		return nil, err
+	}
+
+	criteria := &warnly.ListTagValuesCriteria{
+		Tag:        req.Tag,
+		ProjectIDs: projectIDs,
+		From:       from,
+		To:         to,
+		Limit:      req.Limit,
+	}
+
+	return s.analyticsStore.ListTagValues(ctx, criteria)
 }
 
 // SearchProject searches for a project by name within the user's teams.
@@ -1298,6 +1359,105 @@ func filterRecentIssues(issueList []warnly.IssueEntry, now time.Time) []warnly.I
 	return res
 }
 
+type QueryToken struct {
+	Key       string
+	Operator  string
+	Value     string
+	IsRawText bool
+}
+
+func parseQueryTokens(query string) []QueryToken {
+	tokens := []QueryToken{}
+	parts := strings.Fields(query)
+
+	for _, part := range parts {
+		switch {
+		case strings.Contains(part, ":"):
+			subParts := strings.SplitN(part, ":", 3)
+			switch len(subParts) {
+			case 3:
+				tokens = append(tokens, QueryToken{
+					Key:       subParts[0],
+					Operator:  subParts[1],
+					Value:     subParts[2],
+					IsRawText: false,
+				})
+			case 2:
+				tokens = append(tokens, QueryToken{
+					Key:       subParts[0],
+					Value:     subParts[1],
+					IsRawText: false,
+				})
+			default:
+				tokens = append(tokens, QueryToken{
+					Value:     part,
+					IsRawText: true,
+				})
+			}
+		default:
+			tokens = append(tokens, QueryToken{
+				Value:     part,
+				IsRawText: true,
+			})
+		}
+	}
+
+	return tokens
+}
+
+// getProjectIDs returns project IDs based on user and project name.
+func (s *ProjectService) getProjectIDs(ctx context.Context, user *warnly.User, projectName string) ([]int, error) {
+	if projectName != "" {
+		project, err := s.SearchProject(ctx, projectName, user)
+		if err != nil {
+			return nil, err
+		}
+		return []int{project.ID}, nil
+	}
+
+	teams, err := s.teamStore.ListTeams(ctx, int(user.ID))
+	if err != nil {
+		return nil, err
+	}
+
+	if len(teams) == 0 {
+		return []int{}, nil
+	}
+
+	teamIDs := make([]int, len(teams))
+	for i, team := range teams {
+		teamIDs[i] = team.ID
+	}
+
+	projects, err := s.projectStore.ListProjects(ctx, teamIDs, "")
+	if err != nil {
+		return nil, err
+	}
+
+	projectIDs := make([]int, len(projects))
+	for i := range projects {
+		projectIDs[i] = projects[i].ID
+	}
+
+	return projectIDs, nil
+}
+
+// getTimeRangeFromPeriod parses period and returns from/to times.
+func (s *ProjectService) getTimeRangeFromPeriod(period string) (from, to time.Time, err error) {
+	if period == "" {
+		period = defaultPeriod
+	}
+
+	dur, err := warnly.ParseDuration(period)
+	if err != nil {
+		return time.Time{}, time.Time{}, err
+	}
+
+	now := s.now().UTC()
+
+	return now.Add(-dur), now, nil
+}
+
 // applyFilters applies text search and structured filters to issues.
 func (s *ProjectService) applyFilters(issues []warnly.Issue, query, filtersJSON string) []warnly.Issue {
 	if query == "" && filtersJSON == "" {
@@ -1306,20 +1466,26 @@ func (s *ProjectService) applyFilters(issues []warnly.Issue, query, filtersJSON 
 
 	filtered := make([]warnly.Issue, 0, len(issues))
 
-	queryLower := strings.ToLower(query)
+	tokens := parseQueryTokens(query)
 
 	for i := range issues {
 		matches := true
 
-		if query != "" {
-			messageLower := strings.ToLower(issues[i].Message)
-			typeLower := strings.ToLower(issues[i].ErrorType)
-			viewLower := strings.ToLower(issues[i].View)
+		for _, token := range tokens {
+			if token.IsRawText {
+				// Raw text search
+				queryLower := strings.ToLower(token.Value)
+				messageLower := strings.ToLower(issues[i].Message)
+				typeLower := strings.ToLower(issues[i].ErrorType)
+				viewLower := strings.ToLower(issues[i].View)
 
-			if !strings.Contains(messageLower, queryLower) &&
-				!strings.Contains(typeLower, queryLower) &&
-				!strings.Contains(viewLower, queryLower) {
-				matches = false
+				if !strings.Contains(messageLower, queryLower) &&
+					!strings.Contains(typeLower, queryLower) &&
+					!strings.Contains(viewLower, queryLower) {
+					matches = false
+					break
+				}
+			} else { //nolint:staticcheck // for simplicity
 			}
 		}
 

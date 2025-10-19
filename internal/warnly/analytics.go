@@ -40,6 +40,10 @@ type AnalyticsStore interface {
 	StoreEvent(ctx context.Context, event *EventClickhouse) error
 	// ListFieldFilters lists field filters for a given project.
 	ListFieldFilters(ctx context.Context, criteria *FieldFilterCriteria) ([]Filter, error)
+	// ListPopularTags lists popular tag keys across all events.
+	ListPopularTags(ctx context.Context, criteria *ListPopularTagsCriteria) ([]TagCount, error)
+	// ListTagValues lists popular values for a given tag.
+	ListTagValues(ctx context.Context, criteria *ListTagValuesCriteria) ([]TagValueCount, error)
 }
 
 type FieldFilterCriteria struct {

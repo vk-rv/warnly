@@ -295,7 +295,7 @@ templ timePeriodDropdown() {
 
 templ searchBar(res *warnly.ListIssuesResult) {
 	<div
-		x-data={ fmt.Sprintf("searchInput(%s, %s)", getSearchTokens(res.Request), getFilterCategories(res.Filters)) }
+		x-data={ fmt.Sprintf("searchInput(%s, %s)", getSearchTokens(res.Request), getPopularTagsCategories(res.PopularTags)) }
 		class="search-container"
 		@click.away="closeAllDropdowns()"
 	>
@@ -366,18 +366,29 @@ templ searchSuggestions() {
 		class="dropdown-container text-sm"
 		x-cloak
 	>
-		<div class="flex border-b border-gray-200 px-4 py-2 space-x-4">
-			<template x-for="(category, index) in filterCategories" :key="index">
-				<button
-					class="px-2 py-1 rounded"
-					:class="category.active ? 'bg-black text-white' : 'text-gray-600 hover:bg-gray-200'"
-					x-text="category.name"
-					@click="setActiveCategory(index)"
-				></button>
+		<div class="flex border-b border-gray-200 px-4 py-2 justify-between items-center">
+			<div class="flex space-x-4">
+				<template x-for="(category, index) in filterCategories" :key="index">
+					<button
+						class="px-2 py-1 rounded"
+						:class="category.active ? 'bg-black text-white' : 'text-gray-600 hover:bg-gray-200'"
+						x-text="category.name"
+						@click="setActiveCategory(index)"
+					></button>
+				</template>
+			</div>
+			<!-- Custom value input for tag values mode -->
+			<template x-if="isInTagValuesMode()">
+				<input
+					x-model="customValue"
+					@keydown.enter="addCustomValue()"
+					placeholder="Type custom tag value and press Enter"
+					class="px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 w-80"
+				/>
 			</template>
 		</div>
 		<div class="py-2">
-			<template x-for="category in filterCategories" :key="category.name">
+			<template x-for="category in filterCategories" :key="category.name || 'default'">
 				<template x-if="category.active">
 					<div>
 						<template x-for="item in category.items" :key="item.value">
@@ -385,13 +396,26 @@ templ searchSuggestions() {
 								@click="addFilterFromCategory(item)"
 								class="px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm"
 							>
-								<span class="font-medium" x-text="item.key + ':'"></span>
-								<span x-text="item.value"></span>
+								<span x-text="item.key === item.value ? item.value : item.key + ':' + item.value"></span>
 							</div>
 						</template>
 					</div>
 				</template>
 			</template>
+		</div>
+	</div>
+	<div
+		x-show="showTagMatch"
+		class="dropdown-container text-sm"
+		x-cloak
+	>
+		<div class="py-2">
+			<div
+				@click="selectMatchedTag()"
+				class="px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm"
+			>
+				<span x-text="matchedTag ? matchedTag.key : ''"></span>
+			</div>
 		</div>
 	</div>
 }
@@ -526,8 +550,9 @@ func getIssuesAlpineData(res *warnly.ListIssuesResult) string {
 		period: '%s',
 		projectName: '%s',
 		offset: %d,
-		totalIssues: %d
-	})`, filters, res.Request.Query, period, res.RequestedProject, res.Request.Offset, res.TotalIssues)
+		totalIssues: %d,
+		tokens: %s
+	})`, filters, res.Request.Query, period, res.RequestedProject, res.Request.Offset, res.TotalIssues, getSearchTokens(res.Request))
 }
 
 func getSelectedProjectName(requestedProject string) string {
@@ -579,6 +604,27 @@ func getFilterCategories(filters warnly.IssueFilters) string {
 			"active": false,
 			"items":  items,
 		})
+	}
+
+	jsonBytes, _ := json.Marshal(categories)
+
+	return string(jsonBytes)
+}
+
+func getPopularTagsCategories(tags []warnly.TagCount) string {
+	items := []map[string]string{}
+	for _, t := range tags {
+		items = append(items, map[string]string{
+			"key":   t.Tag,
+			"value": t.Tag,
+		})
+	}
+	categories := []map[string]any{
+		{
+			"name":   "Tags",
+			"active": true,
+			"items":  items,
+		},
 	}
 
 	jsonBytes, _ := json.Marshal(categories)

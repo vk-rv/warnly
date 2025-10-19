@@ -1,10 +1,12 @@
 package server
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
+	"strconv"
 
 	"github.com/vk-rv/warnly/internal/session"
 	"github.com/vk-rv/warnly/internal/warnly"
@@ -85,6 +87,45 @@ func (h *sessionHandler) index(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.writeIndex(w, r, result, &user)
+}
+
+// listTagValues handles the request to list values for a tag.
+func (h *sessionHandler) listTagValues(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	user := getUser(ctx)
+
+	tag := r.URL.Query().Get("tag")
+	projectName := r.URL.Query().Get("project_name")
+	period := r.URL.Query().Get("period")
+	limitStr := r.URL.Query().Get("limit")
+	limit := 100
+	if limitStr != "" {
+		if parsed, err := strconv.Atoi(limitStr); err == nil && parsed > 0 {
+			limit = parsed
+		}
+	}
+
+	req := &warnly.ListTagValuesRequest{
+		User:        &user,
+		Tag:         tag,
+		ProjectName: projectName,
+		Period:      period,
+		Limit:       limit,
+	}
+
+	values, err := h.projectSvc.ListTagValues(ctx, req)
+	if err != nil {
+		h.writeError(ctx, w, http.StatusInternalServerError, "list tag values", err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	if err := json.NewEncoder(w).Encode(values); err != nil {
+		h.writeError(ctx, w, http.StatusInternalServerError, "list tag values: encode", err)
+		return
+	}
 }
 
 // writeIndex writes the index page to the response writer.

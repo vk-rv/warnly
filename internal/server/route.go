@@ -165,6 +165,7 @@ func NewHandler(b *Backend) (*Handler, error) {
 	mux.HandleFunc("GET /static/", fsHandler)
 
 	mux.HandleFunc("GET /", chain(sessionHandler.index))
+	mux.HandleFunc("GET /api/search/tag-values", chain(sessionHandler.listTagValues))
 	mux.HandleFunc("DELETE /session", chain(sessionHandler.destroy))
 
 	mux.HandleFunc("POST /ingest/api/{project_id}/envelope/", eventAPIHandler.IngestEvent)

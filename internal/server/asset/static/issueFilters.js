@@ -42,6 +42,7 @@ window.issueFilters = function(initialData) {
         this.selectedProject = e.detail.project;
         this.resetFilters();
         this.applyFilters();
+        window.dispatchEvent(new CustomEvent('reset-search', {}));
       });
 
       this.$el.addEventListener('issue-clicked', (e) => {

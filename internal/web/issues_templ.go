@@ -426,9 +426,9 @@ func searchBar(res *warnly.ListIssuesResult) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var15 string
-		templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("searchInput(%s, %s)", getSearchTokens(res.Request), getFilterCategories(res.Filters)))
+		templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("searchInput(%s, %s)", getSearchTokens(res.Request), getPopularTagsCategories(res.PopularTags)))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 298, Col: 109}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 298, Col: 118}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 		if templ_7745c5c3_Err != nil {
@@ -475,7 +475,7 @@ func searchSuggestions() templ.Component {
 			templ_7745c5c3_Var16 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "<div x-show=\"showTagSuggestions\" class=\"dropdown-container text-sm\" x-cloak><div class=\"flex border-b border-gray-200 px-4 py-2 space-x-4\"><template x-for=\"(category, index) in filterCategories\" :key=\"index\"><button class=\"px-2 py-1 rounded\" :class=\"category.active ? 'bg-black text-white' : 'text-gray-600 hover:bg-gray-200'\" x-text=\"category.name\" @click=\"setActiveCategory(index)\"></button></template></div><div class=\"py-2\"><template x-for=\"category in filterCategories\" :key=\"category.name\"><template x-if=\"category.active\"><div><template x-for=\"item in category.items\" :key=\"item.value\"><div @click=\"addFilterFromCategory(item)\" class=\"px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm\"><span class=\"font-medium\" x-text=\"item.key + ':'\"></span> <span x-text=\"item.value\"></span></div></template></div></template></template></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "<div x-show=\"showTagSuggestions\" class=\"dropdown-container text-sm\" x-cloak><div class=\"flex border-b border-gray-200 px-4 py-2 justify-between items-center\"><div class=\"flex space-x-4\"><template x-for=\"(category, index) in filterCategories\" :key=\"index\"><button class=\"px-2 py-1 rounded\" :class=\"category.active ? 'bg-black text-white' : 'text-gray-600 hover:bg-gray-200'\" x-text=\"category.name\" @click=\"setActiveCategory(index)\"></button></template></div><!-- Custom value input for tag values mode --><template x-if=\"isInTagValuesMode()\"><input x-model=\"customValue\" @keydown.enter=\"addCustomValue()\" placeholder=\"Type custom tag value and press Enter\" class=\"px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 w-80\"></template></div><div class=\"py-2\"><template x-for=\"category in filterCategories\" :key=\"category.name || 'default'\"><template x-if=\"category.active\"><div><template x-for=\"item in category.items\" :key=\"item.value\"><div @click=\"addFilterFromCategory(item)\" class=\"px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm\"><span x-text=\"item.key === item.value ? item.value : item.key + ':' + item.value\"></span></div></template></div></template></template></div></div><div x-show=\"showTagMatch\" class=\"dropdown-container text-sm\" x-cloak><div class=\"py-2\"><div @click=\"selectMatchedTag()\" class=\"px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm\"><span x-text=\"matchedTag ? matchedTag.key : ''\"></span></div></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -574,7 +574,7 @@ func issuesTable(res *warnly.ListIssuesResult) templ.Component {
 			var templ_7745c5c3_Var20 string
 			templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/projects/%d/issues/%d?period=14d", issue.ProjectID, issue.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 477, Col: 92}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 501, Col: 92}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 			if templ_7745c5c3_Err != nil {
@@ -587,7 +587,7 @@ func issuesTable(res *warnly.ListIssuesResult) templ.Component {
 			var templ_7745c5c3_Var21 string
 			templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(issue.Type)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 484, Col: 69}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 508, Col: 69}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 			if templ_7745c5c3_Err != nil {
@@ -600,7 +600,7 @@ func issuesTable(res *warnly.ListIssuesResult) templ.Component {
 			var templ_7745c5c3_Var22 string
 			templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(issue.Message)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 486, Col: 63}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 510, Col: 63}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
 			if templ_7745c5c3_Err != nil {
@@ -613,7 +613,7 @@ func issuesTable(res *warnly.ListIssuesResult) templ.Component {
 			var templ_7745c5c3_Var23 string
 			templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(getProjectName(res.Projects, issue.ProjectID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 490, Col: 54}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 514, Col: 54}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
 			if templ_7745c5c3_Err != nil {
@@ -626,7 +626,7 @@ func issuesTable(res *warnly.ListIssuesResult) templ.Component {
 			var templ_7745c5c3_Var24 string
 			templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.NumFormatted(issue.TimesSeen))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 493, Col: 45}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 517, Col: 45}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var24))
 			if templ_7745c5c3_Err != nil {
@@ -639,7 +639,7 @@ func issuesTable(res *warnly.ListIssuesResult) templ.Component {
 			var templ_7745c5c3_Var25 string
 			templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.NumFormatted(issue.UserCount))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 496, Col: 45}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 520, Col: 45}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var25))
 			if templ_7745c5c3_Err != nil {
@@ -652,7 +652,7 @@ func issuesTable(res *warnly.ListIssuesResult) templ.Component {
 			var templ_7745c5c3_Var26 string
 			templ_7745c5c3_Var26, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.TimeAgo(func() time.Time { return time.Now() }, issue.FirstSeen, false))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 499, Col: 87}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 523, Col: 87}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var26))
 			if templ_7745c5c3_Err != nil {
@@ -665,7 +665,7 @@ func issuesTable(res *warnly.ListIssuesResult) templ.Component {
 			var templ_7745c5c3_Var27 string
 			templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.TimeAgo(func() time.Time { return time.Now() }, issue.LastSeen, false))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 502, Col: 86}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 526, Col: 86}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var27))
 			if templ_7745c5c3_Err != nil {
@@ -702,8 +702,9 @@ func getIssuesAlpineData(res *warnly.ListIssuesResult) string {
 		period: '%s',
 		projectName: '%s',
 		offset: %d,
-		totalIssues: %d
-	})`, filters, res.Request.Query, period, res.RequestedProject, res.Request.Offset, res.TotalIssues)
+		totalIssues: %d,
+		tokens: %s
+	})`, filters, res.Request.Query, period, res.RequestedProject, res.Request.Offset, res.TotalIssues, getSearchTokens(res.Request))
 }
 
 func getSelectedProjectName(requestedProject string) string {
@@ -755,6 +756,27 @@ func getFilterCategories(filters warnly.IssueFilters) string {
 			"active": false,
 			"items":  items,
 		})
+	}
+
+	jsonBytes, _ := json.Marshal(categories)
+
+	return string(jsonBytes)
+}
+
+func getPopularTagsCategories(tags []warnly.TagCount) string {
+	items := []map[string]string{}
+	for _, t := range tags {
+		items = append(items, map[string]string{
+			"key":   t.Tag,
+			"value": t.Tag,
+		})
+	}
+	categories := []map[string]any{
+		{
+			"name":   "Tags",
+			"active": true,
+			"items":  items,
+		},
 	}
 
 	jsonBytes, _ := json.Marshal(categories)

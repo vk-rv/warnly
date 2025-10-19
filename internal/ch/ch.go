@@ -790,6 +790,111 @@ func (s *ClickhouseStore) CalculateEvents(
 	return res, nil
 }
 
+// ListPopularTags lists popular tag keys across all events in the given time range and projects.
+func (s *ClickhouseStore) ListPopularTags(
+	ctx context.Context,
+	c *warnly.ListPopularTagsCriteria,
+) ([]warnly.TagCount, error) {
+	ctx, span := s.tracer.Start(ctx, "ClickhouseStore.ListPopularTags")
+	defer span.End()
+
+	pidQuestionMarks, pidArgs := createPlaceholdersAndArgs(c.ProjectIDs)
+
+	args := []any{c.From, c.To}
+	args = append(args, pidArgs...)
+
+	query := `SELECT tag, count() AS count
+			   FROM event
+			   ARRAY JOIN tags.key AS tag
+			   WHERE deleted = 0
+			   AND created_at >= toDateTime(?, 'UTC')
+			   AND created_at <= toDateTime(?, 'UTC')
+			   AND pid IN (` + strings.Join(pidQuestionMarks, ",") + `)
+			   GROUP BY tag
+			   ORDER BY count DESC
+			   LIMIT ?`
+
+	args = append(args, c.Limit)
+
+	rows, err := s.conn.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("clickhouse: list popular tags: %w", err)
+	}
+	defer func() {
+		if cerr := rows.Close(); cerr != nil && err == nil {
+			err = cerr
+		}
+	}()
+
+	res := make([]warnly.TagCount, 0, c.Limit)
+	for rows.Next() {
+		tc := warnly.TagCount{}
+		if err := rows.Scan(&tc.Tag, &tc.Count); err != nil {
+			return nil, fmt.Errorf("clickhouse: list popular tags, scan result: %w", err)
+		}
+		res = append(res, tc)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("clickhouse: list popular tags, rows.Err: %w", err)
+	}
+
+	return res, nil
+}
+
+// ListTagValues lists popular values for a given tag in the specified time range and projects.
+func (s *ClickhouseStore) ListTagValues(
+	ctx context.Context,
+	c *warnly.ListTagValuesCriteria,
+) ([]warnly.TagValueCount, error) {
+	ctx, span := s.tracer.Start(ctx, "ClickhouseStore.ListTagValues")
+	defer span.End()
+
+	pidQuestionMarks, pidArgs := createPlaceholdersAndArgs(c.ProjectIDs)
+
+	args := []any{c.Tag, c.From, c.To}
+	args = append(args, pidArgs...)
+
+	query := `SELECT value, count() AS count
+			   FROM event
+			   ARRAY JOIN tags.key AS tag, tags.value AS value
+			   WHERE tag = ?
+			   AND deleted = 0
+			   AND created_at >= toDateTime(?, 'UTC')
+			   AND created_at <= toDateTime(?, 'UTC')
+			   AND pid IN (` + strings.Join(pidQuestionMarks, ",") + `)
+			   GROUP BY value
+			   ORDER BY count DESC
+			   LIMIT ?`
+
+	args = append(args, c.Limit)
+
+	rows, err := s.conn.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("clickhouse: list tag values: %w", err)
+	}
+	defer func() {
+		if cerr := rows.Close(); cerr != nil && err == nil {
+			err = cerr
+		}
+	}()
+
+	res := make([]warnly.TagValueCount, 0, c.Limit)
+	for rows.Next() {
+		tvc := warnly.TagValueCount{}
+		if err := rows.Scan(&tvc.Value, &tvc.Count); err != nil {
+			return nil, fmt.Errorf("clickhouse: list tag values, scan result: %w", err)
+		}
+		res = append(res, tvc)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("clickhouse: list tag values, rows.Err: %w", err)
+	}
+
+	return res, nil
+}
+
 // createPlaceholdersAndArgs creates SQL placeholders and corresponding args for the given items.
 func createPlaceholdersAndArgs[T any](items []T) ([]string, []any) {
 	placeholders := make([]string, len(items))
