@@ -227,7 +227,6 @@ type ListIssuesRequest struct {
 	Start       string
 	End         string
 	Query       string
-	Filters     string
 	ProjectName string
 	ProjectIDs  []int
 	Offset      int
@@ -255,8 +254,9 @@ type IssueFilters struct {
 }
 
 type Filter struct {
-	Key   string
-	Value string
+	Key      string
+	Operator string
+	Value    string
 }
 
 type TagValueCount struct {

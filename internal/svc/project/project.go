@@ -572,10 +572,6 @@ func (s *ProjectService) ListIssues(ctx context.Context, req *warnly.ListIssuesR
 		return nil, err
 	}
 
-	if req.Query != "" || req.Filters != "" {
-		issues = s.applyFilters(issues, req.Query, req.Filters)
-	}
-
 	totalIssues := len(issues)
 
 	if len(issues) == 0 {
@@ -1366,9 +1362,34 @@ type QueryToken struct {
 	IsRawText bool
 }
 
+// ParseQuery parses the query string into filters.
+func ParseQuery(query string) []warnly.Filter {
+	tokens := parseQueryTokens(query)
+	filters := make([]warnly.Filter, 0, len(tokens))
+	for _, token := range tokens {
+		if token.IsRawText {
+			// For raw text, perhaps add as special filter, but for now skip
+			continue
+		}
+		op := token.Operator
+		switch op {
+		case "":
+			op = "is"
+		case "!":
+			op = "is not"
+		}
+		filters = append(filters, warnly.Filter{
+			Key:      token.Key,
+			Operator: op,
+			Value:    token.Value,
+		})
+	}
+	return filters
+}
+
 func parseQueryTokens(query string) []QueryToken {
 	tokens := []QueryToken{}
-	parts := strings.Fields(query)
+	parts := parseQuotedFields(query)
 
 	for _, part := range parts {
 		switch {
@@ -1379,30 +1400,69 @@ func parseQueryTokens(query string) []QueryToken {
 				tokens = append(tokens, QueryToken{
 					Key:       subParts[0],
 					Operator:  subParts[1],
-					Value:     subParts[2],
+					Value:     unquote(subParts[2]),
 					IsRawText: false,
 				})
 			case 2:
 				tokens = append(tokens, QueryToken{
 					Key:       subParts[0],
-					Value:     subParts[1],
+					Value:     unquote(subParts[1]),
 					IsRawText: false,
 				})
 			default:
 				tokens = append(tokens, QueryToken{
-					Value:     part,
+					Value:     unquote(part),
 					IsRawText: true,
 				})
 			}
 		default:
 			tokens = append(tokens, QueryToken{
-				Value:     part,
+				Value:     unquote(part),
 				IsRawText: true,
 			})
 		}
 	}
 
 	return tokens
+}
+
+// parseQuotedFields splits the string by spaces, but respects quoted strings.
+func parseQuotedFields(s string) []string {
+	var parts []string
+	var current strings.Builder
+	inQuotes := false
+	quoteChar := byte(0)
+
+	for i := range len(s) {
+		char := s[i]
+		switch {
+		case !inQuotes && (char == '"' || char == '\''):
+			inQuotes = true
+			quoteChar = char
+		case inQuotes && char == quoteChar:
+			inQuotes = false
+			quoteChar = 0
+		case !inQuotes && char == ' ':
+			if current.Len() > 0 {
+				parts = append(parts, current.String())
+				current.Reset()
+			}
+		default:
+			current.WriteByte(char)
+		}
+	}
+	if current.Len() > 0 {
+		parts = append(parts, current.String())
+	}
+	return parts
+}
+
+// unquote removes surrounding quotes if present.
+func unquote(s string) string {
+	if len(s) >= 2 && ((s[0] == '"' && s[len(s)-1] == '"') || (s[0] == '\'' && s[len(s)-1] == '\'')) {
+		return s[1 : len(s)-1]
+	}
+	return s
 }
 
 // getProjectIDs returns project IDs based on user and project name.
@@ -1456,43 +1516,4 @@ func (s *ProjectService) getTimeRangeFromPeriod(period string) (from, to time.Ti
 	now := s.now().UTC()
 
 	return now.Add(-dur), now, nil
-}
-
-// applyFilters applies text search and structured filters to issues.
-func (s *ProjectService) applyFilters(issues []warnly.Issue, query, filtersJSON string) []warnly.Issue {
-	if query == "" && filtersJSON == "" {
-		return issues
-	}
-
-	filtered := make([]warnly.Issue, 0, len(issues))
-
-	tokens := parseQueryTokens(query)
-
-	for i := range issues {
-		matches := true
-
-		for _, token := range tokens {
-			if token.IsRawText {
-				// Raw text search
-				queryLower := strings.ToLower(token.Value)
-				messageLower := strings.ToLower(issues[i].Message)
-				typeLower := strings.ToLower(issues[i].ErrorType)
-				viewLower := strings.ToLower(issues[i].View)
-
-				if !strings.Contains(messageLower, queryLower) &&
-					!strings.Contains(typeLower, queryLower) &&
-					!strings.Contains(viewLower, queryLower) {
-					matches = false
-					break
-				}
-			} else { //nolint:staticcheck // for simplicity
-			}
-		}
-
-		if matches {
-			filtered = append(filtered, issues[i])
-		}
-	}
-
-	return filtered
 }

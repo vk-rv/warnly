@@ -74,7 +74,6 @@ func (h *rootHandler) index(w http.ResponseWriter, r *http.Request) {
 		Start:       r.URL.Query().Get("start"),
 		End:         r.URL.Query().Get("end"),
 		Query:       r.URL.Query().Get("query"),
-		Filters:     r.URL.Query().Get("filters"),
 		ProjectName: r.URL.Query().Get("project_name"),
 		Offset:      offset,
 		Limit:       50,

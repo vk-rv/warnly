@@ -54,9 +54,21 @@ window.issueFilters = function(initialData) {
       const queryParts = [];
       tokens.forEach(token => {
         if (token.isRawText) {
-          queryParts.push(token.value);
+          let value = token.value;
+          if (value.includes(' ')) {
+            value = `"${value}"`;
+          }
+          queryParts.push(value);
         } else {
-          queryParts.push(`${token.key}${token.operator}${token.value}`);
+          let op = '';
+          if (token.operator === 'is not') {
+            op = '!';
+          }
+          let value = token.value;
+          if (value.includes(' ')) {
+            value = `"${value}"`;
+          }
+          queryParts.push(`${token.key}:${op}${value}`);
         }
       });
       const newQuery = queryParts.join(' ');
