@@ -22,8 +22,8 @@ const (
 	msgSomethingWentWrong = "Something went wrong. Check application logs for more details."
 )
 
-// sessionHandler handles HTTP requests related to user sessions.
-type sessionHandler struct {
+// rootHandler handles HTTP requests related to user sessions and the main page.
+type rootHandler struct {
 	*BaseHandler
 
 	svc          warnly.SessionService
@@ -33,15 +33,15 @@ type sessionHandler struct {
 	rememberDays int
 }
 
-// newSessionHandler creates a new sessionHandler instance.
-func newSessionHandler(
+// newRootHandler creates a new rootHandler instance.
+func newRootHandler(
 	sessionSvc warnly.SessionService,
 	projectSvc warnly.ProjectService,
 	cookieStore *session.CookieStore,
 	rememberDays int,
 	logger *slog.Logger,
-) *sessionHandler {
-	return &sessionHandler{
+) *rootHandler {
+	return &rootHandler{
 		BaseHandler:  NewBaseHandler(logger),
 		svc:          sessionSvc,
 		projectSvc:   projectSvc,
@@ -52,7 +52,7 @@ func newSessionHandler(
 }
 
 // index handles the HTTP request to render the main page with a list of issues.
-func (h *sessionHandler) index(w http.ResponseWriter, r *http.Request) {
+func (h *rootHandler) index(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	user := getUser(ctx)
@@ -90,7 +90,7 @@ func (h *sessionHandler) index(w http.ResponseWriter, r *http.Request) {
 }
 
 // listTagValues handles the request to list values for a tag.
-func (h *sessionHandler) listTagValues(w http.ResponseWriter, r *http.Request) {
+func (h *rootHandler) listTagValues(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	user := getUser(ctx)
@@ -129,7 +129,7 @@ func (h *sessionHandler) listTagValues(w http.ResponseWriter, r *http.Request) {
 }
 
 // writeIndex writes the index page to the response writer.
-func (h *sessionHandler) writeIndex(w http.ResponseWriter, r *http.Request, res *warnly.ListIssuesResult, user *warnly.User) {
+func (h *rootHandler) writeIndex(w http.ResponseWriter, r *http.Request, res *warnly.ListIssuesResult, user *warnly.User) {
 	ctx := r.Context()
 
 	target := r.Header.Get("Hx-Target")
@@ -156,7 +156,7 @@ func (h *sessionHandler) writeIndex(w http.ResponseWriter, r *http.Request, res 
 }
 
 // destroy handles the HTTP request to destroy the current session (log out).
-func (h *sessionHandler) destroy(w http.ResponseWriter, r *http.Request) {
+func (h *rootHandler) destroy(w http.ResponseWriter, r *http.Request) {
 	if err := destroySession(w, r, h.cookieStore); err != nil {
 		h.logger.Error("destroy session: destroy", slog.Any("error", err))
 		if err = web.Hello("").Render(r.Context(), w); err != nil {
@@ -182,7 +182,7 @@ func destroySession(w http.ResponseWriter, r *http.Request, cookieStore *session
 }
 
 // login handles the HTTP request to render the login page.
-func (h *sessionHandler) login(w http.ResponseWriter, r *http.Request) {
+func (h *rootHandler) login(w http.ResponseWriter, r *http.Request) {
 	if err := web.Hello("").Render(r.Context(), w); err != nil {
 		h.logger.Error("get session: hello web render", slog.Any("error", err))
 	}
@@ -192,7 +192,7 @@ func (h *sessionHandler) login(w http.ResponseWriter, r *http.Request) {
 // It authenticates the user and sets the session cookie.
 // If the authentication fails, it renders an error page.
 // If the authentication succeeds, it redirects to the main page.
-func (h *sessionHandler) create(w http.ResponseWriter, r *http.Request) {
+func (h *rootHandler) create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	credentials := &warnly.Credentials{

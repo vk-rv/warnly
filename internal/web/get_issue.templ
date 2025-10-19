@@ -82,6 +82,7 @@ templ GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) {
 	if issue.Request.EventID != "" && issue.Request.Source == warnly.GetIssueRequestSourceIssue {
 		<a hx-swap-oob="true" id="issue_information" hx-swap="outerHTML settle:0" hx-target="#issue_content" hx-get={ fmt.Sprintf("/projects/%d/issues/%d?period=14d&source=issue&event_id=%s", issue.ProjectID, issue.IssueID, issue.Request.EventID) } :class="{ 'border-black text-black': activeTab === 'details', 'border-transparent text-gray-500 cursor-pointer': activeTab !== 'details' }" @click="activeTab = 'details'" class="px-3 py-2 border-b-2">Info</a>
 	}
+	@Toast()
 	<div id="issue_content" class="flex" x-data={ "{ copyToClipboard(text) { navigator.clipboard.writeText(text); showToast('Copied to clipboard'); } }" }>
 		<main class="flex-1 p-6">
 			<div class="flex items-center justify-between mb-6">
