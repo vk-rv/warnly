@@ -216,12 +216,27 @@ type ListIssuesRequest struct {
 }
 
 type ListIssuesResult struct {
-	LastProject      *Project
-	Request          *ListIssuesRequest
 	RequestedProject string
+	Request          *ListIssuesRequest
+	LastProject      *Project
 	Issues           []IssueEntry
 	Projects         []Project
+	Filters          IssueFilters
 	TotalIssues      int
+}
+
+type GetAssignedFiltersCriteria struct {
+	CurrentUserTeamIDs []int
+}
+
+type IssueFilters struct {
+	Assignments []Filter
+	Fields      []Filter
+}
+
+type Filter struct {
+	Key   string
+	Value string
 }
 
 func (l *ListIssuesResult) NoIssues() bool {

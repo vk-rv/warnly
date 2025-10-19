@@ -38,6 +38,14 @@ type AnalyticsStore interface {
 	ListErrors(ctx context.Context, criteria ListErrorsCriteria) ([]AnalyticsStoreErr, error)
 	// StoreEvent stores an event in the analytics database.
 	StoreEvent(ctx context.Context, event *EventClickhouse) error
+	// ListFieldFilters lists field filters for a given project.
+	ListFieldFilters(ctx context.Context, criteria *FieldFilterCriteria) ([]Filter, error)
+}
+
+type FieldFilterCriteria struct {
+	From       time.Time
+	To         time.Time
+	ProjectIDs []int
 }
 
 // EventDefCriteria represents the criteria for querying events.

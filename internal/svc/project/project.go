@@ -598,6 +598,24 @@ func (s *ProjectService) ListIssues(ctx context.Context, req *warnly.ListIssuesR
 		issueList = issueList[start:end]
 	}
 
+	fields, err := s.analyticsStore.ListFieldFilters(ctx, &warnly.FieldFilterCriteria{
+		ProjectIDs: projectIDS,
+		From:       from,
+		To:         to,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	assignedFilters, err := s.assingmentStore.ListAssignedFilters(
+		ctx,
+		&warnly.GetAssignedFiltersCriteria{
+			CurrentUserTeamIDs: teamIDS,
+		})
+	if err != nil {
+		return nil, err
+	}
+
 	return &warnly.ListIssuesResult{
 		Request:          req,
 		Issues:           issueList,
@@ -605,6 +623,10 @@ func (s *ProjectService) ListIssues(ctx context.Context, req *warnly.ListIssuesR
 		Projects:         projects,
 		RequestedProject: req.ProjectName,
 		TotalIssues:      totalAfterFilters,
+		Filters: warnly.IssueFilters{
+			Fields:      fields,
+			Assignments: assignedFilters,
+		},
 	}, nil
 }
 

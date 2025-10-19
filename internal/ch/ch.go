@@ -280,6 +280,64 @@ func (s *ClickhouseStore) GetIssueEvent(ctx context.Context, c *warnly.EventDefC
 	return &i, nil
 }
 
+// ListFieldFilters lists field filters for a given set of project IDs.
+func (s *ClickhouseStore) ListFieldFilters(
+	ctx context.Context,
+	criteria *warnly.FieldFilterCriteria,
+) ([]warnly.Filter, error) {
+	ctx, span := s.tracer.Start(ctx, "ClickhouseStore.ListFieldFilters")
+	defer span.End()
+
+	pidPlaceholders, pidArgs := createPlaceholdersAndArgs(criteria.ProjectIDs)
+
+	args := make([]any, 0, len(pidArgs)+2)
+	args = append(args, pidArgs...)
+	args = append(args, criteria.From, criteria.To)
+
+	query := `SELECT
+				tags.key AS tag_key,
+				tags.value AS tag_value,
+				count() AS frequency
+			FROM event
+			ARRAY JOIN tags
+			WHERE
+				deleted = 0
+			AND pid IN (` + strings.Join(pidPlaceholders, ",") + `)
+			AND created_at >= toDateTime(?, 'UTC')
+			AND created_at < toDateTime(?, 'UTC')
+			GROUP BY tag_key, tag_value
+			ORDER BY frequency DESC
+			LIMIT 1000`
+
+	rows, err := s.conn.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("clickhouse: list field filters: %w", err)
+	}
+	defer func() {
+		if cerr := rows.Close(); cerr != nil && err == nil {
+			err = cerr
+		}
+	}()
+
+	var (
+		filters   []warnly.Filter
+		frequency uint64
+	)
+	for rows.Next() {
+		var f warnly.Filter
+		if err := rows.Scan(&f.Key, &f.Value, &frequency); err != nil {
+			return nil, fmt.Errorf("clickhouse: list field filters, scan result: %w", err)
+		}
+		filters = append(filters, f)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("clickhouse: list field filters, rows.Err: %w", err)
+	}
+
+	return filters, nil
+}
+
 // CalculateFields calculates the number of occurrences of each field for a given issue identifier and
 // project within a specified time range.
 func (s *ClickhouseStore) CalculateFields(ctx context.Context, c warnly.FieldsCriteria) ([]warnly.TagCount, error) {

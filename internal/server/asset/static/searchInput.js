@@ -12,9 +12,9 @@ window.searchInput = function(initialTokens) {
         name: 'Fields',
         active: true,
         items: [
-          { key: 'environment', value: 'production' },
-          { key: 'environment', value: 'staging' },
-          { key: 'environment', value: 'development' }
+          { key: 'is', value: 'unresolved' },
+          { key: 'is', value: 'resolved' },
+          { key: 'is', value: 'ignored' }
         ]
       },
       {
