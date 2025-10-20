@@ -735,7 +735,12 @@ func getPeriodOrDefault(period string) string {
 }
 
 func getSearchTokens(req *warnly.ListIssuesRequest) string {
-	return "[]"
+	if req.Query == "" {
+		return "[]"
+	}
+	tokens := warnly.ParseQuery(req.Query)
+	jsonBytes, _ := json.Marshal(tokens)
+	return string(jsonBytes)
 }
 
 func getPopularTagsCategories(tags []warnly.TagCount) string {

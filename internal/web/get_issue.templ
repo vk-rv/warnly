@@ -147,7 +147,7 @@ templ GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) {
 								<span class="border-b border-dotted border-black">{ kv.Value }</span>
 								<div x-show="open" @click.away="open = false" class="absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded shadow-lg z-50">
 									<a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Search errors</a>
-									<a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Search issues</a>
+									<a hx-get={ fmt.Sprintf("/?project_name=%s&issues=all&period=14d&query=%s:%s", issue.ProjectName, kv.Key, kv.Value) } hx-target="#content" hx-swap="outerHTML settle:0" hx-push-url="true" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Search issues</a>
 									<a href="#" @click.prevent={ fmt.Sprintf("copyToClipboard(%q); $nextTick(() => open = false)", kv.Value) } class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Copy to clipboard</a>
 								</div>
 							</div>
@@ -159,7 +159,7 @@ templ GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) {
 								<span class="border-b border-dotted border-black">{ kv.Value }</span>
 								<div x-show="open" @click.away="open = false" class="absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded shadow-lg z-50">
 									<a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Search errors</a>
-									<a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Search issues</a>
+									<a hx-get={ fmt.Sprintf("/?project_name=%s&issues=all&period=14d&query=%s:%s", issue.ProjectName, kv.Key, kv.Value) } hx-target="#content" hx-swap="outerHTML settle:0" hx-push-url="true" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Search issues</a>
 									<a href="#" @click.prevent={ fmt.Sprintf("copyToClipboard(%q); $nextTick(() => open = false)", kv.Value) } class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Copy to clipboard</a>
 								</div>
 							</div>

@@ -254,11 +254,12 @@ type Filter struct {
 	Value    string
 }
 
+//nolint:tagliatelle // support frontend format
 type QueryToken struct {
-	Key       string
-	Operator  string
-	Value     string
-	IsRawText bool
+	Key       string `json:"key"`
+	Operator  string `json:"operator"`
+	Value     string `json:"value"`
+	IsRawText bool   `json:"isRawText"`
 }
 
 // ParseQuery parses a query string into QueryTokens.
