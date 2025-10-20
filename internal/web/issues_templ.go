@@ -141,7 +141,20 @@ func IssuesBody(res *warnly.ListIssuesResult) templ.Component {
 			templ_7745c5c3_Var4 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<div id=\"issues-body\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<div id=\"issues-body\" data-total=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var5 string
+		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", res.TotalIssues))
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 35, Col: 70}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -153,7 +166,7 @@ func IssuesBody(res *warnly.ListIssuesResult) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -177,12 +190,12 @@ func issuesHeader() templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var5 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var5 == nil {
-			templ_7745c5c3_Var5 = templ.NopComponent
+		templ_7745c5c3_Var6 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var6 == nil {
+			templ_7745c5c3_Var6 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<header class=\"mb-6\"><div class=\"flex items-center gap-2 mb-4\"><h1 class=\"text-xl font-semibold\">Issues</h1></div><nav class=\"border-b border-gray-300 border-[hsl(var(--border))]\"><ul class=\"flex gap-6\"><li class=\"border-b-2 border-black pb-2\"><a href=\"#\" class=\"text-sm font-medium\">All Issues</a></li></ul></nav></header>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<header class=\"mb-6\"><div class=\"flex items-center gap-2 mb-4\"><h1 class=\"text-xl font-semibold\">Issues</h1></div><nav class=\"border-b border-gray-300 border-[hsl(var(--border))]\"><ul class=\"flex gap-6\"><li class=\"border-b-2 border-black pb-2\"><a href=\"#\" class=\"text-sm font-medium\">All Issues</a></li></ul></nav></header>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -206,12 +219,12 @@ func issuesFiltersBar(res *warnly.ListIssuesResult) templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var6 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var6 == nil {
-			templ_7745c5c3_Var6 = templ.NopComponent
+		templ_7745c5c3_Var7 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var7 == nil {
+			templ_7745c5c3_Var7 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<div class=\"mb-6\"><div class=\"flex gap-2 mb-3\"><div class=\"flex\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<div class=\"mb-6\"><div class=\"flex gap-2 mb-3\"><div class=\"flex\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -219,7 +232,7 @@ func issuesFiltersBar(res *warnly.ListIssuesResult) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -227,7 +240,7 @@ func issuesFiltersBar(res *warnly.ListIssuesResult) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</div><div class=\"relative\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</div><div class=\"relative\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -235,7 +248,7 @@ func issuesFiltersBar(res *warnly.ListIssuesResult) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "</div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -259,61 +272,61 @@ func projectSelector(projects []warnly.Project, requestedProject string) templ.C
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var7 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var7 == nil {
-			templ_7745c5c3_Var7 = templ.NopComponent
+		templ_7745c5c3_Var8 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var8 == nil {
+			templ_7745c5c3_Var8 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<div x-data=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "<div x-data=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var8 string
-		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("{ open: false, selected: '%s' }", getSelectedProjectName(requestedProject)))
+		var templ_7745c5c3_Var9 string
+		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("{ open: false, selected: '%s' }", getSelectedProjectName(requestedProject)))
 		if templ_7745c5c3_Err != nil {
 			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 71, Col: 103}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "\"><button @click=\"open = !open\" class=\"inline-flex cursor-pointer items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50\"><span x-text=\"selected\"></span> <svg class=\"ml-2 h-5 w-5 text-gray-400\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M19 9l-7 7-7-7\"></path></svg></button><div x-show=\"open\" @click.away=\"open = false\" x-cloak class=\"absolute mt-2 w-48 rounded-md bg-white shadow-lg z-10\"><ul class=\"py-1 text-sm text-gray-700\"><li><a href=\"#\" @click.prevent=\"selected = 'All Projects'; $dispatch('project-changed', { project: '' }); open = false\" class=\"block px-4 py-2 hover:bg-gray-100\">All Projects</a></li>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "\"><button @click=\"open = !open\" class=\"inline-flex cursor-pointer items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50\"><span x-text=\"selected\"></span> <svg class=\"ml-2 h-5 w-5 text-gray-400\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M19 9l-7 7-7-7\"></path></svg></button><div x-show=\"open\" @click.away=\"open = false\" x-cloak class=\"absolute mt-2 w-48 rounded-md bg-white shadow-lg z-10\"><ul class=\"py-1 text-sm text-gray-700\"><li><a href=\"#\" @click.prevent=\"selected = 'All Projects'; $dispatch('project-changed', { project: '' }); open = false\" class=\"block px-4 py-2 hover:bg-gray-100\">All Projects</a></li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		for _, project := range projects {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "<li><a href=\"#\" @click.prevent=\"")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			var templ_7745c5c3_Var9 string
-			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("selected = '%s'; $dispatch('project-changed', { project: '%s' }); open = false", project.Name, project.Name))
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 101, Col: 145}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "\" class=\"block px-4 py-2 hover:bg-gray-100\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "<li><a href=\"#\" @click.prevent=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var10 string
-			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(project.Name)
+			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("selected = '%s'; $dispatch('project-changed', { project: '%s' }); open = false", project.Name, project.Name))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 104, Col: 21}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 101, Col: 145}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "</a></li>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "\" class=\"block px-4 py-2 hover:bg-gray-100\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var11 string
+			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(project.Name)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 104, Col: 21}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "</a></li>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "</ul></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "</ul></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -337,25 +350,25 @@ func timePeriodSelectorWrapper(initialPeriod string) templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var11 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var11 == nil {
-			templ_7745c5c3_Var11 = templ.NopComponent
+		templ_7745c5c3_Var12 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var12 == nil {
+			templ_7745c5c3_Var12 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "<div class=\"relative z-20\" x-data=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "<div class=\"relative z-20\" x-data=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var12 string
-		templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("timePeriodSelector('%s')", getPeriodOrDefault(initialPeriod)))
+		var templ_7745c5c3_Var13 string
+		templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("timePeriodSelector('%s')", getPeriodOrDefault(initialPeriod)))
 		if templ_7745c5c3_Err != nil {
 			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 114, Col: 111}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "\"><div class=\"flex border hover:bg-gray-50 border-gray-300 rounded-md overflow-hidden bg-white\"><button @click=\"toggleDropdown()\" class=\"flex cursor-pointer items-center px-4 py-2 text-sm\"><span x-text=\"displayLabel\"></span> <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4 ml-1\" viewBox=\"0 0 20 20\" fill=\"currentColor\" :class=\"{'transform rotate-180': isOpen}\"><path fill-rule=\"evenodd\" d=\"M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z\" clip-rule=\"evenodd\"></path></svg></button></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "\"><div class=\"flex border hover:bg-gray-50 border-gray-300 rounded-md overflow-hidden bg-white\"><button @click=\"toggleDropdown()\" class=\"flex cursor-pointer items-center px-4 py-2 text-sm\"><span x-text=\"displayLabel\"></span> <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4 ml-1\" viewBox=\"0 0 20 20\" fill=\"currentColor\" :class=\"{'transform rotate-180': isOpen}\"><path fill-rule=\"evenodd\" d=\"M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z\" clip-rule=\"evenodd\"></path></svg></button></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -363,7 +376,7 @@ func timePeriodSelectorWrapper(initialPeriod string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "</div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "</div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -387,12 +400,12 @@ func timePeriodDropdown() templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var13 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var13 == nil {
-			templ_7745c5c3_Var13 = templ.NopComponent
+		templ_7745c5c3_Var14 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var14 == nil {
+			templ_7745c5c3_Var14 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "<div x-show=\"isOpen\" x-cloak @click.away=\"isOpen = false\" class=\"mt-1 bg-white border border-gray-200 rounded-md shadow-lg absolute z-50\" style=\"left: 0; min-width: 400px; width: max-content;\"><!-- Presets --><div x-show=\"!showCalendar\"><div class=\"p-4 border-b border-gray-200\"><h3 class=\"text-sm font-medium text-gray-800\">Filter Time Range</h3></div><div class=\"p-3\"><input type=\"text\" x-model=\"customRangeInput\" placeholder=\"Custom range: 2h, 4d, 8w...\" class=\"w-full p-2 border text-sm rounded-md focus:outline-none border-gray-300\" @keydown.enter=\"applyCustomRange()\" :class=\"{'border-red-500': customRangeError}\"><div x-show=\"customRangeError\" class=\"text-red-500 text-xs mt-1\" x-text=\"customRangeError\"></div></div><div class=\"py-2\"><template x-for=\"(preset, index) in presets\" :key=\"index\"><div @click=\"selectPreset(preset.value)\" class=\"flex text-sm items-center px-3 py-2 hover:bg-gray-50 cursor-pointer\"><div class=\"w-6\"><svg x-show=\"selectedPreset === preset.value\" xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5 text-black-500\" viewBox=\"0 0 20 20\" fill=\"currentColor\"><path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"></path></svg></div><span class=\"ml-2\" :class=\"{'text-black-600 font-medium': selectedPreset === preset.value}\" x-text=\"preset.label\"></span></div></template><div @click=\"openCalendar()\" class=\"flex items-center text-sm justify-between px-3 py-2 hover:bg-gray-50 cursor-pointer\"><div class=\"flex items-center\"><div class=\"w-6\"><svg x-show=\"selectedPreset === 'custom-range'\" xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5 text-indigo-500\" viewBox=\"0 0 20 20\" fill=\"currentColor\"><path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"></path></svg></div><span class=\"ml-2\" :class=\"{'text-indigo-600 font-medium': selectedPreset === 'custom-range'}\">Absolute date</span></div><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5 text-gray-500\" viewBox=\"0 0 20 20\" fill=\"currentColor\"><path fill-rule=\"evenodd\" d=\"M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z\" clip-rule=\"evenodd\"></path></svg></div></div></div><!-- Calendar view --><div x-show=\"showCalendar\" x-cloak style=\"min-width: 600px; width: max-content;\"><div class=\"p-4 border-b border-gray-200 flex items-center justify-between\"><button @click=\"closeCalendar()\" class=\"text-gray-600 hover:text-gray-900\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5\" viewBox=\"0 0 20 20\" fill=\"currentColor\"><path fill-rule=\"evenodd\" d=\"M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z\" clip-rule=\"evenodd\"></path></svg></button><h3 class=\"text-sm font-medium text-gray-800\">Select Date Range</h3><div></div></div><div class=\"p-4 grid grid-cols-2 gap-6\"><!-- Start Date --><div><label class=\"block text-xs font-medium text-gray-700 mb-2\">Start Date & Time</label> <input type=\"date\" x-model=\"startDate\" class=\"w-full p-2 border border-gray-300 rounded text-sm\"><div class=\"mt-2 flex gap-2 items-center text-sm\"><input type=\"number\" x-model=\"startHour\" min=\"1\" max=\"12\" class=\"w-16 p-1 border border-gray-300 rounded text-center\"> <span>:</span> <input type=\"number\" x-model=\"startMinute\" min=\"0\" max=\"59\" class=\"w-16 p-1 border border-gray-300 rounded text-center\"> <select x-model=\"startPeriod\" class=\"p-1 border border-gray-300 rounded\"><option value=\"AM\">AM</option> <option value=\"PM\">PM</option></select></div></div><!-- End Date --><div><label class=\"block text-xs font-medium text-gray-700 mb-2\">End Date & Time</label> <input type=\"date\" x-model=\"endDate\" class=\"w-full p-2 border border-gray-300 rounded text-sm\"><div class=\"mt-2 flex gap-2 items-center text-sm\"><input type=\"number\" x-model=\"endHour\" min=\"1\" max=\"12\" class=\"w-16 p-1 border border-gray-300 rounded text-center\"> <span>:</span> <input type=\"number\" x-model=\"endMinute\" min=\"0\" max=\"59\" class=\"w-16 p-1 border border-gray-300 rounded text-center\"> <select x-model=\"endPeriod\" class=\"p-1 border border-gray-300 rounded\"><option value=\"AM\">AM</option> <option value=\"PM\">PM</option></select></div></div></div><div class=\"p-4 border-t border-gray-200 flex justify-end gap-2\"><button @click=\"closeCalendar()\" class=\"px-4 py-2 text-sm border border-gray-300 rounded hover:bg-gray-50\">Cancel</button> <button @click=\"applyAbsoluteRange()\" class=\"px-4 py-2 text-sm bg-black text-white rounded hover:bg-gray-800\">Apply</button></div></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "<div x-show=\"isOpen\" x-cloak @click.away=\"isOpen = false\" class=\"mt-1 bg-white border border-gray-200 rounded-md shadow-lg absolute z-50\" style=\"left: 0; min-width: 400px; width: max-content;\"><!-- Presets --><div x-show=\"!showCalendar\"><div class=\"p-4 border-b border-gray-200\"><h3 class=\"text-sm font-medium text-gray-800\">Filter Time Range</h3></div><div class=\"p-3\"><input type=\"text\" x-model=\"customRangeInput\" placeholder=\"Custom range: 2h, 4d, 8w...\" class=\"w-full p-2 border text-sm rounded-md focus:outline-none border-gray-300\" @keydown.enter=\"applyCustomRange()\" :class=\"{'border-red-500': customRangeError}\"><div x-show=\"customRangeError\" class=\"text-red-500 text-xs mt-1\" x-text=\"customRangeError\"></div></div><div class=\"py-2\"><template x-for=\"(preset, index) in presets\" :key=\"index\"><div @click=\"selectPreset(preset.value)\" class=\"flex text-sm items-center px-3 py-2 hover:bg-gray-50 cursor-pointer\"><div class=\"w-6\"><svg x-show=\"selectedPreset === preset.value\" xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5 text-black-500\" viewBox=\"0 0 20 20\" fill=\"currentColor\"><path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"></path></svg></div><span class=\"ml-2\" :class=\"{'text-black-600 font-medium': selectedPreset === preset.value}\" x-text=\"preset.label\"></span></div></template><div @click=\"openCalendar()\" class=\"flex items-center text-sm justify-between px-3 py-2 hover:bg-gray-50 cursor-pointer\"><div class=\"flex items-center\"><div class=\"w-6\"><svg x-show=\"selectedPreset === 'custom-range'\" xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5 text-indigo-500\" viewBox=\"0 0 20 20\" fill=\"currentColor\"><path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"></path></svg></div><span class=\"ml-2\" :class=\"{'text-indigo-600 font-medium': selectedPreset === 'custom-range'}\">Absolute date</span></div><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5 text-gray-500\" viewBox=\"0 0 20 20\" fill=\"currentColor\"><path fill-rule=\"evenodd\" d=\"M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z\" clip-rule=\"evenodd\"></path></svg></div></div></div><!-- Calendar view --><div x-show=\"showCalendar\" x-cloak style=\"min-width: 600px; width: max-content;\"><div class=\"p-4 border-b border-gray-200 flex items-center justify-between\"><button @click=\"closeCalendar()\" class=\"text-gray-600 hover:text-gray-900\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5\" viewBox=\"0 0 20 20\" fill=\"currentColor\"><path fill-rule=\"evenodd\" d=\"M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z\" clip-rule=\"evenodd\"></path></svg></button><h3 class=\"text-sm font-medium text-gray-800\">Select Date Range</h3><div></div></div><div class=\"p-4 grid grid-cols-2 gap-6\"><!-- Start Date --><div><label class=\"block text-xs font-medium text-gray-700 mb-2\">Start Date & Time</label> <input type=\"date\" x-model=\"startDate\" class=\"w-full p-2 border border-gray-300 rounded text-sm\"><div class=\"mt-2 flex gap-2 items-center text-sm\"><input type=\"number\" x-model=\"startHour\" min=\"1\" max=\"12\" class=\"w-16 p-1 border border-gray-300 rounded text-center\"> <span>:</span> <input type=\"number\" x-model=\"startMinute\" min=\"0\" max=\"59\" class=\"w-16 p-1 border border-gray-300 rounded text-center\"> <select x-model=\"startPeriod\" class=\"p-1 border border-gray-300 rounded\"><option value=\"AM\">AM</option> <option value=\"PM\">PM</option></select></div></div><!-- End Date --><div><label class=\"block text-xs font-medium text-gray-700 mb-2\">End Date & Time</label> <input type=\"date\" x-model=\"endDate\" class=\"w-full p-2 border border-gray-300 rounded text-sm\"><div class=\"mt-2 flex gap-2 items-center text-sm\"><input type=\"number\" x-model=\"endHour\" min=\"1\" max=\"12\" class=\"w-16 p-1 border border-gray-300 rounded text-center\"> <span>:</span> <input type=\"number\" x-model=\"endMinute\" min=\"0\" max=\"59\" class=\"w-16 p-1 border border-gray-300 rounded text-center\"> <select x-model=\"endPeriod\" class=\"p-1 border border-gray-300 rounded\"><option value=\"AM\">AM</option> <option value=\"PM\">PM</option></select></div></div></div><div class=\"p-4 border-t border-gray-200 flex justify-end gap-2\"><button @click=\"closeCalendar()\" class=\"px-4 py-2 text-sm border border-gray-300 rounded hover:bg-gray-50\">Cancel</button> <button @click=\"applyAbsoluteRange()\" class=\"px-4 py-2 text-sm bg-black text-white rounded hover:bg-gray-800\">Apply</button></div></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -416,25 +429,25 @@ func searchBar(res *warnly.ListIssuesResult) templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var14 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var14 == nil {
-			templ_7745c5c3_Var14 = templ.NopComponent
+		templ_7745c5c3_Var15 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var15 == nil {
+			templ_7745c5c3_Var15 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "<div x-data=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "<div x-data=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var15 string
-		templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("searchInput(%s, %s)", getSearchTokens(res.Request), getPopularTagsCategories(res.PopularTags)))
+		var templ_7745c5c3_Var16 string
+		templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("searchInput(%s, %s)", getSearchTokens(res.Request), getPopularTagsCategories(res.PopularTags)))
 		if templ_7745c5c3_Err != nil {
 			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 298, Col: 118}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "\" class=\"search-container\" @click.away=\"closeAllDropdowns()\"><div class=\"flex border rounded-lg bg-white border-gray-300 min-h-[2.5rem]\"><div class=\"relative flex-1 flex items-center px-2 text-sm\"><div class=\"text-purple-500 ml-2 mr-1 flex-shrink-0\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"black\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z\"></path></svg></div><div class=\"search-input-wrapper\" @click=\"focusInput()\"><template x-for=\"(token, index) in tokens\" :key=\"index\"><div class=\"tag-pill\"><template x-if=\"!token.isRawText\"><div class=\"flex items-center\"><span x-text=\"token.key\" class=\"text-gray-800\"></span> <span class=\"tag-pill-operator mx-1\" x-text=\"token.operator\" @click.stop=\"openOperatorDropdown(index, $event)\"></span> <span x-text=\"token.value\" class=\"text-gray-800\"></span></div></template><template x-if=\"token.isRawText\"><span x-text=\"token.value\" class=\"text-gray-800\"></span></template><button @click.stop=\"removeToken(index)\" class=\"ml-1 text-gray-500 hover:text-gray-700\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M6 18L18 6M6 6l12 12\"></path></svg></button></div></template><input x-ref=\"searchInput\" type=\"text\" x-model=\"inputValue\" :placeholder=\"tokens.length === 0 ? 'Search for issues, tags, and more' : ''\" class=\"search-input\" @click=\"handleInputClick()\" @focus=\"handleInputFocus()\" @keydown.enter=\"handleEnterKey()\" @keydown.backspace=\"handleBackspace()\" @input=\"handleInput()\"></div><button x-show=\"tokens.length > 0 || inputValue.length > 0\" @click.stop=\"clearAll()\" class=\"mr-4 text-gray-400 hover:text-gray-600\" x-cloak><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M6 18L18 6M6 6l12 12\"></path></svg></button></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "\" class=\"search-container\" @click.away=\"closeAllDropdowns()\"><div class=\"flex border rounded-lg bg-white border-gray-300 min-h-[2.5rem]\"><div class=\"relative flex-1 flex items-center px-2 text-sm\"><div class=\"text-purple-500 ml-2 mr-1 flex-shrink-0\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"black\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z\"></path></svg></div><div class=\"search-input-wrapper\" @click=\"focusInput()\"><template x-for=\"(token, index) in tokens\" :key=\"index\"><div class=\"tag-pill\"><template x-if=\"!token.isRawText\"><div class=\"flex items-center\"><span x-text=\"token.key\" class=\"text-gray-800\"></span> <span class=\"tag-pill-operator mx-1\" x-text=\"token.operator\" @click.stop=\"openOperatorDropdown(index, $event)\"></span> <span x-text=\"token.value\" class=\"text-gray-800\"></span></div></template><template x-if=\"token.isRawText\"><span x-text=\"token.value\" class=\"text-gray-800\"></span></template><button @click.stop=\"removeToken(index)\" class=\"ml-1 text-gray-500 hover:text-gray-700\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M6 18L18 6M6 6l12 12\"></path></svg></button></div></template><input x-ref=\"searchInput\" type=\"text\" x-model=\"inputValue\" :placeholder=\"tokens.length === 0 ? 'Search for issues, tags, and more' : ''\" class=\"search-input\" @click=\"handleInputClick()\" @focus=\"handleInputFocus()\" @keydown.enter=\"handleEnterKey()\" @keydown.backspace=\"handleBackspace()\" @input=\"handleInput()\"></div><button x-show=\"tokens.length > 0 || inputValue.length > 0\" @click.stop=\"clearAll()\" class=\"mr-4 text-gray-400 hover:text-gray-600\" x-cloak><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M6 18L18 6M6 6l12 12\"></path></svg></button></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -446,7 +459,7 @@ func searchBar(res *warnly.ListIssuesResult) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, "</div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "</div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -470,12 +483,12 @@ func searchSuggestions() templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var16 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var16 == nil {
-			templ_7745c5c3_Var16 = templ.NopComponent
+		templ_7745c5c3_Var17 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var17 == nil {
+			templ_7745c5c3_Var17 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "<div x-show=\"showTagSuggestions\" class=\"dropdown-container text-sm\" x-cloak><div class=\"flex border-b border-gray-200 px-4 py-2 justify-between items-center\"><div class=\"flex space-x-4\"><template x-for=\"(category, index) in filterCategories\" :key=\"index\"><button class=\"px-2 py-1 rounded\" :class=\"category.active ? 'bg-black text-white' : 'text-gray-600 hover:bg-gray-200'\" x-text=\"category.name\" @click=\"setActiveCategory(index)\"></button></template></div><!-- Custom value input for tag values mode --><template x-if=\"isInTagValuesMode()\"><input x-model=\"customValue\" @keydown.enter=\"addCustomValue()\" placeholder=\"Type custom tag value and press Enter\" class=\"px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 w-80\"></template></div><div class=\"py-2\"><template x-for=\"category in filterCategories\" :key=\"category.name || 'default'\"><template x-if=\"category.active\"><div><template x-for=\"item in category.items\" :key=\"item.value\"><div @click=\"addFilterFromCategory(item)\" class=\"px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm\"><span x-text=\"item.key === item.value ? item.value : item.key + ':' + item.value\"></span></div></template></div></template></template></div></div><div x-show=\"showTagMatch\" class=\"dropdown-container text-sm\" x-cloak><div class=\"py-2\"><div @click=\"selectMatchedTag()\" class=\"px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm\"><span x-text=\"matchedTag ? matchedTag.key : ''\"></span></div></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "<div x-show=\"showTagSuggestions\" class=\"dropdown-container text-sm\" x-cloak><div class=\"flex border-b border-gray-200 px-4 py-2 justify-between items-center\"><div class=\"flex space-x-4\"><template x-for=\"(category, index) in filterCategories\" :key=\"index\"><button class=\"px-2 py-1 rounded\" :class=\"category.active ? 'bg-black text-white' : 'text-gray-600 hover:bg-gray-200'\" x-text=\"category.name\" @click=\"setActiveCategory(index)\"></button></template></div><!-- Custom value input for tag values mode --><template x-if=\"isInTagValuesMode()\"><input x-model=\"customValue\" @keydown.enter=\"addCustomValue()\" placeholder=\"Type custom tag value and press Enter\" class=\"px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 w-80\"></template></div><div class=\"py-2\"><template x-for=\"category in filterCategories\" :key=\"category.name || 'default'\"><template x-if=\"category.active\"><div><template x-for=\"item in category.items\" :key=\"item.value\"><div @click=\"addFilterFromCategory(item)\" class=\"px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm\"><span x-text=\"item.key === item.value ? item.value : item.key + ':' + item.value\"></span></div></template></div></template></template></div></div><div x-show=\"showTagMatch\" class=\"dropdown-container text-sm\" x-cloak><div class=\"py-2\"><div @click=\"selectMatchedTag()\" class=\"px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm\"><span x-text=\"matchedTag ? matchedTag.key : ''\"></span></div></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -499,12 +512,12 @@ func operatorDropdown() templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var17 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var17 == nil {
-			templ_7745c5c3_Var17 = templ.NopComponent
+		templ_7745c5c3_Var18 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var18 == nil {
+			templ_7745c5c3_Var18 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "<div x-show=\"showOperatorDropdown\" class=\"operator-dropdown text-sm\" :style=\"`top: ${operatorDropdownPosition.top}px; left: ${operatorDropdownPosition.left}px;`\" x-cloak><div class=\"operator-option\" :class=\"{'selected': tokens[activeTokenIndex]?.operator === 'is'}\" @click=\"changeOperator(activeTokenIndex, 'is')\"><svg x-show=\"tokens[activeTokenIndex]?.operator === 'is'\" class=\"h-5 w-5 mr-2 text-black\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 20 20\" fill=\"currentColor\"><path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"></path></svg> <span x-show=\"tokens[activeTokenIndex]?.operator !== 'is'\" class=\"h-5 w-5 mr-2\"></span> <span>is</span></div><div class=\"operator-option\" :class=\"{'selected': tokens[activeTokenIndex]?.operator === 'is not'}\" @click=\"changeOperator(activeTokenIndex, 'is not')\"><svg x-show=\"tokens[activeTokenIndex]?.operator === 'is not'\" class=\"h-5 w-5 mr-2 text-black\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 20 20\" fill=\"currentColor\"><path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"></path></svg> <span x-show=\"tokens[activeTokenIndex]?.operator !== 'is not'\" class=\"h-5 w-5 mr-2\"></span> <span>is not</span></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "<div x-show=\"showOperatorDropdown\" class=\"operator-dropdown text-sm\" :style=\"`top: ${operatorDropdownPosition.top}px; left: ${operatorDropdownPosition.left}px;`\" x-cloak><div class=\"operator-option\" :class=\"{'selected': tokens[activeTokenIndex]?.operator === 'is'}\" @click=\"changeOperator(activeTokenIndex, 'is')\"><svg x-show=\"tokens[activeTokenIndex]?.operator === 'is'\" class=\"h-5 w-5 mr-2 text-black\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 20 20\" fill=\"currentColor\"><path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"></path></svg> <span x-show=\"tokens[activeTokenIndex]?.operator !== 'is'\" class=\"h-5 w-5 mr-2\"></span> <span>is</span></div><div class=\"operator-option\" :class=\"{'selected': tokens[activeTokenIndex]?.operator === 'is not'}\" @click=\"changeOperator(activeTokenIndex, 'is not')\"><svg x-show=\"tokens[activeTokenIndex]?.operator === 'is not'\" class=\"h-5 w-5 mr-2 text-black\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 20 20\" fill=\"currentColor\"><path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"></path></svg> <span x-show=\"tokens[activeTokenIndex]?.operator !== 'is not'\" class=\"h-5 w-5 mr-2\"></span> <span>is not</span></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -528,12 +541,12 @@ func issuesPagination(_ *warnly.ListIssuesResult) templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var18 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var18 == nil {
-			templ_7745c5c3_Var18 = templ.NopComponent
+		templ_7745c5c3_Var19 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var19 == nil {
+			templ_7745c5c3_Var19 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 29, "<div class=\"p-4 border-t border-border flex items-center justify-between text-sm text-gray-600\"><span x-text=\"getPaginationSummary()\" class=\"font-medium\"></span><div class=\"flex gap-3\"><button @click=\"paginatePrev()\" :disabled=\"!canGoPrev()\" class=\"px-4 py-2 cursor-pointer rounded-md border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white transition-colors flex items-center gap-2\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M15 19l-7-7 7-7\"></path></svg> <span class=\"font-medium\">Previous</span></button> <button @click=\"paginateNext()\" :disabled=\"!canGoNext()\" class=\"px-4 py-2 cursor-pointer rounded-md border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white transition-colors flex items-center gap-2\"><span class=\"font-medium\">Next</span> <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M9 5l7 7-7 7\"></path></svg></button></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "<div class=\"p-4 border-t border-border flex items-center justify-between text-sm text-gray-600\"><span x-text=\"getPaginationSummary()\" class=\"font-medium\"></span><div class=\"flex gap-3\"><button @click=\"paginatePrev()\" :disabled=\"!canGoPrev()\" class=\"px-4 py-2 cursor-pointer rounded-md border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white transition-colors flex items-center gap-2\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M15 19l-7-7 7-7\"></path></svg> <span class=\"font-medium\">Previous</span></button> <button @click=\"paginateNext()\" :disabled=\"!canGoNext()\" class=\"px-4 py-2 cursor-pointer rounded-md border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white transition-colors flex items-center gap-2\"><span class=\"font-medium\">Next</span> <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M9 5l7 7-7 7\"></path></svg></button></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -557,102 +570,89 @@ func issuesTable(res *warnly.ListIssuesResult) templ.Component {
 			}()
 		}
 		ctx = templ.InitializeContext(ctx)
-		templ_7745c5c3_Var19 := templ.GetChildren(ctx)
-		if templ_7745c5c3_Var19 == nil {
-			templ_7745c5c3_Var19 = templ.NopComponent
+		templ_7745c5c3_Var20 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var20 == nil {
+			templ_7745c5c3_Var20 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "<div class=\"overflow-x-auto border border-border rounded-lg\"><table class=\"w-full\"><thead><tr class=\"border-b border-border bg-gray-50\"><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">ISSUE</th><th class=\"px-4 py-2 text-center text-sm font-medium text-gray-500\">PROJECT</th><th class=\"px-4 py-2 text-center text-sm font-medium text-gray-500\">EVENTS</th><th class=\"px-4 py-2 text-center text-sm font-medium text-gray-500\">USERS</th><th class=\"px-4 py-2 text-center text-sm font-medium text-gray-500\">FIRST SEEN</th><th class=\"px-4 py-2 text-center text-sm font-medium text-gray-500\">LAST SEEN</th></tr></thead> <tbody>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "<div class=\"overflow-x-auto border border-border rounded-lg\"><table class=\"w-full\"><thead><tr class=\"border-b border-border bg-gray-50\"><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">ISSUE</th><th class=\"px-4 py-2 text-center text-sm font-medium text-gray-500\">PROJECT</th><th class=\"px-4 py-2 text-center text-sm font-medium text-gray-500\">EVENTS</th><th class=\"px-4 py-2 text-center text-sm font-medium text-gray-500\">USERS</th><th class=\"px-4 py-2 text-center text-sm font-medium text-gray-500\">FIRST SEEN</th><th class=\"px-4 py-2 text-center text-sm font-medium text-gray-500\">LAST SEEN</th></tr></thead> <tbody>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		for _, issue := range res.Issues {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "<tr class=\"border-b border-border hover:bg-gray-50\"><td class=\"px-4 py-3\"><a hx-get=\"")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			var templ_7745c5c3_Var20 string
-			templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/projects/%d/issues/%d?period=14d", issue.ProjectID, issue.ID))
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 501, Col: 92}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 32, "\" hx-target=\"#main-content\" hx-swap=\"outerHTML settle:0\" hx-push-url=\"true\" class=\"cursor-pointer block\"><div class=\"flex items-center gap-2\"><span class=\"text-sm font-medium text-gray-900\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 32, "<tr class=\"border-b border-border hover:bg-gray-50\"><td class=\"px-4 py-3\"><a hx-get=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var21 string
-			templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(issue.Type)
+			templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/projects/%d/issues/%d?period=14d", issue.ProjectID, issue.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 508, Col: 69}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 501, Col: 92}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 33, "</span></div><div class=\"text-xs text-gray-500 mt-1\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 33, "\" hx-target=\"#main-content\" hx-swap=\"outerHTML settle:0\" hx-push-url=\"true\" class=\"cursor-pointer block\"><div class=\"flex items-center gap-2\"><span class=\"text-sm font-medium text-gray-900\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var22 string
-			templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(issue.Message)
+			templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(issue.Type)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 510, Col: 63}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 508, Col: 69}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 34, "</div></a></td><td class=\"px-4 py-3 text-sm text-gray-700 text-center\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 34, "</span></div><div class=\"text-xs text-gray-500 mt-1\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var23 string
-			templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(getProjectName(res.Projects, issue.ProjectID))
+			templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(issue.Message)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 514, Col: 54}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 510, Col: 63}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 35, "</td><td class=\"px-4 py-3 text-sm text-gray-900 font-medium text-center\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 35, "</div></a></td><td class=\"px-4 py-3 text-sm text-gray-700 text-center\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var24 string
-			templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.NumFormatted(issue.TimesSeen))
+			templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinStringErrs(getProjectName(res.Projects, issue.ProjectID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 517, Col: 45}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 514, Col: 54}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var24))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 36, "</td><td class=\"px-4 py-3 text-sm text-gray-900 text-center\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 36, "</td><td class=\"px-4 py-3 text-sm text-gray-900 font-medium text-center\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var25 string
-			templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.NumFormatted(issue.UserCount))
+			templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.NumFormatted(issue.TimesSeen))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 520, Col: 45}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 517, Col: 45}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var25))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "</td><td class=\"px-4 py-3 text-sm text-gray-500 text-center\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "</td><td class=\"px-4 py-3 text-sm text-gray-900 text-center\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var26 string
-			templ_7745c5c3_Var26, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.TimeAgo(func() time.Time { return time.Now() }, issue.FirstSeen, false))
+			templ_7745c5c3_Var26, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.NumFormatted(issue.UserCount))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 523, Col: 87}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 520, Col: 45}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var26))
 			if templ_7745c5c3_Err != nil {
@@ -663,20 +663,33 @@ func issuesTable(res *warnly.ListIssuesResult) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var27 string
-			templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.TimeAgo(func() time.Time { return time.Now() }, issue.LastSeen, false))
+			templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.TimeAgo(func() time.Time { return time.Now() }, issue.FirstSeen, false))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 526, Col: 86}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 523, Col: 87}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var27))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 39, "</td></tr>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 39, "</td><td class=\"px-4 py-3 text-sm text-gray-500 text-center\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var28 string
+			templ_7745c5c3_Var28, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.TimeAgo(func() time.Time { return time.Now() }, issue.LastSeen, false))
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/issues.templ`, Line: 526, Col: 86}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var28))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 40, "</td></tr>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 40, "</tbody></table></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 41, "</tbody></table></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -32,7 +32,7 @@ templ IssuesFiltersAndBody(res *warnly.ListIssuesResult) {
 
 // IssuesBody - the issues list and pagination that gets updated via HTMX
 templ IssuesBody(res *warnly.ListIssuesResult) {
-	<div id="issues-body">
+	<div id="issues-body" data-total={ fmt.Sprintf("%d", res.TotalIssues) }>
 		@issuesTable(res)
 		@issuesPagination(res)
 	</div>

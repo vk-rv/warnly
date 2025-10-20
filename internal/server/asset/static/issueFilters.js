@@ -177,6 +177,11 @@ window.issueFilters = function(initialData) {
         target: '#issues-body',
         swap: 'outerHTML'
       }).then(() => {
+        const issuesBody = document.getElementById('issues-body');
+        if (issuesBody) {
+          const newTotal = parseInt(issuesBody.dataset.total) || 0;
+          this.totalIssues = newTotal;
+        }
         if (window.Alpine) {
           window.Alpine.initTree(document.getElementById('issues-body'));
         }
