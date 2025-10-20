@@ -150,44 +150,44 @@ templ SystemHtmx(queries []warnly.SQLQuery, _ bool) {
 												<span>QUERY</span>
 											</button>
 										</th>
-										<th class="py-2 px-4 font-semibold text-right">
-											<button @click="sortBy('avgDuration')" class="flex cursor-pointer items-center space-x-1 hover:text-blue-600 w-full justify-end">
+										<th class="py-2 px-4 font-semibold text-center">
+											<button @click="sortBy('avgDuration')" class="flex cursor-pointer items-center space-x-1 hover:text-blue-600 w-full justify-center">
 												<span>AVG DURATION (MS)</span>
 												<span x-html="getSortIcon('avgDuration')"></span>
 											</button>
 										</th>
-										<th class="py-2 px-4 font-semibold text-right">
-											<button @click="sortBy('rowsScanned')" class="flex cursor-pointer items-center space-x-1 hover:text-blue-600 w-full justify-end">
+										<th class="py-2 px-4 font-semibold text-center">
+											<button @click="sortBy('rowsScanned')" class="flex cursor-pointer items-center space-x-1 hover:text-blue-600 w-full justify-center">
 												<span>AVG RESULT ROWS</span>
 												<span x-html="getSortIcon('rowsScanned')"></span>
 											</button>
 										</th>
-										<th class="py-2 px-4 font-semibold text-right">
-											<button @click="sortBy('callsPerMinute')" class="flex cursor-pointer items-center space-x-1 hover:text-blue-600 w-full justify-end">
+										<th class="py-2 px-4 font-semibold text-center">
+											<button @click="sortBy('callsPerMinute')" class="flex cursor-pointer items-center space-x-1 hover:text-blue-600 w-full justify-center">
 												<span>CALLS/MINUTE</span>
 												<span x-html="getSortIcon('callsPerMinute')"></span>
 											</button>
 										</th>
-										<th class="py-2 px-4 font-semibold text-right">
-											<button @click="sortBy('totalCalls')" class="flex cursor-pointer items-center space-x-1 hover:text-blue-600 w-full justify-end">
+										<th class="py-2 px-4 font-semibold text-center">
+											<button @click="sortBy('totalCalls')" class="flex cursor-pointer items-center space-x-1 hover:text-blue-600 w-full justify-center">
 												<span>TOTAL CALLS</span>
 												<span x-html="getSortIcon('totalCalls')"></span>
 											</button>
 										</th>
-										<th class="py-2 px-4 font-semibold text-right">
-											<button @click="sortBy('totalReadBytesNumeric')" class="flex cursor-pointer items-center space-x-1 hover:text-blue-600 w-full justify-end">
+										<th class="py-2 px-4 font-semibold text-center">
+											<button @click="sortBy('totalReadBytesNumeric')" class="flex cursor-pointer items-center space-x-1 hover:text-blue-600 w-full justify-center">
 												<span>TOTAL READ BYTES</span>
 												<span x-html="getSortIcon('totalReadBytesNumeric')"></span>
 											</button>
 										</th>
-										<th class="py-2 px-4 font-semibold text-right">
-											<button @click="sortBy('percentageIOPS')" class="flex cursor-pointer items-center space-x-1 hover:text-blue-600 w-full justify-end">
+										<th class="py-2 px-4 font-semibold text-center">
+											<button @click="sortBy('percentageIOPS')" class="flex cursor-pointer items-center space-x-1 hover:text-blue-600 w-full justify-center">
 												<span>% IOPS</span>
 												<span x-html="getSortIcon('percentageIOPS')"></span>
 											</button>
 										</th>
-										<th class="py-2 px-4 font-semibold text-right">
-											<button @click="sortBy('percentageRuntime')" class="flex cursor-pointer items-center space-x-1 hover:text-blue-600 w-full justify-end">
+										<th class="py-2 px-4 font-semibold text-center">
+											<button @click="sortBy('percentageRuntime')" class="flex cursor-pointer items-center space-x-1 hover:text-blue-600 w-full justify-center">
 												<span>% RUNTIME</span>
 												<span x-html="getSortIcon('percentageRuntime')"></span>
 											</button>
@@ -226,20 +226,20 @@ templ SystemHtmx(queries []warnly.SQLQuery, _ bool) {
 													</div>
 												</div>
 											</td>
-											<td class="py-2 px-4 text-right" x-text="query.avgDurationDisplay"></td>
-											<td class="py-2 px-4 text-right" x-text="query.rowsScannedDisplay"></td>
-											<td class="py-2 px-4 text-right" x-text="query.callsPerMinuteDisplay"></td>
-											<td class="py-2 px-4 text-right" x-text="query.totalCallsDisplay"></td>
-											<td class="py-2 px-4 text-right">
-												<div class="flex flex-col items-end space-y-1">
+											<td class="py-2 px-4 text-center" x-text="query.avgDurationDisplay"></td>
+											<td class="py-2 px-4 text-center" x-text="query.rowsScannedDisplay"></td>
+											<td class="py-2 px-4 text-center" x-text="query.callsPerMinuteDisplay"></td>
+											<td class="py-2 px-4 text-center" x-text="query.totalCallsDisplay"></td>
+											<td class="py-2 px-4 text-center">
+												<div class="flex flex-col items-center space-y-1">
 													<span x-text="query.totalReadBytes"></span>
 													<div class="w-20 h-2 bg-gray-100 rounded-full overflow-hidden">
 														<div class="h-full bg-gray-300 rounded-full" :style="`width: ${query.progress}%`"></div>
 													</div>
 												</div>
 											</td>
-											<td class="py-2 px-4 text-right" x-text="query.percentageIOPSDisplay"></td>
-											<td class="py-2 px-4 text-right" x-text="query.percentageRuntimeDisplay"></td>
+											<td class="py-2 px-4 text-center" x-text="query.percentageIOPSDisplay"></td>
+											<td class="py-2 px-4 text-center" x-text="query.percentageRuntimeDisplay"></td>
 										</tr>
 									</template>
 								</tbody>
