@@ -564,7 +564,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 46, "</span><div x-show=\"open\" @click.away=\"open = false\" class=\"absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded shadow-lg z-50\"><a href=\"#\" class=\"block px-4 py-2 text-gray-700 hover:bg-gray-100\">Search errors</a> <a hx-get=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 46, "</span><div x-show=\"open\" @click.away=\"open = false\" class=\"absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded shadow-lg z-50\"><!-- <a href=\"#\" class=\"block px-4 py-2 text-gray-700 hover:bg-gray-100\">Search errors</a> --><a hx-get=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -621,7 +621,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 51, "</span><div x-show=\"open\" @click.away=\"open = false\" class=\"absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded shadow-lg z-50\"><a href=\"#\" class=\"block px-4 py-2 text-gray-700 hover:bg-gray-100\">Search errors</a> <a hx-get=\"")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 51, "</span><div x-show=\"open\" @click.away=\"open = false\" class=\"absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded shadow-lg z-50\"><!-- <a href=\"#\" class=\"block px-4 py-2 text-gray-700 hover:bg-gray-100\">Search errors</a> !--><a hx-get=\"")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
