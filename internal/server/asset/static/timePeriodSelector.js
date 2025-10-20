@@ -1,21 +1,21 @@
-window.timePeriodSelector = function(initialPeriod) {
+window.timePeriodSelector = function(initialPeriod, start, end) {
   return {
     isOpen: false,
     showCalendar: false,
     selectedPreset: initialPeriod || '14d',
     displayLabel: '',
-    
+
     customRangeInput: '',
     customRangeError: '',
-    
+
     customStartDate: null,
     customEndDate: null,
-    
+
     currentMonth: new Date().getMonth(),
     currentYear: new Date().getFullYear(),
-    monthNames: ['January', 'February', 'March', 'April', 'May', 'June', 
+    monthNames: ['January', 'February', 'March', 'April', 'May', 'June',
                  'July', 'August', 'September', 'October', 'November', 'December'],
-    
+
     startDate: null,
     endDate: null,
     startHour: 12,
@@ -26,7 +26,7 @@ window.timePeriodSelector = function(initialPeriod) {
     endPeriod: 'PM',
     startSelectedPart: 'hour',
     endSelectedPart: 'hour',
-    
+
     presets: [
       { label: 'Last hour', value: '1h' },
       { label: 'Last 24 hours', value: '24h' },
@@ -35,8 +35,23 @@ window.timePeriodSelector = function(initialPeriod) {
       { label: 'Last 30 days', value: '30d' },
       { label: 'Last 90 days', value: '90d' }
     ],
-    
+
     init() {
+      if (start && end) {
+        this.selectedPreset = 'custom-range';
+        const startDateTime = new Date(start + (start.includes('Z') ? '' : 'Z'));
+        const endDateTime = new Date(end + (end.includes('Z') ? '' : 'Z'));
+        this.customStartDate = startDateTime.toISOString().split('T')[0];
+        this.customEndDate = endDateTime.toISOString().split('T')[0];
+        this.startHour = startDateTime.getUTCHours() % 12 || 12;
+        this.startMinute = startDateTime.getUTCMinutes();
+        this.startPeriod = startDateTime.getUTCHours() >= 12 ? 'PM' : 'AM';
+        this.endHour = endDateTime.getUTCHours() % 12 || 12;
+        this.endMinute = endDateTime.getUTCMinutes();
+        this.endPeriod = endDateTime.getUTCHours() >= 12 ? 'PM' : 'AM';
+        this.startDate = this.customStartDate;
+        this.endDate = this.customEndDate;
+      }
       this.updateDisplayLabel();
     },
     

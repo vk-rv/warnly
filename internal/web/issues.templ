@@ -55,7 +55,7 @@ templ issuesFiltersBar(res *warnly.ListIssuesResult) {
 			<div class="flex">
 				@projectSelector(res.Projects, res.RequestedProject)
 			</div>
-			@timePeriodSelectorWrapper(res.Request.Period)
+			@timePeriodSelectorWrapper(res.Request.Period, res.Request.Start, res.Request.End)
 		</div>
 		<div class="relative">
 			@searchBar(res)
@@ -106,8 +106,8 @@ templ projectSelector(projects []warnly.Project, requestedProject string) {
 	</div>
 }
 
-templ timePeriodSelectorWrapper(initialPeriod string) {
-	<div class="relative z-20" x-data={ fmt.Sprintf("timePeriodSelector('%s')", getPeriodOrDefault(initialPeriod)) }>
+templ timePeriodSelectorWrapper(initialPeriod, start, end string) {
+	<div class="relative z-20" x-data={ fmt.Sprintf("timePeriodSelector('%s', '%s', '%s')", getPeriodOrDefault(initialPeriod), start, end) }>
 		<div class="flex border hover:bg-gray-50 border-gray-300 rounded-md overflow-hidden bg-white">
 			<button
 				@click="toggleDropdown()"
@@ -547,8 +547,10 @@ func getIssuesAlpineData(res *warnly.ListIssuesResult) string {
 		projectName: '%s',
 		offset: %d,
 		totalIssues: %d,
-		tokens: %s
-	})`, filters, res.Request.Query, period, res.RequestedProject, res.Request.Offset, res.TotalIssues, getSearchTokens(res.Request))
+		tokens: %s,
+		start: '%s',
+		end: '%s'
+	})`, filters, res.Request.Query, period, res.RequestedProject, res.Request.Offset, res.TotalIssues, getSearchTokens(res.Request), res.Request.Start, res.Request.End)
 }
 
 func getSelectedProjectName(requestedProject string) string {

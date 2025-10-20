@@ -2,10 +2,10 @@ window.issueFilters = function(initialData) {
   return {
     filters: initialData.filters || [],
     searchQuery: initialData.searchQuery || '',
-    selectedPeriod: initialData.period || '14d',
+    selectedPeriod: (initialData.start && initialData.end) ? '' : (initialData.period || '14d'),
     selectedProject: initialData.projectName || '',
-    startDate: '',
-    endDate: '',
+    startDate: initialData.start || '',
+    endDate: initialData.end || '',
 
     offset: initialData.offset || 0,
     limit: 50,
