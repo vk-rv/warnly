@@ -22,11 +22,7 @@ templ IssuesFiltersAndBody(res *warnly.ListIssuesResult) {
 		x-data={ getIssuesAlpineData(res) }
 	>
 		@issuesFiltersBar(res)
-		if res.NoIssues() {
-			<span>No issues found</span>
-		} else {
-			@IssuesBody(res)
-		}
+		@IssuesBody(res)
 	</div>
 }
 
