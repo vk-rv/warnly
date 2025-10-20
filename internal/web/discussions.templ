@@ -81,49 +81,18 @@ templ Discussion(discussion *warnly.Discussion) {
 func discussionState(discussion *warnly.Discussion) string {
 	uri := fmt.Sprintf("/projects/%d/issues/%d/discussions", discussion.Info.ProjectID, discussion.Info.IssueID)
 	json := fmt.Sprintf(`{
-        "activeTab": "write",
-        "comment": "",
-        "showMentions": false,
-        "mentionFilter": "",
-        "mentionedUsers": [],
-        "users": %s,
-        "filteredUsers": function() {
-            return this.users.filter(user => 
-                user.name.toLowerCase().includes(this.mentionFilter.toLowerCase())
-            );
-        },
-        "addMention": function(user) {
-            this.comment = this.comment.substring(0, this.comment.lastIndexOf('@')) + '@' + user.name + ' ';
-            this.mentionedUsers.push(user.id);
-            this.showMentions = false;
-        },
-        "formatComment": function(comment) {
-            let div = document.createElement('div');
-            div.textContent = comment;
-            let escaped = div.innerHTML;
-            return escaped.replace(/@(\w+)/g, '<strong>@$1</strong>')
-                         .replace(/\n/g, '<br>');
-        },
-        "postComment": function() {
-            const formData = new FormData();
-            formData.append('content', this.comment);
-            this.mentionedUsers.forEach(id => {
-                formData.append('mentioned_users', id);
-            });
-            
-            htmx.ajax('POST', '%s', {
-                values: {
-                    content: this.comment,
-                    mentioned_users: this.mentionedUsers
-                },
-                swap: 'outerHTML',
-                target: '#messages'
-            });
-            
-            this.comment = '';
-            this.mentionedUsers = [];
-        }
-    }`,
+"activeTab": "write",
+"comment": "",
+"showMentions": false,
+"mentionFilter": "",
+"mentionedUsers": [],
+"users": %s,
+"uri": "%s",
+"filteredUsers": window.discussionFunctions.filteredUsers,
+"addMention": window.discussionFunctions.addMention,
+"formatComment": window.discussionFunctions.formatComment,
+"postComment": window.discussionFunctions.postComment
+}`,
 		marshalTeammates(discussion.Teammates),
 		uri)
 

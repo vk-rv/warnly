@@ -84,49 +84,18 @@ func Discussion(discussion *warnly.Discussion) templ.Component {
 func discussionState(discussion *warnly.Discussion) string {
 	uri := fmt.Sprintf("/projects/%d/issues/%d/discussions", discussion.Info.ProjectID, discussion.Info.IssueID)
 	json := fmt.Sprintf(`{
-        "activeTab": "write",
-        "comment": "",
-        "showMentions": false,
-        "mentionFilter": "",
-        "mentionedUsers": [],
-        "users": %s,
-        "filteredUsers": function() {
-            return this.users.filter(user => 
-                user.name.toLowerCase().includes(this.mentionFilter.toLowerCase())
-            );
-        },
-        "addMention": function(user) {
-            this.comment = this.comment.substring(0, this.comment.lastIndexOf('@')) + '@' + user.name + ' ';
-            this.mentionedUsers.push(user.id);
-            this.showMentions = false;
-        },
-        "formatComment": function(comment) {
-            let div = document.createElement('div');
-            div.textContent = comment;
-            let escaped = div.innerHTML;
-            return escaped.replace(/@(\w+)/g, '<strong>@$1</strong>')
-                         .replace(/\n/g, '<br>');
-        },
-        "postComment": function() {
-            const formData = new FormData();
-            formData.append('content', this.comment);
-            this.mentionedUsers.forEach(id => {
-                formData.append('mentioned_users', id);
-            });
-            
-            htmx.ajax('POST', '%s', {
-                values: {
-                    content: this.comment,
-                    mentioned_users: this.mentionedUsers
-                },
-                swap: 'outerHTML',
-                target: '#messages'
-            });
-            
-            this.comment = '';
-            this.mentionedUsers = [];
-        }
-    }`,
+"activeTab": "write",
+"comment": "",
+"showMentions": false,
+"mentionFilter": "",
+"mentionedUsers": [],
+"users": %s,
+"uri": "%s",
+"filteredUsers": window.discussionFunctions.filteredUsers,
+"addMention": window.discussionFunctions.addMention,
+"formatComment": window.discussionFunctions.formatComment,
+"postComment": window.discussionFunctions.postComment
+}`,
 		marshalTeammates(discussion.Teammates),
 		uri)
 
@@ -173,7 +142,7 @@ func DiscussionMessages(discussion *warnly.Discussion) templ.Component {
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", len(discussion.Messages)))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/discussions.templ`, Line: 146, Col: 110}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/discussions.templ`, Line: 115, Col: 110}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
@@ -225,7 +194,7 @@ func renderMessage(message warnly.IssueMessage, info warnly.DiscussionInfo) temp
 		var templ_7745c5c3_Var7 string
 		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(string(message.Username[0]))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/discussions.templ`, Line: 160, Col: 35}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/discussions.templ`, Line: 129, Col: 35}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 		if templ_7745c5c3_Err != nil {
@@ -238,7 +207,7 @@ func renderMessage(message warnly.IssueMessage, info warnly.DiscussionInfo) temp
 		var templ_7745c5c3_Var8 string
 		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(message.Username)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/discussions.templ`, Line: 163, Col: 24}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/discussions.templ`, Line: 132, Col: 24}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 		if templ_7745c5c3_Err != nil {
@@ -251,7 +220,7 @@ func renderMessage(message warnly.IssueMessage, info warnly.DiscussionInfo) temp
 		var templ_7745c5c3_Var9 string
 		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.TimeAgo(time.Now, message.CreatedAt, false))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/discussions.templ`, Line: 168, Col: 58}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/discussions.templ`, Line: 137, Col: 58}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 		if templ_7745c5c3_Err != nil {
@@ -264,7 +233,7 @@ func renderMessage(message warnly.IssueMessage, info warnly.DiscussionInfo) temp
 		var templ_7745c5c3_Var10 string
 		templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/projects/%d/issues/%d/discussions/%d", info.ProjectID, info.IssueID, message.ID))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/discussions.templ`, Line: 177, Col: 116}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/discussions.templ`, Line: 146, Col: 116}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 		if templ_7745c5c3_Err != nil {

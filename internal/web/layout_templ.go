@@ -140,7 +140,7 @@ func htmlHeader(title string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</title><link rel=\"icon\" href=\"/static/favicon.svg\" type=\"image/svg+xml\"><link href=\"/static/tailwind.css\" rel=\"stylesheet\"><link href=\"/static/issues.css\" rel=\"stylesheet\"><script src=\"/static/htmx@2.0.4.min.js\"></script><script src=\"/static/uPlot.iife.min.js\"></script><link href=\"/static/uPlot.min.css\" rel=\"stylesheet\"><script src=\"/static/issueFilters.js\"></script><script src=\"/static/timePeriodSelector.js\"></script><script src=\"/static/searchInput.js\"></script><script src=\"/static/alpinejs@3.12.3.min.js\" defer></script><style>\n\t\t.warnly-preview .u-legend {\n\t\t\tfont-size: 13px;\n\t\t}\n\t\t</style><style>\n\t\t.toast-container {\n\t\t\tposition: fixed;\n\t\t\tbottom: 20px;\n\t\t\tleft: 50%;\n\t\t\ttransform: translateX(-50%);\n\t\t\tz-index: 1000;\n\t\t\tdisplay: flex;\n\t\t\tflex-direction: column;\n\t\t\tgap: 8px;\n\t\t\tpointer-events: none;\n\t\t}\n\n\t\t.toast-message {\n\t\t\tbackground: rgba(35, 39, 47, 0.92);\n\t\t\tcolor: #fff;\n\t\t\tpadding: 8px 16px;\n\t\t\tborder-radius: 8px;\n\t\t\tbox-shadow: 0 4px 16px rgba(16,24,40,0.12), 0 1px 2px rgba(0,0,0,0.08);\n\t\t\topacity: 0;\n\t\t\ttransition: opacity 0.25s cubic-bezier(.4,0,.2,1), transform 0.25s cubic-bezier(.4,0,.2,1);\n\t\t\ttransform: translateY(12px) scale(0.97);\n\t\t\tmin-width: 160px;\n\t\t\tmax-width: 90vw;\n\t\t\ttext-align: center;\n\t\t\tfont-size: 0.75rem;\n\t\t\tfont-weight: 500;\n\t\t\tletter-spacing: 0.01em;\n\t\t\tborder: 1px solid #23272f;\n\t\t\tpointer-events: auto;\n\t\t\tbackdrop-filter: blur(3px);\n\t\t}\n\n\t\t.toast-message.show {\n\t\t\topacity: 1;\n\t\t\ttransform: translateY(0) scale(1);\n\t\t}\n\n\t\t.toast-message.hide {\n\t\t\topacity: 0;\n\t\t\ttransform: translateY(12px) scale(0.97);\n\t\t}\n</style></head>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</title><link rel=\"icon\" href=\"/static/favicon.svg\" type=\"image/svg+xml\"><link href=\"/static/tailwind.css\" rel=\"stylesheet\"><link href=\"/static/issues.css\" rel=\"stylesheet\"><script src=\"/static/htmx@2.0.4.min.js\"></script><script src=\"/static/uPlot.iife.min.js\"></script><link href=\"/static/uPlot.min.css\" rel=\"stylesheet\"><script src=\"/static/issueFilters.js\"></script><script src=\"/static/timePeriodSelector.js\"></script><script src=\"/static/searchInput.js\"></script><script src=\"/static/discussions.js\"></script><script src=\"/static/alpinejs@3.12.3.min.js\" defer></script><style>\n\t\t.warnly-preview .u-legend {\n\t\t\tfont-size: 13px;\n\t\t}\n\t\t</style><style>\n\t\t.toast-container {\n\t\t\tposition: fixed;\n\t\t\tbottom: 20px;\n\t\t\tleft: 50%;\n\t\t\ttransform: translateX(-50%);\n\t\t\tz-index: 1000;\n\t\t\tdisplay: flex;\n\t\t\tflex-direction: column;\n\t\t\tgap: 8px;\n\t\t\tpointer-events: none;\n\t\t}\n\n\t\t.toast-message {\n\t\t\tbackground: rgba(35, 39, 47, 0.92);\n\t\t\tcolor: #fff;\n\t\t\tpadding: 8px 16px;\n\t\t\tborder-radius: 8px;\n\t\t\tbox-shadow: 0 4px 16px rgba(16,24,40,0.12), 0 1px 2px rgba(0,0,0,0.08);\n\t\t\topacity: 0;\n\t\t\ttransition: opacity 0.25s cubic-bezier(.4,0,.2,1), transform 0.25s cubic-bezier(.4,0,.2,1);\n\t\t\ttransform: translateY(12px) scale(0.97);\n\t\t\tmin-width: 160px;\n\t\t\tmax-width: 90vw;\n\t\t\ttext-align: center;\n\t\t\tfont-size: 0.75rem;\n\t\t\tfont-weight: 500;\n\t\t\tletter-spacing: 0.01em;\n\t\t\tborder: 1px solid #23272f;\n\t\t\tpointer-events: auto;\n\t\t\tbackdrop-filter: blur(3px);\n\t\t}\n\n\t\t.toast-message.show {\n\t\t\topacity: 1;\n\t\t\ttransform: translateY(0) scale(1);\n\t\t}\n\n\t\t.toast-message.hide {\n\t\t\topacity: 0;\n\t\t\ttransform: translateY(12px) scale(0.97);\n\t\t}\n</style></head>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -176,7 +176,7 @@ func sidebar(currentPage string, user *warnly.User) templ.Component {
 		var templ_7745c5c3_Var6 string
 		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("{ activePage: '%s' }", currentPage))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/layout.templ`, Line: 115, Col: 94}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/layout.templ`, Line: 116, Col: 94}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {
@@ -343,7 +343,7 @@ func sidebar(currentPage string, user *warnly.User) templ.Component {
 		var templ_7745c5c3_Var21 string
 		templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(user.AvatarInitials())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/layout.templ`, Line: 207, Col: 63}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/layout.templ`, Line: 208, Col: 63}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 		if templ_7745c5c3_Err != nil {
@@ -356,7 +356,7 @@ func sidebar(currentPage string, user *warnly.User) templ.Component {
 		var templ_7745c5c3_Var22 string
 		templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(user.FullName())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/layout.templ`, Line: 210, Col: 54}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/layout.templ`, Line: 211, Col: 54}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
 		if templ_7745c5c3_Err != nil {
@@ -369,7 +369,7 @@ func sidebar(currentPage string, user *warnly.User) templ.Component {
 		var templ_7745c5c3_Var23 string
 		templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(user.Username)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/layout.templ`, Line: 211, Col: 54}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/layout.templ`, Line: 212, Col: 54}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
 		if templ_7745c5c3_Err != nil {
