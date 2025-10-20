@@ -9,131 +9,14 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/vk-rv/warnly/internal/warnly"
-	"strings"
 )
 
 func queriesTable(queries []warnly.SQLQuery) string {
-	var queryData []string
-	for _, query := range queries {
-		queryData = append(queryData, fmt.Sprintf(`{
-            id: %s,
-            sql: '%s',
-            avgDuration: %.2f,
-            avgDurationDisplay: '%.2f',
-            rowsScanned: %.2f,
-            rowsScannedDisplay: '%.2f',
-            callsPerMinute: %.2f,
-            callsPerMinuteDisplay: '%.2f',
-            progress: %.0f,
-            totalReadBytes: '%s',
-            totalReadBytesNumeric: %.0f,
-            percentageIOPS: %.2f,
-            percentageIOPSDisplay: '%.2f',
-            percentageRuntime: %.2f,
-            percentageRuntimeDisplay: '%.2f',
-            totalCalls: %d,
-            totalCallsDisplay: '%d'
-        }`,
-			query.NormalizedQueryHash,
-			query.NormalizedQuery,
-			query.AvgDuration,
-			query.AvgDuration,
-			query.AvgResultRows,
-			query.AvgResultRows,
-			query.CallsPerMinute,
-			query.CallsPerMinute,
-			query.Percent,
-			query.TotalReadBytes,
-			query.TotalReadBytesNumeric,
-			query.PercentageIOPS,
-			query.PercentageIOPS,
-			query.PercentageRuntime,
-			query.PercentageRuntime,
-			query.TotalCalls,
-			query.TotalCalls))
-	}
-	return fmt.Sprintf(`{
-        queries: [%s],
-        sortedQueries: [],
-        activeTooltip: null,
-        sortField: 'totalReadBytesNumeric',
-        sortDirection: 'desc',
-        
-        init() {
-            this.sortedQueries = [...this.queries];
-            this.sortQueries();
-        },
-        
-        copyToClipboard(text) {
-            navigator.clipboard.writeText(text);
-			showToast('Copied to clipboard');
-			this.activeTooltip = null;
-        },
-        
-        formatSql(sql) {
-            const maxLength = 100;
-            if (sql.length > maxLength) {
-                sql = sql.substring(0, maxLength) + '...';
-            }
-            return sql.split(' ').map(word => {
-                if (['SELECT', 'AS', 'FROM'].includes(word.toUpperCase())) {
-                    return`+"`<span class='text-black font-semibold'>${word}</span>`;"+
-		`}
-                return word;
-            }).join(' ');
-        },
-        
-        toggleTooltip(id) {
-            if (this.activeTooltip === id) {
-                this.activeTooltip = null;
-            } else {
-                this.activeTooltip = id;
-            }
-        },
-        
-        sortBy(field) {
-            if (this.sortField === field) {
-                this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-            } else {
-                this.sortField = field;
-                this.sortDirection = 'asc';
-            }
-            this.sortQueries();
-        },
-        
-        sortQueries() {
-            this.sortedQueries = [...this.queries].sort((a, b) => {
-                let aVal = a[this.sortField];
-                let bVal = b[this.sortField];
-                
-                if (this.sortField === 'sql') {
-                    aVal = aVal.toLowerCase();
-                    bVal = bVal.toLowerCase();
-                }
-                
-                if (aVal < bVal) {
-                    return this.sortDirection === 'asc' ? -1 : 1;
-                }
-                if (aVal > bVal) {
-                    return this.sortDirection === 'asc' ? 1 : -1;
-                }
-                return 0;
-            });
-        },
-        
-        getSortIcon(field) {
-            if (this.sortField !== field) {
-                return '<svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path></svg>';
-            }
-            if (this.sortDirection === 'asc') {
-                return '<svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>';
-            } else {
-                return '<svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>';
-            }
-        }
-    }`, strings.Join(queryData, ","))
+	jsonData, _ := json.Marshal(queries)
+	return fmt.Sprintf("queriesTable(%s)", string(jsonData))
 }
 
 func System(queries []warnly.SQLQuery, isPartial bool, user *warnly.User) templ.Component {
@@ -193,7 +76,7 @@ func SystemHtmx(queries []warnly.SQLQuery, _ bool) templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(QueriesTitle)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/system.templ`, Line: 136, Col: 22}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/system.templ`, Line: 19, Col: 22}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -206,7 +89,7 @@ func SystemHtmx(queries []warnly.SQLQuery, _ bool) templ.Component {
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(AppName)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/system.templ`, Line: 136, Col: 36}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/system.templ`, Line: 19, Col: 36}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
@@ -235,7 +118,7 @@ func SystemHtmx(queries []warnly.SQLQuery, _ bool) templ.Component {
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(queriesTable(queries))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/system.templ`, Line: 144, Col: 71}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/system.templ`, Line: 27, Col: 71}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
