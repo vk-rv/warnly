@@ -562,7 +562,7 @@ func issuesTable(res *warnly.ListIssuesResult) templ.Component {
 			templ_7745c5c3_Var19 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "<div class=\"overflow-x-auto border border-border rounded-lg\"><table class=\"w-full\"><thead><tr class=\"border-b border-border bg-gray-50\"><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">ISSUE</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">PROJECT</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">EVENTS</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">USERS</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">FIRST SEEN</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">LAST SEEN</th></tr></thead> <tbody>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "<div class=\"overflow-x-auto border border-border rounded-lg\"><table class=\"w-full\"><thead><tr class=\"border-b border-border bg-gray-50\"><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">ISSUE</th><th class=\"px-4 py-2 text-center text-sm font-medium text-gray-500\">PROJECT</th><th class=\"px-4 py-2 text-center text-sm font-medium text-gray-500\">EVENTS</th><th class=\"px-4 py-2 text-center text-sm font-medium text-gray-500\">USERS</th><th class=\"px-4 py-2 text-center text-sm font-medium text-gray-500\">FIRST SEEN</th><th class=\"px-4 py-2 text-center text-sm font-medium text-gray-500\">LAST SEEN</th></tr></thead> <tbody>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -606,7 +606,7 @@ func issuesTable(res *warnly.ListIssuesResult) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 34, "</div></a></td><td class=\"px-4 py-3 text-sm text-gray-700\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 34, "</div></a></td><td class=\"px-4 py-3 text-sm text-gray-700 text-center\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -619,7 +619,7 @@ func issuesTable(res *warnly.ListIssuesResult) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 35, "</td><td class=\"px-4 py-3 text-sm text-gray-900 font-medium\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 35, "</td><td class=\"px-4 py-3 text-sm text-gray-900 font-medium text-center\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -632,7 +632,7 @@ func issuesTable(res *warnly.ListIssuesResult) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 36, "</td><td class=\"px-4 py-3 text-sm text-gray-900\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 36, "</td><td class=\"px-4 py-3 text-sm text-gray-900 text-center\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -645,7 +645,7 @@ func issuesTable(res *warnly.ListIssuesResult) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "</td><td class=\"px-4 py-3 text-sm text-gray-500\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "</td><td class=\"px-4 py-3 text-sm text-gray-500 text-center\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -658,7 +658,7 @@ func issuesTable(res *warnly.ListIssuesResult) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 38, "</td><td class=\"px-4 py-3 text-sm text-gray-500\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 38, "</td><td class=\"px-4 py-3 text-sm text-gray-500 text-center\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

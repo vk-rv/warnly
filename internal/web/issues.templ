@@ -486,11 +486,11 @@ templ issuesTable(res *warnly.ListIssuesResult) {
 			<thead>
 				<tr class="border-b border-border bg-gray-50">
 					<th class="px-4 py-2 text-left text-sm font-medium text-gray-500">ISSUE</th>
-					<th class="px-4 py-2 text-left text-sm font-medium text-gray-500">PROJECT</th>
-					<th class="px-4 py-2 text-left text-sm font-medium text-gray-500">EVENTS</th>
-					<th class="px-4 py-2 text-left text-sm font-medium text-gray-500">USERS</th>
-					<th class="px-4 py-2 text-left text-sm font-medium text-gray-500">FIRST SEEN</th>
-					<th class="px-4 py-2 text-left text-sm font-medium text-gray-500">LAST SEEN</th>
+					<th class="px-4 py-2 text-center text-sm font-medium text-gray-500">PROJECT</th>
+					<th class="px-4 py-2 text-center text-sm font-medium text-gray-500">EVENTS</th>
+					<th class="px-4 py-2 text-center text-sm font-medium text-gray-500">USERS</th>
+					<th class="px-4 py-2 text-center text-sm font-medium text-gray-500">FIRST SEEN</th>
+					<th class="px-4 py-2 text-center text-sm font-medium text-gray-500">LAST SEEN</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -510,19 +510,19 @@ templ issuesTable(res *warnly.ListIssuesResult) {
 								<div class="text-xs text-gray-500 mt-1">{ issue.Message }</div>
 							</a>
 						</td>
-						<td class="px-4 py-3 text-sm text-gray-700">
+						<td class="px-4 py-3 text-sm text-gray-700 text-center">
 							{ getProjectName(res.Projects, issue.ProjectID) }
 						</td>
-						<td class="px-4 py-3 text-sm text-gray-900 font-medium">
+						<td class="px-4 py-3 text-sm text-gray-900 font-medium text-center">
 							{ warnly.NumFormatted(issue.TimesSeen) }
 						</td>
-						<td class="px-4 py-3 text-sm text-gray-900">
+						<td class="px-4 py-3 text-sm text-gray-900 text-center">
 							{ warnly.NumFormatted(issue.UserCount) }
 						</td>
-						<td class="px-4 py-3 text-sm text-gray-500">
+						<td class="px-4 py-3 text-sm text-gray-500 text-center">
 							{ warnly.TimeAgo(func() time.Time { return time.Now() }, issue.FirstSeen, false) }
 						</td>
-						<td class="px-4 py-3 text-sm text-gray-500">
+						<td class="px-4 py-3 text-sm text-gray-500 text-center">
 							{ warnly.TimeAgo(func() time.Time { return time.Now() }, issue.LastSeen, false) }
 						</td>
 					</tr>
