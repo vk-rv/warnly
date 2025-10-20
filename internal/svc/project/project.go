@@ -552,6 +552,17 @@ func (s *ProjectService) ListIssues(ctx context.Context, req *warnly.ListIssuesR
 
 	projectIDS := extractProjectIDs(projects, req.ProjectName)
 
+	popularTagsReq := &warnly.ListPopularTagsRequest{
+		User:        req.User,
+		ProjectName: req.ProjectName,
+		Period:      req.Period,
+		Limit:       1000,
+	}
+	popularTags, err := s.ListPopularTags(ctx, popularTagsReq)
+	if err != nil {
+		return nil, err
+	}
+
 	var groupIDs []int64
 	if req.Query != "" {
 		tokens := warnly.ParseQuery(req.Query)
@@ -566,21 +577,10 @@ func (s *ProjectService) ListIssues(ctx context.Context, req *warnly.ListIssuesR
 				LastProject:      &lastProject,
 				Issues:           []warnly.IssueEntry{},
 				Projects:         projects,
-				PopularTags:      []warnly.TagCount{},
+				PopularTags:      popularTags,
 				TotalIssues:      0,
 			}, nil
 		}
-	}
-
-	popularTagsReq := &warnly.ListPopularTagsRequest{
-		User:        req.User,
-		ProjectName: req.ProjectName,
-		Period:      req.Period,
-		Limit:       1000,
-	}
-	popularTags, err := s.ListPopularTags(ctx, popularTagsReq)
-	if err != nil {
-		return nil, err
 	}
 
 	issues, err := s.issueStore.ListIssues(ctx, &warnly.ListIssuesCriteria{
