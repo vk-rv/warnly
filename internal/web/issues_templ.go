@@ -725,44 +725,6 @@ func getSearchTokens(req *warnly.ListIssuesRequest) string {
 	return "[]"
 }
 
-func getFilterCategories(filters warnly.IssueFilters) string {
-	categories := []map[string]any{}
-
-	if len(filters.Fields) > 0 {
-		items := []map[string]string{}
-		for _, f := range filters.Fields {
-			items = append(items, map[string]string{
-				"key":   f.Key,
-				"value": f.Value,
-			})
-		}
-		categories = append(categories, map[string]any{
-			"name":   "Fields",
-			"active": true,
-			"items":  items,
-		})
-	}
-
-	if len(filters.Assignments) > 0 {
-		items := []map[string]string{}
-		for _, f := range filters.Assignments {
-			items = append(items, map[string]string{
-				"key":   f.Key,
-				"value": f.Value,
-			})
-		}
-		categories = append(categories, map[string]any{
-			"name":   "Assigned",
-			"active": false,
-			"items":  items,
-		})
-	}
-
-	jsonBytes, _ := json.Marshal(categories)
-
-	return string(jsonBytes)
-}
-
 func getPopularTagsCategories(tags []warnly.TagCount) string {
 	items := []map[string]string{}
 	for _, t := range tags {

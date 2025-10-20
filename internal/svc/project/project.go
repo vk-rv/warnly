@@ -246,7 +246,7 @@ func (s *ProjectService) GetProjectDetails(
 		return nil, err
 	}
 
-	issues, err := s.issueStore.ListIssues(ctx, warnly.ListIssuesCriteria{
+	issues, err := s.issueStore.ListIssues(ctx, &warnly.ListIssuesCriteria{
 		ProjectIDs: []int{project.ID},
 		From:       from,
 		To:         to,
@@ -500,7 +500,7 @@ func parseDuration(period string, defaultDur time.Duration) (time.Duration, erro
 	return dur, nil
 }
 
-func getListIssuesTimeRange(s *ProjectService, req *warnly.ListIssuesRequest) (time.Time, time.Time, error) {
+func parseTimeRange(s *ProjectService, req *warnly.ListIssuesRequest) (time.Time, time.Time, error) {
 	if req.Start != "" && req.End != "" {
 		from, to, err := warnly.ParseTimeRange(req.Start, req.End)
 		return from, to, err
@@ -516,7 +516,7 @@ func getListIssuesTimeRange(s *ProjectService, req *warnly.ListIssuesRequest) (t
 
 // ListIssues lists issues for the projects the user has access to.
 func (s *ProjectService) ListIssues(ctx context.Context, req *warnly.ListIssuesRequest) (*warnly.ListIssuesResult, error) {
-	from, to, err := getListIssuesTimeRange(s, req)
+	from, to, err := parseTimeRange(s, req)
 	if err != nil {
 		return nil, err
 	}
@@ -552,6 +552,26 @@ func (s *ProjectService) ListIssues(ctx context.Context, req *warnly.ListIssuesR
 
 	projectIDS := extractProjectIDs(projects, req.ProjectName)
 
+	var groupIDs []int64
+	if req.Query != "" {
+		tokens := warnly.ParseQuery(req.Query)
+		groupIDs, err = s.analyticsStore.GetFilteredGroupIDs(ctx, tokens, from, to, projectIDS)
+		if err != nil {
+			return nil, err
+		}
+		if len(groupIDs) == 0 {
+			return &warnly.ListIssuesResult{
+				RequestedProject: req.ProjectName,
+				Request:          req,
+				LastProject:      &lastProject,
+				Issues:           []warnly.IssueEntry{},
+				Projects:         projects,
+				PopularTags:      []warnly.TagCount{},
+				TotalIssues:      0,
+			}, nil
+		}
+	}
+
 	popularTagsReq := &warnly.ListPopularTagsRequest{
 		User:        req.User,
 		ProjectName: req.ProjectName,
@@ -563,8 +583,9 @@ func (s *ProjectService) ListIssues(ctx context.Context, req *warnly.ListIssuesR
 		return nil, err
 	}
 
-	issues, err := s.issueStore.ListIssues(ctx, warnly.ListIssuesCriteria{
+	issues, err := s.issueStore.ListIssues(ctx, &warnly.ListIssuesCriteria{
 		ProjectIDs: projectIDS,
+		GroupIDs:   groupIDs,
 		From:       from,
 		To:         to,
 	})
@@ -609,24 +630,6 @@ func (s *ProjectService) ListIssues(ctx context.Context, req *warnly.ListIssuesR
 		issueList = issueList[start:end]
 	}
 
-	fields, err := s.analyticsStore.ListFieldFilters(ctx, &warnly.FieldFilterCriteria{
-		ProjectIDs: projectIDS,
-		From:       from,
-		To:         to,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	assignedFilters, err := s.assingmentStore.ListAssignedFilters(
-		ctx,
-		&warnly.GetAssignedFiltersCriteria{
-			CurrentUserTeamIDs: teamIDS,
-		})
-	if err != nil {
-		return nil, err
-	}
-
 	return &warnly.ListIssuesResult{
 		Request:          req,
 		Issues:           issueList,
@@ -635,10 +638,6 @@ func (s *ProjectService) ListIssues(ctx context.Context, req *warnly.ListIssuesR
 		RequestedProject: req.ProjectName,
 		PopularTags:      popularTags,
 		TotalIssues:      totalAfterFilters,
-		Filters: warnly.IssueFilters{
-			Fields:      fields,
-			Assignments: assignedFilters,
-		},
 	}, nil
 }
 

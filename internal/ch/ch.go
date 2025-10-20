@@ -12,6 +12,11 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
+const (
+	hasTagSQL    = " AND has(_tags_hash_map, cityHash64(?))"
+	notHasTagSQL = " AND not has(_tags_hash_map, cityHash64(?))"
+)
+
 // ClickhouseStore encapsulates clickhouse connection.
 type ClickhouseStore struct {
 	conn            clickhouse.Conn
@@ -464,9 +469,9 @@ func (s *ClickhouseStore) ListEvents(ctx context.Context, criteria *warnly.Event
 
 	for key, value := range criteria.Tags {
 		if value.IsNot {
-			query += " AND not has(_tags_hash_map, cityHash64(?))"
+			query += notHasTagSQL
 		} else {
-			query += " AND has(_tags_hash_map, cityHash64(?))"
+			query += hasTagSQL
 		}
 		args = append(args, fmt.Sprintf("%s=%s", key, value.Value))
 	}
@@ -893,6 +898,67 @@ func (s *ClickhouseStore) ListTagValues(
 	}
 
 	return res, nil
+}
+
+// GetFilteredGroupIDs returns group IDs that match the query filters.
+func (s *ClickhouseStore) GetFilteredGroupIDs(
+	ctx context.Context,
+	tokens []warnly.QueryToken,
+	from, to time.Time,
+	projectIDs []int,
+) ([]int64, error) {
+	ctx, span := s.tracer.Start(ctx, "ClickhouseStore.GetFilteredGroupIDs")
+	defer span.End()
+
+	query := `SELECT DISTINCT gid FROM event WHERE deleted = 0 AND pid IN (?` +
+		strings.Repeat(",?", len(projectIDs)-1) +
+		`) AND created_at >= toDateTime(?, 'UTC') AND created_at <= toDateTime(?, 'UTC')`
+
+	args := make([]any, 0, len(projectIDs)+2)
+	for _, pid := range projectIDs {
+		args = append(args, pid)
+	}
+	args = append(args, from, to)
+
+	for _, token := range tokens {
+		if token.IsRawText {
+			query += " AND (notEquals(positionCaseInsensitive(message, ?), 0) OR notEquals(positionCaseInsensitive(title, ?), 0))"
+			args = append(args, token.Value, token.Value)
+		} else {
+			hash := fmt.Sprintf("%s=%s", token.Key, token.Value)
+			if token.Operator == "is not" {
+				query += " AND not has(_tags_hash_map, cityHash64(?))"
+			} else {
+				query += " AND has(_tags_hash_map, cityHash64(?))"
+			}
+			args = append(args, hash)
+		}
+	}
+
+	rows, err := s.conn.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("clickhouse: get filtered group ids: %w", err)
+	}
+	defer func() {
+		if cerr := rows.Close(); err == nil && cerr != nil {
+			err = cerr
+		}
+	}()
+
+	var gids []int64
+	for rows.Next() {
+		var gid uint64
+		if err := rows.Scan(&gid); err != nil {
+			return nil, fmt.Errorf("clickhouse: get filtered group ids, scan result: %w", err)
+		}
+		gids = append(gids, int64(gid))
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("clickhouse: get filtered group ids, rows.Err: %w", err)
+	}
+
+	return gids, nil
 }
 
 // createPlaceholdersAndArgs creates SQL placeholders and corresponding args for the given items.

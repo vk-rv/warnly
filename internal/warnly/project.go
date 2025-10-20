@@ -7,6 +7,7 @@ import (
 	"math"
 	"slices"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -239,7 +240,6 @@ type ListIssuesResult struct {
 	LastProject      *Project
 	Issues           []IssueEntry
 	Projects         []Project
-	Filters          IssueFilters
 	PopularTags      []TagCount
 	TotalIssues      int
 }
@@ -248,15 +248,91 @@ type GetAssignedFiltersCriteria struct {
 	CurrentUserTeamIDs []int
 }
 
-type IssueFilters struct {
-	Assignments []Filter
-	Fields      []Filter
-}
-
 type Filter struct {
 	Key      string
 	Operator string
 	Value    string
+}
+
+type QueryToken struct {
+	Key       string
+	Operator  string
+	Value     string
+	IsRawText bool
+}
+
+// ParseQuery parses a query string into QueryTokens.
+// Supports quoted values, operators like : and !:, and raw text.
+func ParseQuery(query string) []QueryToken {
+	var tokens []QueryToken
+	var current strings.Builder
+	inQuotes := false
+	quoteChar := byte(0)
+
+	for i := range len(query) {
+		char := query[i]
+
+		switch {
+		case !inQuotes && (char == '"' || char == '\''):
+			inQuotes = true
+			quoteChar = char
+		case inQuotes && char == quoteChar:
+			inQuotes = false
+			quoteChar = 0
+		case !inQuotes && char == ' ':
+			if current.Len() > 0 {
+				tokens = append(tokens, parseToken(current.String()))
+				current.Reset()
+			}
+		default:
+			current.WriteByte(char)
+		}
+	}
+
+	if current.Len() > 0 {
+		tokens = append(tokens, parseToken(current.String()))
+	}
+
+	return tokens
+}
+
+// parseToken parses a single token string into QueryToken.
+func parseToken(token string) QueryToken {
+	if strings.Contains(token, ":") {
+		parts := strings.SplitN(token, ":", 2)
+		key := parts[0]
+		value := parts[1]
+
+		var operator string
+		if strings.HasPrefix(value, "!") {
+			operator = "is not"
+			value = value[1:]
+		} else {
+			operator = "is"
+		}
+
+		// Remove quotes if present
+		if len(value) >= 2 && ((value[0] == '"' && value[len(value)-1] == '"') || (value[0] == '\'' && value[len(value)-1] == '\'')) {
+			value = value[1 : len(value)-1]
+		}
+
+		return QueryToken{
+			Key:      key,
+			Operator: operator,
+			Value:    value,
+		}
+	}
+
+	// Raw text, remove quotes if present
+	value := token
+	if len(value) >= 2 && ((value[0] == '"' && value[len(value)-1] == '"') || (value[0] == '\'' && value[len(value)-1] == '\'')) {
+		value = value[1 : len(value)-1]
+	}
+
+	return QueryToken{
+		Value:     value,
+		IsRawText: true,
+	}
 }
 
 type TagValueCount struct {

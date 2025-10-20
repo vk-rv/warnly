@@ -44,6 +44,8 @@ type AnalyticsStore interface {
 	ListPopularTags(ctx context.Context, criteria *ListPopularTagsCriteria) ([]TagCount, error)
 	// ListTagValues lists popular values for a given tag.
 	ListTagValues(ctx context.Context, criteria *ListTagValuesCriteria) ([]TagValueCount, error)
+	// GetFilteredGroupIDs returns group IDs that match the query filters.
+	GetFilteredGroupIDs(ctx context.Context, tokens []QueryToken, from, to time.Time, projectIDs []int) ([]int64, error)
 }
 
 type FieldFilterCriteria struct {
