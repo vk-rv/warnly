@@ -77,7 +77,7 @@ func NewHandler(b *Backend) (*Handler, error) {
 	))
 	mux.HandleFunc("GET /settings", chain(settingsHandler.listSettings))
 
-	sessionHandler := newSessionHandler(
+	rootHandler := newRootHandler(
 		b.SessionService,
 		b.ProjectService,
 		b.CookieStore,
@@ -164,13 +164,13 @@ func NewHandler(b *Backend) (*Handler, error) {
 
 	mux.HandleFunc("GET /static/", fsHandler)
 
-	mux.HandleFunc("GET /", chain(sessionHandler.index))
-	mux.HandleFunc("DELETE /session", chain(sessionHandler.destroy))
+	mux.HandleFunc("GET /login", chainWithoutAuth(rootHandler.login))
+	mux.HandleFunc("POST /login", chainWithoutAuth(rootHandler.create))
+	mux.HandleFunc("GET /", chain(rootHandler.index))
+	mux.HandleFunc("GET /api/search/tag-values", chain(rootHandler.listTagValues))
+	mux.HandleFunc("DELETE /session", chain(rootHandler.destroy))
 
 	mux.HandleFunc("POST /ingest/api/{project_id}/envelope/", eventAPIHandler.IngestEvent)
-
-	mux.HandleFunc("GET /login", chainWithoutAuth(sessionHandler.login))
-	mux.HandleFunc("POST /login", chainWithoutAuth(sessionHandler.create))
 
 	return &Handler{ServeMux: mux}, nil
 }

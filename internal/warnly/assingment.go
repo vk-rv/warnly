@@ -40,6 +40,8 @@ type AssingmentStore interface {
 	DeleteAssignment(ctx context.Context, issueID int64) error
 	// ListAssingments lists all assignments for a given issue.
 	ListAssingments(ctx context.Context, issueIDs []int64) ([]*AssignedUser, error)
+	// ListAssignedFilters gets filters for assigned issues.
+	ListAssignedFilters(ctx context.Context, criteria *GetAssignedFiltersCriteria) ([]Filter, error)
 }
 
 // AssignIssueRequest represents the request to assign an issue to a user.

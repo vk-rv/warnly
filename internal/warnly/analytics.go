@@ -38,6 +38,20 @@ type AnalyticsStore interface {
 	ListErrors(ctx context.Context, criteria ListErrorsCriteria) ([]AnalyticsStoreErr, error)
 	// StoreEvent stores an event in the analytics database.
 	StoreEvent(ctx context.Context, event *EventClickhouse) error
+	// ListFieldFilters lists field filters for a given project.
+	ListFieldFilters(ctx context.Context, criteria *FieldFilterCriteria) ([]Filter, error)
+	// ListPopularTags lists popular tag keys across all events.
+	ListPopularTags(ctx context.Context, criteria *ListPopularTagsCriteria) ([]TagCount, error)
+	// ListTagValues lists popular values for a given tag.
+	ListTagValues(ctx context.Context, criteria *ListTagValuesCriteria) ([]TagValueCount, error)
+	// GetFilteredGroupIDs returns group IDs that match the query filters.
+	GetFilteredGroupIDs(ctx context.Context, tokens []QueryToken, from, to time.Time, projectIDs []int) ([]int64, error)
+}
+
+type FieldFilterCriteria struct {
+	From       time.Time
+	To         time.Time
+	ProjectIDs []int
 }
 
 // EventDefCriteria represents the criteria for querying events.

@@ -12,6 +12,11 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
+const (
+	hasTagSQL    = " AND has(_tags_hash_map, cityHash64(?))"
+	notHasTagSQL = " AND not has(_tags_hash_map, cityHash64(?))"
+)
+
 // ClickhouseStore encapsulates clickhouse connection.
 type ClickhouseStore struct {
 	conn            clickhouse.Conn
@@ -280,6 +285,64 @@ func (s *ClickhouseStore) GetIssueEvent(ctx context.Context, c *warnly.EventDefC
 	return &i, nil
 }
 
+// ListFieldFilters lists field filters for a given set of project IDs.
+func (s *ClickhouseStore) ListFieldFilters(
+	ctx context.Context,
+	criteria *warnly.FieldFilterCriteria,
+) ([]warnly.Filter, error) {
+	ctx, span := s.tracer.Start(ctx, "ClickhouseStore.ListFieldFilters")
+	defer span.End()
+
+	pidPlaceholders, pidArgs := createPlaceholdersAndArgs(criteria.ProjectIDs)
+
+	args := make([]any, 0, len(pidArgs)+2)
+	args = append(args, pidArgs...)
+	args = append(args, criteria.From, criteria.To)
+
+	query := `SELECT
+				tags.key AS tag_key,
+				tags.value AS tag_value,
+				count() AS frequency
+			FROM event
+			ARRAY JOIN tags
+			WHERE
+				deleted = 0
+			AND pid IN (` + strings.Join(pidPlaceholders, ",") + `)
+			AND created_at >= toDateTime(?, 'UTC')
+			AND created_at < toDateTime(?, 'UTC')
+			GROUP BY tag_key, tag_value
+			ORDER BY frequency DESC
+			LIMIT 1000`
+
+	rows, err := s.conn.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("clickhouse: list field filters: %w", err)
+	}
+	defer func() {
+		if cerr := rows.Close(); cerr != nil && err == nil {
+			err = cerr
+		}
+	}()
+
+	var (
+		filters   []warnly.Filter
+		frequency uint64
+	)
+	for rows.Next() {
+		var f warnly.Filter
+		if err := rows.Scan(&f.Key, &f.Value, &frequency); err != nil {
+			return nil, fmt.Errorf("clickhouse: list field filters, scan result: %w", err)
+		}
+		filters = append(filters, f)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("clickhouse: list field filters, rows.Err: %w", err)
+	}
+
+	return filters, nil
+}
+
 // CalculateFields calculates the number of occurrences of each field for a given issue identifier and
 // project within a specified time range.
 func (s *ClickhouseStore) CalculateFields(ctx context.Context, c warnly.FieldsCriteria) ([]warnly.TagCount, error) {
@@ -406,9 +469,9 @@ func (s *ClickhouseStore) ListEvents(ctx context.Context, criteria *warnly.Event
 
 	for key, value := range criteria.Tags {
 		if value.IsNot {
-			query += " AND not has(_tags_hash_map, cityHash64(?))"
+			query += notHasTagSQL
 		} else {
-			query += " AND has(_tags_hash_map, cityHash64(?))"
+			query += hasTagSQL
 		}
 		args = append(args, fmt.Sprintf("%s=%s", key, value.Value))
 	}
@@ -730,6 +793,172 @@ func (s *ClickhouseStore) CalculateEvents(
 	}
 
 	return res, nil
+}
+
+// ListPopularTags lists popular tag keys across all events in the given time range and projects.
+func (s *ClickhouseStore) ListPopularTags(
+	ctx context.Context,
+	c *warnly.ListPopularTagsCriteria,
+) ([]warnly.TagCount, error) {
+	ctx, span := s.tracer.Start(ctx, "ClickhouseStore.ListPopularTags")
+	defer span.End()
+
+	pidQuestionMarks, pidArgs := createPlaceholdersAndArgs(c.ProjectIDs)
+
+	args := []any{c.From, c.To}
+	args = append(args, pidArgs...)
+
+	query := `SELECT tag, count() AS count
+			   FROM event
+			   ARRAY JOIN tags.key AS tag
+			   WHERE deleted = 0
+			   AND created_at >= toDateTime(?, 'UTC')
+			   AND created_at <= toDateTime(?, 'UTC')
+			   AND pid IN (` + strings.Join(pidQuestionMarks, ",") + `)
+			   GROUP BY tag
+			   ORDER BY count DESC
+			   LIMIT ?`
+
+	args = append(args, c.Limit)
+
+	rows, err := s.conn.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("clickhouse: list popular tags: %w", err)
+	}
+	defer func() {
+		if cerr := rows.Close(); cerr != nil && err == nil {
+			err = cerr
+		}
+	}()
+
+	res := make([]warnly.TagCount, 0, c.Limit)
+	for rows.Next() {
+		tc := warnly.TagCount{}
+		if err := rows.Scan(&tc.Tag, &tc.Count); err != nil {
+			return nil, fmt.Errorf("clickhouse: list popular tags, scan result: %w", err)
+		}
+		res = append(res, tc)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("clickhouse: list popular tags, rows.Err: %w", err)
+	}
+
+	return res, nil
+}
+
+// ListTagValues lists popular values for a given tag in the specified time range and projects.
+func (s *ClickhouseStore) ListTagValues(
+	ctx context.Context,
+	c *warnly.ListTagValuesCriteria,
+) ([]warnly.TagValueCount, error) {
+	ctx, span := s.tracer.Start(ctx, "ClickhouseStore.ListTagValues")
+	defer span.End()
+
+	pidQuestionMarks, pidArgs := createPlaceholdersAndArgs(c.ProjectIDs)
+
+	args := []any{c.Tag, c.From, c.To}
+	args = append(args, pidArgs...)
+
+	query := `SELECT value, count() AS count
+			   FROM event
+			   ARRAY JOIN tags.key AS tag, tags.value AS value
+			   WHERE tag = ?
+			   AND deleted = 0
+			   AND created_at >= toDateTime(?, 'UTC')
+			   AND created_at <= toDateTime(?, 'UTC')
+			   AND pid IN (` + strings.Join(pidQuestionMarks, ",") + `)
+			   GROUP BY value
+			   ORDER BY count DESC
+			   LIMIT ?`
+
+	args = append(args, c.Limit)
+
+	rows, err := s.conn.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("clickhouse: list tag values: %w", err)
+	}
+	defer func() {
+		if cerr := rows.Close(); cerr != nil && err == nil {
+			err = cerr
+		}
+	}()
+
+	res := make([]warnly.TagValueCount, 0, c.Limit)
+	for rows.Next() {
+		tvc := warnly.TagValueCount{}
+		if err := rows.Scan(&tvc.Value, &tvc.Count); err != nil {
+			return nil, fmt.Errorf("clickhouse: list tag values, scan result: %w", err)
+		}
+		res = append(res, tvc)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("clickhouse: list tag values, rows.Err: %w", err)
+	}
+
+	return res, nil
+}
+
+// GetFilteredGroupIDs returns group IDs that match the query filters.
+func (s *ClickhouseStore) GetFilteredGroupIDs(
+	ctx context.Context,
+	tokens []warnly.QueryToken,
+	from, to time.Time,
+	projectIDs []int,
+) ([]int64, error) {
+	ctx, span := s.tracer.Start(ctx, "ClickhouseStore.GetFilteredGroupIDs")
+	defer span.End()
+
+	query := `SELECT DISTINCT gid FROM event WHERE deleted = 0 AND pid IN (?` +
+		strings.Repeat(",?", len(projectIDs)-1) +
+		`) AND created_at >= toDateTime(?, 'UTC') AND created_at <= toDateTime(?, 'UTC')`
+
+	args := make([]any, 0, len(projectIDs)+2)
+	for _, pid := range projectIDs {
+		args = append(args, pid)
+	}
+	args = append(args, from, to)
+
+	for _, token := range tokens {
+		if token.IsRawText {
+			query += " AND (notEquals(positionCaseInsensitive(message, ?), 0) OR notEquals(positionCaseInsensitive(title, ?), 0))"
+			args = append(args, token.Value, token.Value)
+		} else {
+			hash := fmt.Sprintf("%s=%s", token.Key, token.Value)
+			if token.Operator == "is not" {
+				query += " AND not has(_tags_hash_map, cityHash64(?))"
+			} else {
+				query += " AND has(_tags_hash_map, cityHash64(?))"
+			}
+			args = append(args, hash)
+		}
+	}
+
+	rows, err := s.conn.Query(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("clickhouse: get filtered group ids: %w", err)
+	}
+	defer func() {
+		if cerr := rows.Close(); err == nil && cerr != nil {
+			err = cerr
+		}
+	}()
+
+	var gids []int64
+	for rows.Next() {
+		var gid uint64
+		if err := rows.Scan(&gid); err != nil {
+			return nil, fmt.Errorf("clickhouse: get filtered group ids, scan result: %w", err)
+		}
+		gids = append(gids, int64(gid))
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("clickhouse: get filtered group ids, rows.Err: %w", err)
+	}
+
+	return gids, nil
 }
 
 // createPlaceholdersAndArgs creates SQL placeholders and corresponding args for the given items.

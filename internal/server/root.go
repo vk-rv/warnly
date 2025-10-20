@@ -1,10 +1,12 @@
 package server
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
+	"strconv"
 
 	"github.com/vk-rv/warnly/internal/session"
 	"github.com/vk-rv/warnly/internal/warnly"
@@ -20,8 +22,8 @@ const (
 	msgSomethingWentWrong = "Something went wrong. Check application logs for more details."
 )
 
-// sessionHandler handles HTTP requests related to user sessions.
-type sessionHandler struct {
+// rootHandler handles HTTP requests related to user sessions and the main page.
+type rootHandler struct {
 	*BaseHandler
 
 	svc          warnly.SessionService
@@ -31,15 +33,15 @@ type sessionHandler struct {
 	rememberDays int
 }
 
-// newSessionHandler creates a new sessionHandler instance.
-func newSessionHandler(
+// newRootHandler creates a new rootHandler instance.
+func newRootHandler(
 	sessionSvc warnly.SessionService,
 	projectSvc warnly.ProjectService,
 	cookieStore *session.CookieStore,
 	rememberDays int,
 	logger *slog.Logger,
-) *sessionHandler {
-	return &sessionHandler{
+) *rootHandler {
+	return &rootHandler{
 		BaseHandler:  NewBaseHandler(logger),
 		svc:          sessionSvc,
 		projectSvc:   projectSvc,
@@ -50,7 +52,7 @@ func newSessionHandler(
 }
 
 // index handles the HTTP request to render the main page with a list of issues.
-func (h *sessionHandler) index(w http.ResponseWriter, r *http.Request) {
+func (h *rootHandler) index(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	user := getUser(ctx)
@@ -69,8 +71,12 @@ func (h *sessionHandler) index(w http.ResponseWriter, r *http.Request) {
 	req := &warnly.ListIssuesRequest{
 		User:        &user,
 		Period:      period,
+		Start:       r.URL.Query().Get("start"),
+		End:         r.URL.Query().Get("end"),
+		Query:       r.URL.Query().Get("query"),
 		ProjectName: r.URL.Query().Get("project_name"),
 		Offset:      offset,
+		Limit:       50,
 	}
 
 	result, err := h.projectSvc.ListIssues(ctx, req)
@@ -82,21 +88,74 @@ func (h *sessionHandler) index(w http.ResponseWriter, r *http.Request) {
 	h.writeIndex(w, r, result, &user)
 }
 
-// writeIndex writes the index page to the response writer.
-func (h *sessionHandler) writeIndex(w http.ResponseWriter, r *http.Request, res *warnly.ListIssuesResult, user *warnly.User) {
-	if r.Header.Get(htmxHeader) != "" {
-		if err := web.IssuesHtmx(res).Render(r.Context(), w); err != nil {
-			h.logger.Error("print index web render", slog.Any("error", err))
+// listTagValues handles the request to list values for a tag.
+func (h *rootHandler) listTagValues(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	user := getUser(ctx)
+
+	tag := r.URL.Query().Get("tag")
+	projectName := r.URL.Query().Get("project_name")
+	period := r.URL.Query().Get("period")
+	limitStr := r.URL.Query().Get("limit")
+	limit := 100
+	if limitStr != "" {
+		if parsed, err := strconv.Atoi(limitStr); err == nil && parsed > 0 {
+			limit = parsed
 		}
-	} else {
-		if err := web.Index(res, user).Render(r.Context(), w); err != nil {
+	}
+
+	req := &warnly.ListTagValuesRequest{
+		User:        &user,
+		Tag:         tag,
+		ProjectName: projectName,
+		Period:      period,
+		Limit:       limit,
+	}
+
+	values, err := h.projectSvc.ListTagValues(ctx, req)
+	if err != nil {
+		h.writeError(ctx, w, http.StatusInternalServerError, "list tag values", err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	if err := json.NewEncoder(w).Encode(values); err != nil {
+		h.writeError(ctx, w, http.StatusInternalServerError, "list tag values: encode", err)
+		return
+	}
+}
+
+// writeIndex writes the index page to the response writer.
+func (h *rootHandler) writeIndex(w http.ResponseWriter, r *http.Request, res *warnly.ListIssuesResult, user *warnly.User) {
+	ctx := r.Context()
+
+	target := r.Header.Get("Hx-Target")
+	partial := r.URL.Query().Get("partial")
+
+	switch {
+	case partial == "body":
+		if err := web.IssuesBody(res).Render(ctx, w); err != nil {
+			h.logger.Error("print index body web render", slog.Any("error", err))
+		}
+	case partial == "filters" || (target == "issues-container" && partial != ""):
+		if err := web.IssuesFiltersAndBody(res).Render(ctx, w); err != nil {
+			h.logger.Error("print index filters web render", slog.Any("error", err))
+		}
+	case target == "content":
+		if err := web.IssuesHtmx(res).Render(ctx, w); err != nil {
+			h.logger.Error("print index htmx web render", slog.Any("error", err))
+		}
+	default:
+		if err := web.Index(res, user).Render(ctx, w); err != nil {
 			h.logger.Error("print index web render", slog.Any("error", err))
 		}
 	}
 }
 
 // destroy handles the HTTP request to destroy the current session (log out).
-func (h *sessionHandler) destroy(w http.ResponseWriter, r *http.Request) {
+func (h *rootHandler) destroy(w http.ResponseWriter, r *http.Request) {
 	if err := destroySession(w, r, h.cookieStore); err != nil {
 		h.logger.Error("destroy session: destroy", slog.Any("error", err))
 		if err = web.Hello("").Render(r.Context(), w); err != nil {
@@ -122,7 +181,7 @@ func destroySession(w http.ResponseWriter, r *http.Request, cookieStore *session
 }
 
 // login handles the HTTP request to render the login page.
-func (h *sessionHandler) login(w http.ResponseWriter, r *http.Request) {
+func (h *rootHandler) login(w http.ResponseWriter, r *http.Request) {
 	if err := web.Hello("").Render(r.Context(), w); err != nil {
 		h.logger.Error("get session: hello web render", slog.Any("error", err))
 	}
@@ -132,7 +191,7 @@ func (h *sessionHandler) login(w http.ResponseWriter, r *http.Request) {
 // It authenticates the user and sets the session cookie.
 // If the authentication fails, it renders an error page.
 // If the authentication succeeds, it redirects to the main page.
-func (h *sessionHandler) create(w http.ResponseWriter, r *http.Request) {
+func (h *rootHandler) create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	credentials := &warnly.Credentials{

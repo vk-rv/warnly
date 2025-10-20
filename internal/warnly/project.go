@@ -7,6 +7,7 @@ import (
 	"math"
 	"slices"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -162,6 +163,10 @@ type ProjectService interface {
 
 	// SearchProject searches for projects by name. Returns ErrProjectNotFound if no project is found.
 	SearchProject(ctx context.Context, name string, user *User) (*Project, error)
+	// ListPopularTags lists popular tag keys for search suggestions.
+	ListPopularTags(ctx context.Context, req *ListPopularTagsRequest) ([]TagCount, error)
+	// ListTagValues lists popular values for a given tag.
+	ListTagValues(ctx context.Context, req *ListTagValuesRequest) ([]TagValueCount, error)
 }
 
 type DeleteMessageRequest struct {
@@ -169,6 +174,21 @@ type DeleteMessageRequest struct {
 	MessageID int
 	ProjectID int
 	IssueID   int
+}
+
+type ListPopularTagsRequest struct {
+	User        *User
+	ProjectName string
+	Period      string
+	Limit       int
+}
+
+type ListTagValuesRequest struct {
+	User        *User
+	Tag         string
+	ProjectName string
+	Period      string
+	Limit       int
 }
 
 // ListTeammatesRequest is a request to list teammates for a project.
@@ -205,19 +225,134 @@ type TeammateAssign struct {
 type ListIssuesRequest struct {
 	User        *User
 	Period      string
+	Start       string
+	End         string
 	Query       string
 	ProjectName string
 	ProjectIDs  []int
 	Offset      int
+	Limit       int
 }
 
 type ListIssuesResult struct {
-	LastProject      *Project
-	Request          *ListIssuesRequest
 	RequestedProject string
+	Request          *ListIssuesRequest
+	LastProject      *Project
 	Issues           []IssueEntry
 	Projects         []Project
+	PopularTags      []TagCount
 	TotalIssues      int
+}
+
+type GetAssignedFiltersCriteria struct {
+	CurrentUserTeamIDs []int
+}
+
+type Filter struct {
+	Key      string
+	Operator string
+	Value    string
+}
+
+type QueryToken struct {
+	Key       string
+	Operator  string
+	Value     string
+	IsRawText bool
+}
+
+// ParseQuery parses a query string into QueryTokens.
+// Supports quoted values, operators like : and !:, and raw text.
+func ParseQuery(query string) []QueryToken {
+	var tokens []QueryToken
+	var current strings.Builder
+	inQuotes := false
+	quoteChar := byte(0)
+
+	for i := range len(query) {
+		char := query[i]
+
+		switch {
+		case !inQuotes && (char == '"' || char == '\''):
+			inQuotes = true
+			quoteChar = char
+		case inQuotes && char == quoteChar:
+			inQuotes = false
+			quoteChar = 0
+		case !inQuotes && char == ' ':
+			if current.Len() > 0 {
+				tokens = append(tokens, parseToken(current.String()))
+				current.Reset()
+			}
+		default:
+			current.WriteByte(char)
+		}
+	}
+
+	if current.Len() > 0 {
+		tokens = append(tokens, parseToken(current.String()))
+	}
+
+	return tokens
+}
+
+// parseToken parses a single token string into QueryToken.
+func parseToken(token string) QueryToken {
+	if strings.Contains(token, ":") {
+		parts := strings.SplitN(token, ":", 2)
+		key := parts[0]
+		value := parts[1]
+
+		var operator string
+		if strings.HasPrefix(value, "!") {
+			operator = "is not"
+			value = value[1:]
+		} else {
+			operator = "is"
+		}
+
+		// Remove quotes if present
+		if len(value) >= 2 && ((value[0] == '"' && value[len(value)-1] == '"') || (value[0] == '\'' && value[len(value)-1] == '\'')) {
+			value = value[1 : len(value)-1]
+		}
+
+		return QueryToken{
+			Key:      key,
+			Operator: operator,
+			Value:    value,
+		}
+	}
+
+	// Raw text, remove quotes if present
+	value := token
+	if len(value) >= 2 && ((value[0] == '"' && value[len(value)-1] == '"') || (value[0] == '\'' && value[len(value)-1] == '\'')) {
+		value = value[1 : len(value)-1]
+	}
+
+	return QueryToken{
+		Value:     value,
+		IsRawText: true,
+	}
+}
+
+type TagValueCount struct {
+	Value string `json:"value"`
+	Count uint64 `json:"count"`
+}
+
+type ListPopularTagsCriteria struct {
+	From       time.Time
+	To         time.Time
+	ProjectIDs []int
+	Limit      int
+}
+
+type ListTagValuesCriteria struct {
+	From       time.Time
+	To         time.Time
+	Tag        string
+	ProjectIDs []int
+	Limit      int
 }
 
 func (l *ListIssuesResult) NoIssues() bool {

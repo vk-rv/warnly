@@ -79,7 +79,7 @@ type IssueStore interface {
 	// StoreIssue stores a new issue.
 	StoreIssue(ctx context.Context, issue *Issue) error
 	// ListIssues returns a list of issues.
-	ListIssues(ctx context.Context, criteria ListIssuesCriteria) ([]Issue, error)
+	ListIssues(ctx context.Context, criteria *ListIssuesCriteria) ([]Issue, error)
 	// UpdateLastSeen updates the last seen time of an issue.
 	UpdateLastSeen(ctx context.Context, upd *UpdateLastSeen) error
 }
@@ -105,6 +105,7 @@ type ListIssuesCriteria struct {
 	From       time.Time
 	To         time.Time
 	ProjectIDs []int
+	GroupIDs   []int64
 }
 
 // IsAllowedIssueType checks whether provided issueType argument is included into predefined

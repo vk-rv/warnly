@@ -1,20 +1,40 @@
 package web
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/vk-rv/warnly/internal/warnly"
 	"time"
 )
 
+// Issues is the main template that includes filters header and issue list body
 templ Issues(res *warnly.ListIssuesResult) {
-	<div id="content" class="max-w-7xl bg-white mx-auto p-6">
+	<div class="max-w-7xl bg-white mx-auto p-6">
 		@issuesHeader()
-		@issuesSearchBar(res.Projects, res.RequestedProject)
+		@IssuesFiltersAndBody(res)
+	</div>
+}
+
+// IssuesFiltersAndBody contains the filters and the body - used for HTMX updates
+templ IssuesFiltersAndBody(res *warnly.ListIssuesResult) {
+	<div
+		id="issues-container"
+		x-data={ getIssuesAlpineData(res) }
+	>
+		@issuesFiltersBar(res)
 		if res.NoIssues() {
-			@gettingStarted(res.LastProject)
+			<span>No issues found</span>
 		} else {
-			@issuesList(res)
+			@IssuesBody(res)
 		}
+	</div>
+}
+
+// IssuesBody - the issues list and pagination that gets updated via HTMX
+templ IssuesBody(res *warnly.ListIssuesResult) {
+	<div id="issues-body">
+		@issuesTable(res)
+		@issuesPagination(res)
 	</div>
 }
 
@@ -33,1775 +53,552 @@ templ issuesHeader() {
 	</header>
 }
 
-func getSelectedProject(requestedProject string) string {
-	selected := "All Projects"
-	if requestedProject != "" {
-		selected = requestedProject
-	}
-	return fmt.Sprintf("{ open: false, selected: '%s' }", selected)
-}
-
-templ issuesSearchBar(projects []warnly.Project, requestedProject string) {
-	<div class="flex gap-2">
-		<div class="flex">
-			<div x-data={ getSelectedProject(requestedProject) }>
-				<button
-					@click="open = !open"
-					class="inline-flex cursor-pointer items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
-				>
-					<span x-text="selected"></span>
-					<svg class="ml-2 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-					</svg>
-				</button>
-				<div x-show="open" @click.away="open = false" class="absolute mt-2 w-48 rounded-md bg-white shadow-lg z-10">
-					<ul class="py-1 text-sm text-gray-700">
-						<li>
-							<a
-								href="#"
-								@click.prevent="selected = 'All Projects'; open = false"
-								hx-get="/"
-								hx-target="#content"
-								hx-swap="outerHTML settle:0"
-								class="block px-4 py-2 hover:bg-gray-100"
-							>
-								All Projects
-							</a>
-						</li>
-						for _, project := range projects {
-							<li>
-								<a
-									href="#"
-									@click.prevent={ fmt.Sprintf("selected = '%s'; open = false", project.Name) }
-									hx-get={ fmt.Sprintf("/?project_name=%s", project.Name) }
-									hx-target="#content"
-									hx-swap="outerHTML settle:0"
-									class="block px-4 py-2 hover:bg-gray-100"
-								>
-									{ project.Name }
-								</a>
-							</li>
-						}
-					</ul>
-				</div>
+templ issuesFiltersBar(res *warnly.ListIssuesResult) {
+	<div class="mb-6">
+		<div class="flex gap-2 mb-3">
+			<div class="flex">
+				@projectSelector(res.Projects, res.RequestedProject)
 			</div>
+			@timePeriodSelectorWrapper(res.Request.Period)
 		</div>
-		<style>
-    [x-cloak] { display: none !important; }
-    
-    .time-input {
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      padding: 0;
-      border: 1px solid #e2e8f0;
-      border-radius: 0.375rem;
-      background-color: white;
-      width: 100%;
-      height: 2.5rem;
-    }
-    
-    .time-input:focus-within {
-      border-color: #6366f1;
-      outline: 2px solid #c7d2fe;
-    }
-    
-    .time-part {
-      display: inline-block;
-      text-align: center;
-      padding: 0.25rem 0;
-      cursor: pointer;
-      user-select: none;
-    }
-    
-    .time-part:hover {
-      background-color: #f3f4f6;
-    }
-    
-    .time-part.selected {
-      background-color: #e0e7ff;
-    }
-    
-    .time-part.hour {
-      width: 2rem;
-      text-align: right;
-    }
-    
-    .time-part.minute {
-      width: 2rem;
-      text-align: left;
-    }
-    
-    .time-part.period {
-      width: 2.5rem;
-      text-align: center;
-    }
-    
-    .time-separator {
-      display: inline-block;
-      width: 0.5rem;
-      text-align: center;
-      user-select: none;
-    }
-  </style>
-		<div class="max-w-md mx-auto" x-data="timePeriodSelector()">
-			<div class="flex border hover:bg-gray-50 border-gray-300 rounded-md overflow-hidden bg-white">
-				<button
-					@click="toggleDropdown()"
-					class="flex cursor-pointer items-center px-4 py-2 text-sm"
-				>
-					<span x-text="displayLabel"></span>
-					<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor" :class="{'transform rotate-180': isOpen}">
-						<path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-					</svg>
-				</button>
-			</div>
-			<div
-				x-show="isOpen"
-				x-cloak
-				@click.away="isOpen = false"
-				class="mt-1 bg-white border border-gray-200 rounded-md shadow-lg absolute z-10 w-full max-w-md"
-			>
-				<div x-show="!showCalendar">
-					<div class="p-4 border-b border-gray-200">
-						<h3 class="text-sm font-medium text-gray-800">Filter Time Range</h3>
-					</div>
-					<div class="p-3">
-						<input
-							type="text"
-							x-model="customRangeInput"
-							placeholder="Custom range: 2h, 4d, 8w..."
-							class="w-full p-2 border text-sm rounded-md focus:outline-none border-gray-300"
-							@keydown.enter="applyCustomRange()"
-							:class="{'border-red-500': customRangeError}"
-						/>
-						<div x-show="customRangeError" class="text-red-500 text-xs mt-1" x-text="customRangeError"></div>
-					</div>
-					<div class="py-2">
-						<template x-for="(preset, index) in presets" :key="index">
-							<div
-								@click="selectPreset(preset.value)"
-								class="flex text-sm items-center px-3 py-2 hover:bg-gray-50 cursor-pointer"
-							>
-								<div class="w-6">
-									<svg
-										x-show="selectedPreset === preset.value"
-										xmlns="http://www.w3.org/2000/svg"
-										class="h-5 w-5 text-black-500"
-										viewBox="0 0 20 20"
-										fill="currentColor"
-									>
-										<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-									</svg>
-								</div>
-								<span
-									class="ml-2"
-									:class="{'text-black-600 font-medium': selectedPreset === preset.value}"
-									x-text="preset.label"
-								></span>
-							</div>
-						</template>
-						<div
-							@click="openCalendar()"
-							class="flex items-center text-sm justify-between px-3 py-2 hover:bg-gray-50 cursor-pointer"
-						>
-							<div class="flex items-center">
-								<div class="w-6">
-									<svg
-										x-show="selectedPreset === 'custom-range'"
-										xmlns="http://www.w3.org/2000/svg"
-										class="h-5 w-5 text-indigo-500"
-										viewBox="0 0 20 20"
-										fill="currentColor"
-									>
-										<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-									</svg>
-								</div>
-								<span
-									class="ml-2"
-									:class="{'text-indigo-600 font-medium': selectedPreset === 'custom-range'}"
-								>Absolute date</span>
-							</div>
-							<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
-								<path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-							</svg>
-						</div>
-					</div>
-				</div>
-				<div x-show="showCalendar" x-cloak>
-					<div class="p-4 border-b border-gray-200">
-						<h3 class="text-sm font-medium text-gray-800">Filter Time Range</h3>
-					</div>
-					<div class="p-4 text-sm">
-						<div class="flex items-center justify-between mb-4">
-							<button @click="prevMonth()" class="text-gray-600">
-								<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-									<path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-								</svg>
-							</button>
-							<div class="text-md font-medium text-gray-700">
-								<span x-text="monthNames[currentMonth]"></span>
-								<span x-text="currentYear"></span>
-							</div>
-							<button @click="nextMonth()" class="text-gray-600">
-								<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-									<path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-								</svg>
-							</button>
-						</div>
-						<div class="grid grid-cols-7 gap-1 text-center">
-							<template x-for="day in ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']" :key="day">
-								<div class="text-xs font-medium text-gray-500 py-1" x-text="day"></div>
-							</template>
-							<template x-for="blank in firstDayOfMonth" :key="'blank-' + blank">
-								<div class="h-10 w-10 rounded-full"></div>
-							</template>
-							<template x-for="date in daysInMonth" :key="date">
-								<div
-									@click="selectDate(date)"
-									class="h-10 w-10 flex items-center justify-center rounded-full cursor-pointer"
-									:class="{
-                  'bg-gray-300 text-white': isSelectedDate(date),
-                  'hover:bg-gray-100': !isSelectedDate(date) && !isInDateRange(date),
-                  'bg-gray-100': isInDateRange(date) && !isSelectedDate(date),
-                  'text-gray-400': isDateDisabled(date),
-                  'text-gray-700': !isDateDisabled(date)
-                }"
-								>
-									<span x-text="date"></span>
-								</div>
-							</template>
-						</div>
-						<div class="mt-6 text-sm flex space-x-4">
-							<div class="flex-1">
-								<div
-									class="time-input"
-									:class="{'border-indigo-500': startTimeActive}"
-									@click="activateStartTime"
-									@keydown="handleTimeKeydown($event, true)"
-									tabindex="0"
-								>
-									<div
-										class="time-part hour"
-										:class="{'selected': startSelectedPart === 'hour'}"
-										@click.stop="selectStartPart('hour')"
-										x-text="startHour.toString().padStart(2, '0')"
-									></div>
-									<div class="time-separator">:</div>
-									<div
-										class="time-part minute"
-										:class="{'selected': startSelectedPart === 'minute'}"
-										@click.stop="selectStartPart('minute')"
-										x-text="startMinute.toString().padStart(2, '0')"
-									></div>
-									<div class="time-separator">&nbsp;</div>
-									<div
-										class="time-part period"
-										:class="{'selected': startSelectedPart === 'period'}"
-										@click.stop="selectStartPart('period')"
-										x-text="startPeriod"
-									></div>
-								</div>
-							</div>
-							<div class="flex-1">
-								<div
-									class="time-input"
-									:class="{'border-indigo-500': endTimeActive}"
-									@click="activateEndTime"
-									@keydown="handleTimeKeydown($event, false)"
-									tabindex="0"
-								>
-									<div
-										class="time-part hour"
-										:class="{'selected': endSelectedPart === 'hour'}"
-										@click.stop="selectEndPart('hour')"
-										x-text="endHour.toString().padStart(2, '0')"
-									></div>
-									<div class="time-separator">:</div>
-									<div
-										class="time-part minute"
-										:class="{'selected': endSelectedPart === 'minute'}"
-										@click.stop="selectEndPart('minute')"
-										x-text="endMinute.toString().padStart(2, '0')"
-									></div>
-									<div class="time-separator">&nbsp;</div>
-									<div
-										class="time-part period"
-										:class="{'selected': endSelectedPart === 'period'}"
-										@click.stop="selectEndPart('period')"
-										x-text="endPeriod"
-									></div>
-								</div>
-							</div>
-							<div class="flex items-center">
-								<input
-									type="checkbox"
-									id="utc"
-									x-model="useUTC"
-									class="h-5 w-5 text-black-600 rounded focus:ring-black-500"
-								/>
-								<label for="utc" class="ml-2 text-gray-700">UTC</label>
-							</div>
-						</div>
-					</div>
-					<div class="p-4 flex justify-between border-t border-gray-200">
-						<button
-							@click="showCalendar = false"
-							class="px-4 py-2 text-gray-700 font-medium text-sm"
-						>
-							← Back
-						</button>
-						<button
-							@click="applyDateRange()"
-							class="px-6 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 text-sm"
-						>
-							Apply
-						</button>
-					</div>
-				</div>
-			</div>
-		</div>
-		<script>
-    function timePeriodSelector() {
-      return {
-        isOpen: false,
-        showCalendar: false,
-        selectedPreset: 'last24h',
-        customRangeInput: '',
-        customRangeError: null,
-        startDate: null,
-        endDate: null,
-        
-        startHour: 7,
-        startMinute: 22,
-        startPeriod: 'AM',
-        endHour: 1,
-        endMinute: 58,
-        endPeriod: 'AM',
-        
-        startTimeActive: false,
-        endTimeActive: false,
-        startSelectedPart: null,
-        endSelectedPart: null,
-        
-        useUTC: true,
-        currentMonth: new Date().getMonth(),
-        currentYear: new Date().getFullYear(),
-        selectionStart: null,
-        selectionEnd: null,
-        selectionInProgress: false,
-        
-        monthNames: [
-          'January', 'February', 'March', 'April', 'May', 'June', 
-          'July', 'August', 'September', 'October', 'November', 'December'
-        ],
-        
-        presets: [
-          { label: 'Last hour', value: 'last1h' },
-          { label: 'Last 24 hours', value: 'last24h' },
-          { label: 'Last 7 days', value: 'last7d' },
-          { label: 'Last 14 days', value: 'last14d' },
-          { label: 'Last 30 days', value: 'last30d' },
-          { label: 'Last 90 days', value: 'last90d' }
-        ],
-        
-        get displayLabel() {
-          if (this.selectedPreset === 'custom-range' && this.selectionStart && this.selectionEnd) {
-            return this.formatDateRange(this.selectionStart, this.selectionEnd);
-          }
-          
-          if (this.selectedPreset === 'custom' && this.customRangeInput) {
-            return this.customRangeInput;
-          }
-          
-          const preset = this.presets.find(p => p.value === this.selectedPreset);
-          return preset ? preset.label : '24H';
-        },
-        
-        get daysInMonth() {
-          return new Date(this.currentYear, this.currentMonth + 1, 0).getDate();
-        },
-        
-        get firstDayOfMonth() {
-          return new Date(this.currentYear, this.currentMonth, 1).getDay();
-        },
-        
-        toggleDropdown() {
-          this.isOpen = !this.isOpen;
-          if (!this.isOpen) {
-            this.showCalendar = false;
-            this.startTimeActive = false;
-            this.endTimeActive = false;
-          }
-        },
-        
-        openCalendar() {
-          this.showCalendar = true;
-          
-          if (!this.selectionStart) {
-            const today = new Date();
-            this.currentMonth = today.getMonth();
-            this.currentYear = today.getFullYear();
-          }
-        },
-        
-        selectPreset(value) {
-          this.selectedPreset = value;
-          this.isOpen = false;
-          
-          this.selectionStart = null;
-          this.selectionEnd = null;
-        },
-        
-        validateCustomRange(input) {
-          this.customRangeError = null;
-          
-          input = input.trim();
-          
-          if (!input) {
-            this.customRangeError = "Please enter a time range";
-            return false;
-          }
-          
-          // Regex to validate format: number + unit (h, d, w, m, y)
-          const regex = /^(\d+)(h|d|w|m|y)$/i;
-          const match = input.match(regex);
-          
-          if (!match) {
-            this.customRangeError = "Invalid format. Use format like: 1h, 2d, 3w, 4m, 1y";
-            return false;
-          }
-          
-          const value = parseInt(match[1]);
-          const unit = match[2].toLowerCase();
-          
-          if (value <= 0) {
-            this.customRangeError = "Value must be positive";
-            return false;
-          }
-          
-          const limits = {
-            'h': 720,    // Max 30 days in hours
-            'd': 365,    // Max 1 year in days
-            'w': 52,     // Max 1 year in weeks
-            'm': 60,     // Max 5 years in months
-            'y': 10      // Max 10 years
-          };
-          
-          if (value > limits[unit]) {
-            this.customRangeError = `Maximum value for ${unit} is ${limits[unit]}`;
-            return false;
-          }
-          
-          return true;
-        },
-        
-        applyCustomRange() {
-          if (this.validateCustomRange(this.customRangeInput)) {
-            this.selectedPreset = 'custom';
-            this.isOpen = false;
-            
-            this.selectionStart = null;
-            this.selectionEnd = null;
-          }
-        },
-        
-        prevMonth() {
-          if (this.currentMonth === 0) {
-            this.currentMonth = 11;
-            this.currentYear--;
-          } else {
-            this.currentMonth--;
-          }
-        },
-        
-        nextMonth() {
-          if (this.currentMonth === 11) {
-            this.currentMonth = 0;
-            this.currentYear++;
-          } else {
-            this.currentMonth++;
-          }
-        },
-        
-        selectDate(date) {
-          const selectedDate = new Date(this.currentYear, this.currentMonth, date);
-          
-          if (!this.selectionInProgress || !this.selectionStart) {
-
-            this.selectionStart = selectedDate;
-            this.selectionEnd = null;
-            this.selectionInProgress = true;
-          } else {
-            this.selectionInProgress = false;
-            
-            if (selectedDate < this.selectionStart) {
-              this.selectionEnd = this.selectionStart;
-              this.selectionStart = selectedDate;
-            } else {
-              this.selectionEnd = selectedDate;
-            }
-          }
-        },
-        
-        isSelectedDate(date) {
-          const currentDate = new Date(this.currentYear, this.currentMonth, date);
-          
-          if (!this.selectionStart && !this.selectionEnd) return false;
-          
-          if (this.selectionStart && !this.selectionEnd) {
-            return this.isSameDate(currentDate, this.selectionStart);
-          }
-          
-          return this.isSameDate(currentDate, this.selectionStart) || 
-                 this.isSameDate(currentDate, this.selectionEnd);
-        },
-        
-        isInDateRange(date) {
-          if (!this.selectionStart || !this.selectionEnd) return false;
-          
-          const currentDate = new Date(this.currentYear, this.currentMonth, date);
-          return currentDate > this.selectionStart && currentDate < this.selectionEnd;
-        },
-        
-        isSameDate(date1, date2) {
-          return date1.getDate() === date2.getDate() && 
-                 date1.getMonth() === date2.getMonth() && 
-                 date1.getFullYear() === date2.getFullYear();
-        },
-        
-        isDateDisabled(date) {
-          return false;
-        },
-        
-        applyDateRange() {
-          if (this.selectionStart) {
-            this.selectedPreset = 'custom-range';
-            this.isOpen = false;
-            this.showCalendar = false;
-          }
-        },
-        
-        formatDate(date) {
-          if (!date) return '';
-          const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-          return `${monthNames[date.getMonth()]} ${date.getDate()}`;
-        },
-        
-        formatDateRange(start, end) {
-          if (!start || !end) return '';
-          
-          if (start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear()) {
-            return `${this.formatDate(start)} - ${end.getDate()}`;
-          }
-          
-          return `${this.formatDate(start)} - ${this.formatDate(end)}`;
-        },
-        
-        activateStartTime() {
-          this.startTimeActive = true;
-          this.endTimeActive = false;
-          if (!this.startSelectedPart) {
-            this.startSelectedPart = 'hour';
-          }
-        },
-        
-        activateEndTime() {
-          this.endTimeActive = true;
-          this.startTimeActive = false;
-          if (!this.endSelectedPart) {
-            this.endSelectedPart = 'hour';
-          }
-        },
-        
-        selectStartPart(part) {
-          this.startSelectedPart = part;
-          this.startTimeActive = true;
-          this.endTimeActive = false;
-        },
-        
-        selectEndPart(part) {
-          this.endSelectedPart = part;
-          this.endTimeActive = true;
-          this.startTimeActive = false;
-        },
-        
-        handleTimeKeydown(event, isStartTime) {
-          const selectedPart = isStartTime ? this.startSelectedPart : this.endSelectedPart;
-          
-          if (!selectedPart) {
-            if (isStartTime) {
-              this.startSelectedPart = 'hour';
-            } else {
-              this.endSelectedPart = 'hour';
-            }
-            return;
-          }
-          
-          if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
-            event.preventDefault();
-            this.adjustTimePart(isStartTime, selectedPart, event.key === 'ArrowUp' ? 1 : -1);
-          }
-          else if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
-            event.preventDefault();
-            this.navigateTimeParts(isStartTime, event.key === 'ArrowRight');
-          }
-          else if (/^\d$/.test(event.key) && (selectedPart === 'hour' || selectedPart === 'minute')) {
-            event.preventDefault();
-            this.setTimePartDirectly(isStartTime, selectedPart, parseInt(event.key));
-          }
-          else if ((event.key.toLowerCase() === 'a' || event.key.toLowerCase() === 'p') && selectedPart === 'period') {
-            event.preventDefault();
-            const newPeriod = event.key.toLowerCase() === 'a' ? 'AM' : 'PM';
-            if (isStartTime) {
-              this.startPeriod = newPeriod;
-            } else {
-              this.endPeriod = newPeriod;
-            }
-          }
-        },
-        
-        adjustTimePart(isStartTime, part, direction) {
-          if (part === 'hour') {
-            if (isStartTime) {
-              this.startHour = this.adjustHour(this.startHour, direction);
-            } else {
-              this.endHour = this.adjustHour(this.endHour, direction);
-            }
-          } 
-          else if (part === 'minute') {
-            if (isStartTime) {
-              this.startMinute = this.adjustMinute(this.startMinute, direction);
-            } else {
-              this.endMinute = this.adjustMinute(this.endMinute, direction);
-            }
-          }
-          else if (part === 'period') {
-            if (isStartTime) {
-              this.startPeriod = this.startPeriod === 'AM' ? 'PM' : 'AM';
-            } else {
-              this.endPeriod = this.endPeriod === 'AM' ? 'PM' : 'AM';
-            }
-          }
-        },
-        
-        adjustHour(hour, direction) {
-          // 12-hour format: 1-12
-          let newHour = hour + direction;
-          if (newHour > 12) newHour = 1;
-          if (newHour < 1) newHour = 12;
-          return newHour;
-        },
-        
-        adjustMinute(minute, direction) {
-          let newMinute = minute + direction;
-          if (newMinute > 59) newMinute = 0;
-          if (newMinute < 0) newMinute = 59;
-          return newMinute;
-        },
-        
-        navigateTimeParts(isStartTime, moveRight) {
-          const parts = ['hour', 'minute', 'period'];
-          let currentIndex;
-          
-          if (isStartTime) {
-            currentIndex = parts.indexOf(this.startSelectedPart);
-            if (currentIndex === -1) {
-              this.startSelectedPart = 'hour';
-              return;
-            }
-            
-            if (moveRight) {
-              currentIndex = (currentIndex + 1) % parts.length;
-            } else {
-              currentIndex = (currentIndex - 1 + parts.length) % parts.length;
-            }
-            
-            this.startSelectedPart = parts[currentIndex];
-          } else {
-            currentIndex = parts.indexOf(this.endSelectedPart);
-            if (currentIndex === -1) {
-              this.endSelectedPart = 'hour';
-              return;
-            }
-            
-            if (moveRight) {
-              currentIndex = (currentIndex + 1) % parts.length;
-            } else {
-              currentIndex = (currentIndex - 1 + parts.length) % parts.length;
-            }
-            
-            this.endSelectedPart = parts[currentIndex];
-          }
-        },
-        
-        setTimePartDirectly(isStartTime, part, digit) {
-          if (part === 'hour') {
-            if (isStartTime) {
-              if (this.startHour >= 10 || this.startHour === 0) {
-                this.startHour = digit === 0 ? 12 : digit;
-              } else {
-                const newHour = parseInt(`${this.startHour}${digit}`);
-                this.startHour = newHour > 12 ? digit : newHour;
-              }
-            } else {
-              if (this.endHour >= 10 || this.endHour === 0) {
-                this.endHour = digit === 0 ? 12 : digit;
-              } else {
-                const newHour = parseInt(`${this.endHour}${digit}`);
-                this.endHour = newHour > 12 ? digit : newHour;
-              }
-            }
-          } 
-          else if (part === 'minute') {
-            if (isStartTime) {
-              if (this.startMinute >= 10) {
-                this.startMinute = digit;
-              } else {
-                const newMinute = parseInt(`${this.startMinute}${digit}`);
-                this.startMinute = newMinute > 59 ? digit : newMinute;
-              }
-            } else {
-              if (this.endMinute >= 10) {
-                this.endMinute = digit;
-              } else {
-                const newMinute = parseInt(`${this.endMinute}${digit}`);
-                this.endMinute = newMinute > 59 ? digit : newMinute;
-              }
-            }
-          }
-        }
-      };
-    }
-  </script>
-		<div class="flex-1 relative">
-			<style>
-        [x-cloak] { display: none !important; }
-        
-        .search-container {
-            position: relative;
-        }
-        
-        .tag-pill {
-            display: inline-flex;
-            align-items: center;
-            background-color: #f3f4f6;
-            border-radius: 0.25rem;
-            padding: 0.25rem 0.5rem;
-            margin-right: 0.5rem;
-            white-space: nowrap;
-        }
-        
-        .tag-pill-operator {
-            background-color: #e5e7eb;
-            cursor: pointer;
-        }
-        
-        .search-input-wrapper {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            width: 100%;
-        }
-        
-        .search-input {
-            background: transparent;
-            border: none;
-            outline: none;
-            flex: 1;
-            min-width: 100px;
-        }
-        
-        .dropdown-container {
-            position: absolute;
-            width: 100%;
-            z-index: 50;
-            border: 1px solid #e5e7eb;
-            border-top: none;
-            border-radius: 0 0 0.5rem 0.5rem;
-            background-color: white;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        }
-        
-        .operator-dropdown {
-            z-index: 60;
-            border: 1px solid #e5e7eb;
-            border-radius: 0.5rem;
-            background-color: white;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            min-width: 120px;
-        }
-        
-        .operator-option {
-            padding: 0.75rem 1rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-        }
-        
-        .operator-option:hover {
-            background-color: #f9fafb;
-        }
-        
-       
-    </style>
-			<div class="max-w-4xl mx-auto">
-				<div
-					x-data="searchInput"
-					x-init="init()"
-					class="search-container"
-					@click.away="closeAllDropdowns()"
-				>
-					<div class="flex border rounded-lg overflow-hidden bg-white border-gray-300">
-						<div class="relative flex-1 flex items-center px-2 text-sm">
-							<div class="text-purple-500 ml-2 mr-1">
-								<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="black">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-								</svg>
-							</div>
-							<div class="search-input-wrapper py-2" @click="focusInput()">
-								<template x-for="(token, index) in tokens" :key="index">
-									<div class="tag-pill">
-										<template x-if="!token.isRawText">
-											<div class="flex items-center">
-												<span x-text="token.key" class="text-gray-800"></span>
-												<span
-													class="tag-pill-operator mx-1"
-													x-text="token.operator"
-													@click.stop="openOperatorDropdown(index)"
-												></span>
-												<span x-text="token.value" class="text-gray-800"></span>
-											</div>
-										</template>
-										<template x-if="token.isRawText">
-											<span x-text="token.value" class="text-gray-800"></span>
-										</template>
-										<button @click.stop="removeToken(index)" class="ml-1 text-gray-500 hover:text-gray-700">
-											<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-											</svg>
-										</button>
-									</div>
-								</template>
-								<input
-									x-ref="searchInput"
-									type="text"
-									x-model="inputValue"
-									:placeholder="tokens.length === 0 ? 'Search for events, users, tags, and more' : ''"
-									class="search-input"
-									@click="handleInputClick()"
-									@focus="handleInputFocus()"
-									@keydown.enter="handleEnterKey()"
-									@keydown.backspace="handleBackspace()"
-									@keydown.escape="closeAllDropdowns()"
-									@input="handleInput()"
-								/>
-							</div>
-							<button
-								x-show="tokens.length > 0 || inputValue.length > 0"
-								@click.stop="clearAll()"
-								class="mr-4 text-gray-400 hover:text-gray-600"
-								x-cloak
-							>
-								<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-								</svg>
-							</button>
-						</div>
-					</div>
-					<div
-						x-show="showOperatorDropdown"
-						class="operator-dropdown text-sm"
-						:style="`top: ${operatorDropdownPosition.top}px; left: ${operatorDropdownPosition.left}px;`"
-						x-cloak
-					>
-						<div
-							class="operator-option"
-							:class="{'selected': tokens[activeTokenIndex]?.operator === 'is'}"
-							@click="changeOperator(activeTokenIndex, 'is')"
-						>
-							<svg x-show="tokens[activeTokenIndex]?.operator === 'is'" class="h-5 w-5 mr-2 text-black" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-								<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-							</svg>
-							<span x-show="tokens[activeTokenIndex]?.operator !== 'is'" class="h-5 w-5 mr-2"></span>
-							<span>is</span>
-						</div>
-						<div
-							class="operator-option"
-							:class="{'selected': tokens[activeTokenIndex]?.operator === 'is not'}"
-							@click="changeOperator(activeTokenIndex, 'is not')"
-						>
-							<svg x-show="tokens[activeTokenIndex]?.operator === 'is not'" class="h-5 w-5 mr-2 text-black" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-								<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-							</svg>
-							<span x-show="tokens[activeTokenIndex]?.operator !== 'is not'" class="h-5 w-5 mr-2"></span>
-							<span>is not</span>
-						</div>
-					</div>
-					<div
-						x-show="showTagSuggestions"
-						class="dropdown-container text-sm"
-						x-cloak
-					>
-						<div class="flex border-b border-gray-200 px-4 py-2 space-x-4">
-							<template x-for="(category, index) in filterCategories" :key="index">
-								<button
-									class="px-2 py-1 rounded"
-									:class="category.active ? 'bg-black text-white' : 'text-gray-600 hover:bg-gray-200'"
-									x-text="category.name"
-									@click="setActiveCategory(index)"
-								></button>
-							</template>
-						</div>
-						<div class="flex">
-							<div class="w-1/2 border-r border-gray-200 max-h-80 overflow-y-auto">
-								<template x-for="tag in filteredTags()" :key="tag.key">
-									<div
-										@click="selectTag(tag.key)"
-										class="px-4 py-3 hover:bg-gray-100 cursor-pointer"
-										:class="{'bg-gray-100': hoveredTag === tag.key}"
-										@mouseover="hoveredTag = tag.key"
-										x-text="tag.key"
-									></div>
-								</template>
-							</div>
-							<div class="w-1/2 p-4">
-								<template x-if="hoveredTag && getTagDetails(hoveredTag)">
-									<div>
-										<h3 class="text-lg font-medium text-gray-800" x-text="hoveredTag"></h3>
-										<p class="text-gray-600 mt-2" x-text="getTagDetails(hoveredTag).description"></p>
-										<div class="mt-4">
-											<span class="text-gray-700">Type</span>
-											<span class="ml-2 text-gray-600" x-text="getTagDetails(hoveredTag).type || 'String'"></span>
-										</div>
-									</div>
-								</template>
-							</div>
-						</div>
-					</div>
-					<div
-						x-show="showTagValues"
-						class="dropdown-container text-sm"
-						x-cloak
-					>
-						<div class="max-h-80 overflow-y-auto">
-							<template x-for="(item, index) in filteredTagValues()" :key="index">
-								<div
-									@click="selectTagValue(item.value)"
-									class="px-4 py-3 hover:bg-gray-100 cursor-pointer flex items-center justify-between"
-								>
-									<span x-text="item.value"></span>
-								</div>
-							</template>
-						</div>
-					</div>
-				</div>
-			</div>
-			<script>
-      htmx.onLoad(function (target) {
-            Alpine.data('searchInput', () => ({
-          inputValue: '',
-          tokens: [],
-          rawText: '',
-          
-          showTagSuggestions: false,
-          showTagValues: false,
-          showOperatorDropdown: false,
-          operatorDropdownPosition: { top: 0, left: 0 },
-          activeTokenIndex: null,
-          
-          currentTag: null,
-          currentOperator: 'is',
-          multiSelectMode: false,
-          multiSelectedValues: [],
-          hoveredTag: null,
-          
-          operators: ['is', 'is not'],
-          
-          filterCategories: [
-              { name: 'All', active: true },
-              { name: 'Issues', active: false },
-              { name: 'Event Tags', active: false }
-          ],
-          
-          availableTags: [
-              { key: 'is', description: 'Filter by exact match', type: 'Operator', category: 'All' },
-              { key: 'level', description: 'Filter by log level', type: 'String', category: 'All' },
-              { key: 'url', description: 'URL of the request', type: 'String', category: 'All' },
-              
-              { key: 'issue.priority', description: 'Filter by issue priority', type: 'String', category: 'Issues' },
-              { key: 'issue.status', description: 'Filter by issue status', type: 'String', category: 'Issues' },
-              { key: 'issue.type', description: 'Filter by issue type', type: 'String', category: 'Issues' },
-              
-              { key: 'os.name', description: 'Name of the Operating System', type: 'String', category: 'Event Tags' },
-              { key: 'runtime', description: 'Runtime environment', type: 'String', category: 'Event Tags' },
-              { key: 'runtime.name', description: 'Name of the runtime', type: 'String', category: 'Event Tags' },
-              { key: 'server_name', description: 'Server identifier', type: 'String', category: 'Event Tags' },
-              { key: 'os', description: 'Operating system', type: 'String', category: 'Event Tags' },
-              { key: 'browser.name', description: 'Browser name', type: 'String', category: 'Event Tags' },
-              { key: 'logger', description: 'Filter by logger name', type: 'String', category: 'Event Tags' }
-          ],
-          
-          tagValues: {
-              'runtime': [
-            { value: 'go go1.24.0', description: 'Go version 1.24.0' },
-            { value: 'php 7.4.33', description: 'PHP version 7.4.33' },
-            { value: 'go go1.22.12', description: 'Go version 1.22.12' },
-            { value: 'php 8.2.28', description: 'PHP version 8.2.28' }
-              ],
-              'runtime.name': [
-            { value: 'go', description: 'Go runtime' },
-            { value: 'php', description: 'PHP runtime' },
-            { value: 'node', description: 'Node.js runtime' },
-            { value: 'python', description: 'Python runtime' }
-              ],
-              'server_name': [
-            { value: 'app-go-prod-5896566df9-ztjkc', description: 'Production Go server' },
-            { value: 'app-php-prod-3456789ab1-xyzab', description: 'Production PHP server' }
-              ],
-              'is': [
-            { value: 'true', description: 'Boolean true' },
-            { value: 'false', description: 'Boolean false' }
-              ],
-              'level': [
-            { value: 'error', description: 'Error level' },
-            { value: 'warning', description: 'Warning level' },
-            { value: 'info', description: 'Info level' },
-            { value: 'debug', description: 'Debug level' }
-              ],
-              'issue.priority': [
-            { value: 'high', description: 'High priority' },
-            { value: 'medium', description: 'Medium priority' },
-            { value: 'low', description: 'Low priority' }
-              ],
-              'issue.status': [
-            { value: 'open', description: 'Open issues' },
-            { value: 'resolved', description: 'Resolved issues' },
-            { value: 'ignored', description: 'Ignored issues' }
-              ],
-              'os.name': [
-            { value: 'Linux', description: 'Linux operating system' },
-            { value: 'Windows', description: 'Windows operating system' },
-            { value: 'macOS', description: 'macOS operating system' }
-              ],
-              'browser.name': [
-            { value: 'Chrome', description: 'Google Chrome' },
-            { value: 'Firefox', description: 'Mozilla Firefox' },
-            { value: 'Safari', description: 'Apple Safari' },
-            { value: 'Edge', description: 'Microsoft Edge' }
-              ]
-          },
-          
-          init() {
-              window.addEventListener('keydown', (e) => {
-            if (e.key === 'Meta' || e.key === 'Control') {
-                this.multiSelectMode = true;
-            }
-              });
-              
-              window.addEventListener('keyup', (e) => {
-            if (e.key === 'Meta' || e.key === 'Control') {
-                this.multiSelectMode = false;
-            }
-              });
-          },
-        
-          getTagDetails(key) {
-              return this.availableTags.find(tag => tag.key === key);
-          },
-          
-          getActiveCategory() {
-              const activeCategory = this.filterCategories.find(cat => cat.active);
-              return activeCategory ? activeCategory.name : 'All';
-          },
-          
-          filteredTags() {
-              const activeCategory = this.getActiveCategory();
-              let filteredByCategory;
-              
-              if (activeCategory === 'All') {
-            filteredByCategory = this.availableTags;
-              } else {
-            filteredByCategory = this.availableTags.filter(tag => 
-                tag.category === activeCategory
-            );
-              }
-              
-              if (this.inputValue && !this.currentTag) {
-            const searchTerm = this.inputValue.toLowerCase();
-            return filteredByCategory.filter(tag => 
-                tag.key.toLowerCase().includes(searchTerm)
-            );
-              }
-              
-              return filteredByCategory;
-          },
-          
-          filteredTagValues() {
-              if (!this.currentTag || !this.tagValues[this.currentTag]) {
-            return [];
-              }
-              
-              const searchTerm = this.inputValue.toLowerCase();
-              return this.tagValues[this.currentTag].filter(item => 
-            item.value.toLowerCase().includes(searchTerm)
-              );
-          },
-          
-          setActiveCategory(index) {
-              this.filterCategories.forEach((category, i) => {
-            category.active = (i === index);
-              });
-          },
-          
-          handleInputClick() {
-              if (this.currentTag) {
-            this.showTagValues = true;
-            this.showTagSuggestions = false;
-              } else {
-            this.showTagSuggestions = true;
-            this.showTagValues = false;
-              }
-              this.showOperatorDropdown = false;
-          },
-          
-          handleInputFocus() {
-              this.handleInputClick();
-          },
-  
-          handleInput() {
-              if (this.currentTag) {
-            this.showTagValues = true;
-            this.showTagSuggestions = false;
-              } else {
-            this.showTagSuggestions = true;
-            this.showTagValues = false;
-              }
-              this.showOperatorDropdown = false;
-          },
-          
-          handleEnterKey() {
-              if (this.currentTag && this.inputValue) {
-            this.selectTagValue(this.inputValue);
-              } else if (this.inputValue && !this.currentTag) {
-            this.rawText = this.inputValue;
-            this.tokens.push({
-                key: '',
-                operator: '',
-                value: this.inputValue,
-                isRawText: true
-            });
-            this.inputValue = '';
-            this.closeAllDropdowns();
-              }
-          },
-          
-          handleBackspace() {
-              if (this.inputValue === '' && this.tokens.length > 0) {
-            if (this.currentTag) {
-                this.currentTag = null;
-                this.showTagValues = false;
-                this.showTagSuggestions = true;
-            } else {
-                this.tokens.pop();
-            }
-              }
-          },
-          
-          selectTag(tag) {
-              this.currentTag = tag;
-              this.inputValue = '';
-              this.showTagSuggestions = false;
-              this.showTagValues = true;
-              this.multiSelectedValues = [];
-              this.$nextTick(() => {
-            this.$refs.searchInput.focus();
-              });
-          },
-          
-          selectTagValue(value) {
-              if (this.multiSelectMode && this.multiSelectedValues.length > 0) {
-            this.multiSelectedValues.forEach(val => {
-                this.tokens.push({
-              key: this.currentTag,
-              operator: this.currentOperator,
-              value: val
-                });
-            });
-            this.multiSelectedValues = [];
-              } else {
-            this.tokens.push({
-                key: this.currentTag,
-                operator: this.currentOperator,
-                value: value
-            });
-              }
-              
-              this.currentTag = null;
-              this.inputValue = '';
-              this.closeAllDropdowns();
-              this.$nextTick(() => {
-            this.$refs.searchInput.focus();
-              });
-          },
-          
-          toggleMultiSelect(value) {
-              if (!this.multiSelectMode) {
-            this.selectTagValue(value);
-            return;
-              }
-              
-              const index = this.multiSelectedValues.indexOf(value);
-              if (index === -1) {
-            this.multiSelectedValues.push(value);
-              } else {
-            this.multiSelectedValues.splice(index, 1);
-              }
-          },
-          
-          isValueSelected(value) {
-              return this.multiSelectedValues.includes(value);
-          },
-          
-          openOperatorDropdown(tokenIndex) {
-              if (this.tokens[tokenIndex].isRawText) return;
-              
-              this.activeTokenIndex = tokenIndex;
-              
-              const operatorElement = event.target;
-              const rect = operatorElement.getBoundingClientRect();
-              
-              this.operatorDropdownPosition = {
-            top: rect.bottom + window.scrollY,
-            left: rect.left + window.scrollX
-              };
-              
-              this.showOperatorDropdown = true;
-              this.showTagSuggestions = false;
-              this.showTagValues = false;
-          },
-        
-          changeOperator(tokenIndex, newOperator) {
-              if (tokenIndex !== null && this.tokens[tokenIndex]) {
-            this.tokens[tokenIndex].operator = newOperator;
-              }
-              this.showOperatorDropdown = false;
-          },
-          
-          removeToken(index) {
-              this.tokens.splice(index, 1);
-          },
-        
-          clearAll() {
-              this.tokens = [];
-              this.inputValue = '';
-              this.rawText = '';
-              this.currentTag = null;
-              this.closeAllDropdowns();
-              this.$nextTick(() => {
-            this.$refs.searchInput.focus();
-              });
-          },
-          
-          closeAllDropdowns() {
-              this.showTagSuggestions = false;
-              this.showTagValues = false;
-              this.showOperatorDropdown = false;
-          },
-      
-          focusInput() {
-              this.$refs.searchInput.focus();
-          }
-            }));
-        });
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('searchInput', () => ({
-          inputValue: '',
-          tokens: [],
-          rawText: '',
-          
-          showTagSuggestions: false,
-          showTagValues: false,
-          showOperatorDropdown: false,
-          operatorDropdownPosition: { top: 0, left: 0 },
-          activeTokenIndex: null,
-          
-          currentTag: null,
-          currentOperator: 'is',
-          multiSelectMode: false,
-          multiSelectedValues: [],
-          hoveredTag: null,
-          
-          operators: ['is', 'is not'],
-          
-          filterCategories: [
-              { name: 'All', active: true },
-              { name: 'Issues', active: false },
-              { name: 'Event Tags', active: false }
-          ],
-          
-          availableTags: [
-              { key: 'is', description: 'Filter by exact match', type: 'Operator', category: 'All' },
-              { key: 'level', description: 'Filter by log level', type: 'String', category: 'All' },
-              { key: 'url', description: 'URL of the request', type: 'String', category: 'All' },
-              
-              { key: 'issue.priority', description: 'Filter by issue priority', type: 'String', category: 'Issues' },
-              { key: 'issue.status', description: 'Filter by issue status', type: 'String', category: 'Issues' },
-              { key: 'issue.type', description: 'Filter by issue type', type: 'String', category: 'Issues' },
-              
-              { key: 'os.name', description: 'Name of the Operating System', type: 'String', category: 'Event Tags' },
-              { key: 'runtime', description: 'Runtime environment', type: 'String', category: 'Event Tags' },
-              { key: 'runtime.name', description: 'Name of the runtime', type: 'String', category: 'Event Tags' },
-              { key: 'server_name', description: 'Server identifier', type: 'String', category: 'Event Tags' },
-              { key: 'os', description: 'Operating system', type: 'String', category: 'Event Tags' },
-              { key: 'browser.name', description: 'Browser name', type: 'String', category: 'Event Tags' },
-              { key: 'logger', description: 'Filter by logger name', type: 'String', category: 'Event Tags' }
-          ],
-          
-          tagValues: {
-              'runtime': [
-            { value: 'go go1.24.0', description: 'Go version 1.24.0' },
-            { value: 'php 7.4.33', description: 'PHP version 7.4.33' },
-            { value: 'go go1.22.12', description: 'Go version 1.22.12' },
-            { value: 'php 8.2.28', description: 'PHP version 8.2.28' }
-              ],
-              'runtime.name': [
-            { value: 'go', description: 'Go runtime' },
-            { value: 'php', description: 'PHP runtime' },
-            { value: 'node', description: 'Node.js runtime' },
-            { value: 'python', description: 'Python runtime' }
-              ],
-              'server_name': [
-            { value: 'app-go-prod-5896566df9-ztjkc', description: 'Production Go server' },
-            { value: 'app-php-prod-3456789ab1-xyzab', description: 'Production PHP server' }
-              ],
-              'is': [
-            { value: 'true', description: 'Boolean true' },
-            { value: 'false', description: 'Boolean false' }
-              ],
-              'level': [
-            { value: 'error', description: 'Error level' },
-            { value: 'warning', description: 'Warning level' },
-            { value: 'info', description: 'Info level' },
-            { value: 'debug', description: 'Debug level' }
-              ],
-              'issue.priority': [
-            { value: 'high', description: 'High priority' },
-            { value: 'medium', description: 'Medium priority' },
-            { value: 'low', description: 'Low priority' }
-              ],
-              'issue.status': [
-            { value: 'open', description: 'Open issues' },
-            { value: 'resolved', description: 'Resolved issues' },
-            { value: 'ignored', description: 'Ignored issues' }
-              ],
-              'os.name': [
-            { value: 'Linux', description: 'Linux operating system' },
-            { value: 'Windows', description: 'Windows operating system' },
-            { value: 'macOS', description: 'macOS operating system' }
-              ],
-              'browser.name': [
-            { value: 'Chrome', description: 'Google Chrome' },
-            { value: 'Firefox', description: 'Mozilla Firefox' },
-            { value: 'Safari', description: 'Apple Safari' },
-            { value: 'Edge', description: 'Microsoft Edge' }
-              ]
-          },
-          
-          init() {
-              window.addEventListener('keydown', (e) => {
-            if (e.key === 'Meta' || e.key === 'Control') {
-                this.multiSelectMode = true;
-            }
-              });
-              
-              window.addEventListener('keyup', (e) => {
-            if (e.key === 'Meta' || e.key === 'Control') {
-                this.multiSelectMode = false;
-            }
-              });
-          },
-          
-          getTagDetails(key) {
-              return this.availableTags.find(tag => tag.key === key);
-          },
-          
-          getActiveCategory() {
-              const activeCategory = this.filterCategories.find(cat => cat.active);
-              return activeCategory ? activeCategory.name : 'All';
-          },
-          
-          filteredTags() {
-              const activeCategory = this.getActiveCategory();
-              let filteredByCategory;
-              
-              if (activeCategory === 'All') {
-            filteredByCategory = this.availableTags;
-              } else {
-            filteredByCategory = this.availableTags.filter(tag => 
-                tag.category === activeCategory
-            );
-              }
-              
-              if (this.inputValue && !this.currentTag) {
-            const searchTerm = this.inputValue.toLowerCase();
-            return filteredByCategory.filter(tag => 
-                tag.key.toLowerCase().includes(searchTerm)
-            );
-              }
-              
-              return filteredByCategory;
-          },
-          
-          filteredTagValues() {
-              if (!this.currentTag || !this.tagValues[this.currentTag]) {
-            return [];
-              }
-              
-              const searchTerm = this.inputValue.toLowerCase();
-              return this.tagValues[this.currentTag].filter(item => 
-            item.value.toLowerCase().includes(searchTerm)
-              );
-          },
-          
-          setActiveCategory(index) {
-              this.filterCategories.forEach((category, i) => {
-            category.active = (i === index);
-              });
-          },
-          
-          handleInputClick() {
-              if (this.currentTag) {
-            this.showTagValues = true;
-            this.showTagSuggestions = false;
-              } else {
-            this.showTagSuggestions = true;
-            this.showTagValues = false;
-              }
-              this.showOperatorDropdown = false;
-          },
-          
-          handleInputFocus() {
-              this.handleInputClick();
-          },
-          
-          handleInput() {
-              if (this.currentTag) {
-            this.showTagValues = true;
-            this.showTagSuggestions = false;
-              } else {
-            this.showTagSuggestions = true;
-            this.showTagValues = false;
-              }
-              this.showOperatorDropdown = false;
-          },
-          
-          handleEnterKey() {
-              if (this.currentTag && this.inputValue) {
-            this.selectTagValue(this.inputValue);
-              } else if (this.inputValue && !this.currentTag) {
-            this.rawText = this.inputValue;
-            this.tokens.push({
-                key: '',
-                operator: '',
-                value: this.inputValue,
-                isRawText: true
-            });
-            this.inputValue = '';
-            this.closeAllDropdowns();
-              }
-          },
-          
-          handleBackspace() {
-              if (this.inputValue === '' && this.tokens.length > 0) {
-            if (this.currentTag) {
-                this.currentTag = null;
-                this.showTagValues = false;
-                this.showTagSuggestions = true;
-            } else {
-                this.tokens.pop();
-            }
-              }
-          },
-          
-          selectTag(tag) {
-              this.currentTag = tag;
-              this.inputValue = '';
-              this.showTagSuggestions = false;
-              this.showTagValues = true;
-              this.multiSelectedValues = [];
-              this.$nextTick(() => {
-            this.$refs.searchInput.focus();
-              });
-          },
-          
-          selectTagValue(value) {
-              if (this.multiSelectMode && this.multiSelectedValues.length > 0) {
-            this.multiSelectedValues.forEach(val => {
-                this.tokens.push({
-              key: this.currentTag,
-              operator: this.currentOperator,
-              value: val
-                });
-            });
-            this.multiSelectedValues = [];
-              } else {
-            this.tokens.push({
-                key: this.currentTag,
-                operator: this.currentOperator,
-                value: value
-            });
-              }
-              
-              this.currentTag = null;
-              this.inputValue = '';
-              this.closeAllDropdowns();
-              this.$nextTick(() => {
-            this.$refs.searchInput.focus();
-              });
-          },
-          
-          toggleMultiSelect(value) {
-              if (!this.multiSelectMode) {
-            this.selectTagValue(value);
-            return;
-              }
-              
-              const index = this.multiSelectedValues.indexOf(value);
-              if (index === -1) {
-            this.multiSelectedValues.push(value);
-              } else {
-            this.multiSelectedValues.splice(index, 1);
-              }
-          },
-          
-          isValueSelected(value) {
-              return this.multiSelectedValues.includes(value);
-          },
-          
-          openOperatorDropdown(tokenIndex) {
-              if (this.tokens[tokenIndex].isRawText) return;
-              
-              this.activeTokenIndex = tokenIndex;
-              
-              const operatorElement = event.target;
-              const rect = operatorElement.getBoundingClientRect();
-              
-              this.operatorDropdownPosition = {
-            top: rect.bottom + window.scrollY,
-            left: rect.left + window.scrollX
-              };
-              
-              this.showOperatorDropdown = true;
-              this.showTagSuggestions = false;
-              this.showTagValues = false;
-          },
-          
-          changeOperator(tokenIndex, newOperator) {
-              if (tokenIndex !== null && this.tokens[tokenIndex]) {
-            this.tokens[tokenIndex].operator = newOperator;
-              }
-              this.showOperatorDropdown = false;
-          },
-          
-          removeToken(index) {
-              this.tokens.splice(index, 1);
-          },
-          
-          clearAll() {
-              this.tokens = [];
-              this.inputValue = '';
-              this.rawText = '';
-              this.currentTag = null;
-              this.closeAllDropdowns();
-              this.$nextTick(() => {
-            this.$refs.searchInput.focus();
-              });
-          },
-          
-          closeAllDropdowns() {
-              this.showTagSuggestions = false;
-              this.showTagValues = false;
-              this.showOperatorDropdown = false;
-          },
-          
-          focusInput() {
-              this.$refs.searchInput.focus();
-          }
-            }));
-        });
-    </script>
+		<div class="relative">
+			@searchBar(res)
 		</div>
 	</div>
 }
 
-templ issuesList(res *warnly.ListIssuesResult) {
-	<main>
-		<div class="flex justify-between items-center mt-4">
-			<table class="min-w-full">
-				<thead>
-					<tr>
-						<th class="py-3 text-left text-xs font-medium text-gray-500 uppercase">Issue</th>
-						<th class="py-3 text-center text-xs font-medium text-gray-500 uppercase">Errors</th>
-						<th class="py-3 text-center text-xs font-medium text-gray-500 uppercase">Users</th>
-					</tr>
-				</thead>
-				<tbody class="bg-white divide-y divide-gray-200">
-					for _, issue := range res.Issues {
-						<tr class="hover:bg-gray-50 transition duration-150 ease-in-out">
-							<td class="py-4 px-6 w-1/2">
-								<div class="flex items-start cursor-pointer">
-									<a hx-get={ fmt.Sprintf("/projects/%d/issues/%d?period=14d", issue.ProjectID, issue.ID) } hx-target="#main-content" hx-swap="outerHTML settle:0" hx-push-url="true">
-										<div class="flex items-center space-x-1">
-											<span class="text-vercel-blue font-semibold">{ issue.Type }</span>
-											<span class="text-gray-600 text-sm truncate max-w-xs" title={ issue.View }>{ issue.View }</span>
-										</div>
-										<div class="text-gray-600 text-sm mt-1">{ issue.Message } </div>
-										<div class="flex items-center space-x-2 mt-2">
-											<span class="text-gray-400 text-xs flex items-center">
-												Last Noticed: { warnly.TimeAgo(time.Now, issue.LastSeen, true) } ago | First Noticed: { warnly.TimeAgo(time.Now, issue.FirstSeen, true) } old
-												if issue.MessagesCount > 0 {
-													| <svg data-testid="geist-icon" height="12" stroke-linejoin="round" style="color: currentcolor; vertical-align: middle; margin-left: 0.15rem;" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" clip-rule="evenodd" d="M2.8914 10.4028L2.98327 10.6318C3.22909 11.2445 3.5 12.1045 3.5 13C3.5 13.3588 3.4564 13.7131 3.38773 14.0495C3.69637 13.9446 4.01409 13.8159 4.32918 13.6584C4.87888 13.3835 5.33961 13.0611 5.70994 12.7521L6.22471 12.3226L6.88809 12.4196C7.24851 12.4724 7.61994 12.5 8 12.5C11.7843 12.5 14.5 9.85569 14.5 7C14.5 4.14431 11.7843 1.5 8 1.5C4.21574 1.5 1.5 4.14431 1.5 7C1.5 8.18175 1.94229 9.29322 2.73103 10.2153L2.8914 10.4028ZM2.8135 15.7653C1.76096 16 1 16 1 16C1 16 1.43322 15.3097 1.72937 14.4367C1.88317 13.9834 2 13.4808 2 13C2 12.3826 1.80733 11.7292 1.59114 11.1903C0.591845 10.0221 0 8.57152 0 7C0 3.13401 3.58172 0 8 0C12.4183 0 16 3.13401 16 7C16 10.866 12.4183 14 8 14C7.54721 14 7.10321 13.9671 6.67094 13.9038C6.22579 14.2753 5.66881 14.6656 5 15C4.23366 15.3832 3.46733 15.6195 2.8135 15.7653Z" fill="currentColor"></path></svg>
-													{ fmt.Sprint(issue.MessagesCount) }
-												}
-											</span>
-										</div>
-									</a>
-								</div>
-							</td>
-							<td class="py-4 text-center font-semibold text-gray-700">{ warnly.NumFormatted(issue.TimesSeen) }</td>
-							<td class="py-4 text-center font-semibold text-gray-700">{ warnly.NumFormatted(issue.UserCount) }</td>
-						</tr>
-					}
-				</tbody>
-			</table>
+templ projectSelector(projects []warnly.Project, requestedProject string) {
+	<div x-data={ fmt.Sprintf("{ open: false, selected: '%s' }", getSelectedProjectName(requestedProject)) }>
+		<button
+			@click="open = !open"
+			class="inline-flex cursor-pointer items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+		>
+			<span x-text="selected"></span>
+			<svg class="ml-2 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+			</svg>
+		</button>
+		<div
+			x-show="open"
+			@click.away="open = false"
+			x-cloak
+			class="absolute mt-2 w-48 rounded-md bg-white shadow-lg z-10"
+		>
+			<ul class="py-1 text-sm text-gray-700">
+				<li>
+					<a
+						href="#"
+						@click.prevent="selected = 'All Projects'; $dispatch('project-changed', { project: '' }); open = false"
+						class="block px-4 py-2 hover:bg-gray-100"
+					>
+						All Projects
+					</a>
+				</li>
+				for _, project := range projects {
+					<li>
+						<a
+							href="#"
+							@click.prevent={ fmt.Sprintf("selected = '%s'; $dispatch('project-changed', { project: '%s' }); open = false", project.Name, project.Name) }
+							class="block px-4 py-2 hover:bg-gray-100"
+						>
+							{ project.Name }
+						</a>
+					</li>
+				}
+			</ul>
 		</div>
-		<div class="flex justify-end mt-4 mr-5">
-			<span class="text-sm py-2 mr-4 text-gray-400">{ issuePaginationSummary(res) }</span>
-			<button class="cursor-pointer px-4 py-2 text-sm border rounded-lg hover:bg-gray-50 flex items-center border-gray-300">
-				<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+	</div>
+}
+
+templ timePeriodSelectorWrapper(initialPeriod string) {
+	<div class="relative z-20" x-data={ fmt.Sprintf("timePeriodSelector('%s')", getPeriodOrDefault(initialPeriod)) }>
+		<div class="flex border hover:bg-gray-50 border-gray-300 rounded-md overflow-hidden bg-white">
+			<button
+				@click="toggleDropdown()"
+				class="flex cursor-pointer items-center px-4 py-2 text-sm"
+			>
+				<span x-text="displayLabel"></span>
+				<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor" :class="{'transform rotate-180': isOpen}">
+					<path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
 				</svg>
 			</button>
-			<button class="cursor-pointer px-4 py-2 text-sm border rounded-lg hover:bg-gray-50 flex items-center ml-2 border-gray-300">
-				<svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+		</div>
+		@timePeriodDropdown()
+	</div>
+}
+
+templ timePeriodDropdown() {
+	<div
+		x-show="isOpen"
+		x-cloak
+		@click.away="isOpen = false"
+		class="mt-1 bg-white border border-gray-200 rounded-md shadow-lg absolute z-50"
+		style="left: 0; min-width: 400px; width: max-content;"
+	>
+		<!-- Presets -->
+		<div x-show="!showCalendar">
+			<div class="p-4 border-b border-gray-200">
+				<h3 class="text-sm font-medium text-gray-800">Filter Time Range</h3>
+			</div>
+			<div class="p-3">
+				<input
+					type="text"
+					x-model="customRangeInput"
+					placeholder="Custom range: 2h, 4d, 8w..."
+					class="w-full p-2 border text-sm rounded-md focus:outline-none border-gray-300"
+					@keydown.enter="applyCustomRange()"
+					:class="{'border-red-500': customRangeError}"
+				/>
+				<div x-show="customRangeError" class="text-red-500 text-xs mt-1" x-text="customRangeError"></div>
+			</div>
+			<div class="py-2">
+				<template x-for="(preset, index) in presets" :key="index">
+					<div
+						@click="selectPreset(preset.value)"
+						class="flex text-sm items-center px-3 py-2 hover:bg-gray-50 cursor-pointer"
+					>
+						<div class="w-6">
+							<svg
+								x-show="selectedPreset === preset.value"
+								xmlns="http://www.w3.org/2000/svg"
+								class="h-5 w-5 text-black-500"
+								viewBox="0 0 20 20"
+								fill="currentColor"
+							>
+								<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+							</svg>
+						</div>
+						<span
+							class="ml-2"
+							:class="{'text-black-600 font-medium': selectedPreset === preset.value}"
+							x-text="preset.label"
+						></span>
+					</div>
+				</template>
+				<div
+					@click="openCalendar()"
+					class="flex items-center text-sm justify-between px-3 py-2 hover:bg-gray-50 cursor-pointer"
+				>
+					<div class="flex items-center">
+						<div class="w-6">
+							<svg
+								x-show="selectedPreset === 'custom-range'"
+								xmlns="http://www.w3.org/2000/svg"
+								class="h-5 w-5 text-indigo-500"
+								viewBox="0 0 20 20"
+								fill="currentColor"
+							>
+								<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+							</svg>
+						</div>
+						<span
+							class="ml-2"
+							:class="{'text-indigo-600 font-medium': selectedPreset === 'custom-range'}"
+						>Absolute date</span>
+					</div>
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+						<path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+					</svg>
+				</div>
+			</div>
+		</div>
+		<!-- Calendar view -->
+		<div x-show="showCalendar" x-cloak style="min-width: 600px; width: max-content;">
+			<div class="p-4 border-b border-gray-200 flex items-center justify-between">
+				<button @click="closeCalendar()" class="text-gray-600 hover:text-gray-900">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+						<path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+					</svg>
+				</button>
+				<h3 class="text-sm font-medium text-gray-800">Select Date Range</h3>
+				<div></div>
+			</div>
+			<div class="p-4 grid grid-cols-2 gap-6">
+				<!-- Start Date -->
+				<div>
+					<label class="block text-xs font-medium text-gray-700 mb-2">Start Date & Time</label>
+					<input
+						type="date"
+						x-model="startDate"
+						class="w-full p-2 border border-gray-300 rounded text-sm"
+					/>
+					<div class="mt-2 flex gap-2 items-center text-sm">
+						<input
+							type="number"
+							x-model="startHour"
+							min="1"
+							max="12"
+							class="w-16 p-1 border border-gray-300 rounded text-center"
+						/>
+						<span>:</span>
+						<input
+							type="number"
+							x-model="startMinute"
+							min="0"
+							max="59"
+							class="w-16 p-1 border border-gray-300 rounded text-center"
+						/>
+						<select x-model="startPeriod" class="p-1 border border-gray-300 rounded">
+							<option value="AM">AM</option>
+							<option value="PM">PM</option>
+						</select>
+					</div>
+				</div>
+				<!-- End Date -->
+				<div>
+					<label class="block text-xs font-medium text-gray-700 mb-2">End Date & Time</label>
+					<input
+						type="date"
+						x-model="endDate"
+						class="w-full p-2 border border-gray-300 rounded text-sm"
+					/>
+					<div class="mt-2 flex gap-2 items-center text-sm">
+						<input
+							type="number"
+							x-model="endHour"
+							min="1"
+							max="12"
+							class="w-16 p-1 border border-gray-300 rounded text-center"
+						/>
+						<span>:</span>
+						<input
+							type="number"
+							x-model="endMinute"
+							min="0"
+							max="59"
+							class="w-16 p-1 border border-gray-300 rounded text-center"
+						/>
+						<select x-model="endPeriod" class="p-1 border border-gray-300 rounded">
+							<option value="AM">AM</option>
+							<option value="PM">PM</option>
+						</select>
+					</div>
+				</div>
+			</div>
+			<div class="p-4 border-t border-gray-200 flex justify-end gap-2">
+				<button
+					@click="closeCalendar()"
+					class="px-4 py-2 text-sm border border-gray-300 rounded hover:bg-gray-50"
+				>
+					Cancel
+				</button>
+				<button
+					@click="applyAbsoluteRange()"
+					class="px-4 py-2 text-sm bg-black text-white rounded hover:bg-gray-800"
+				>
+					Apply
+				</button>
+			</div>
+		</div>
+	</div>
+}
+
+templ searchBar(res *warnly.ListIssuesResult) {
+	<div
+		x-data={ fmt.Sprintf("searchInput(%s, %s)", getSearchTokens(res.Request), getPopularTagsCategories(res.PopularTags)) }
+		class="search-container"
+		@click.away="closeAllDropdowns()"
+	>
+		<div class="flex border rounded-lg bg-white border-gray-300 min-h-[2.5rem]">
+			<div class="relative flex-1 flex items-center px-2 text-sm">
+				<div class="text-purple-500 ml-2 mr-1 flex-shrink-0">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="black">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+					</svg>
+				</div>
+				<div class="search-input-wrapper" @click="focusInput()">
+					<template x-for="(token, index) in tokens" :key="index">
+						<div class="tag-pill">
+							<template x-if="!token.isRawText">
+								<div class="flex items-center">
+									<span x-text="token.key" class="text-gray-800"></span>
+									<span
+										class="tag-pill-operator mx-1"
+										x-text="token.operator"
+										@click.stop="openOperatorDropdown(index, $event)"
+									></span>
+									<span x-text="token.value" class="text-gray-800"></span>
+								</div>
+							</template>
+							<template x-if="token.isRawText">
+								<span x-text="token.value" class="text-gray-800"></span>
+							</template>
+							<button @click.stop="removeToken(index)" class="ml-1 text-gray-500 hover:text-gray-700">
+								<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+								</svg>
+							</button>
+						</div>
+					</template>
+					<input
+						x-ref="searchInput"
+						type="text"
+						x-model="inputValue"
+						:placeholder="tokens.length === 0 ? 'Search for issues, tags, and more' : ''"
+						class="search-input"
+						@click="handleInputClick()"
+						@focus="handleInputFocus()"
+						@keydown.enter="handleEnterKey()"
+						@keydown.backspace="handleBackspace()"
+						@input="handleInput()"
+					/>
+				</div>
+				<button
+					x-show="tokens.length > 0 || inputValue.length > 0"
+					@click.stop="clearAll()"
+					class="mr-4 text-gray-400 hover:text-gray-600"
+					x-cloak
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+					</svg>
+				</button>
+			</div>
+		</div>
+		@searchSuggestions()
+		@operatorDropdown()
+	</div>
+}
+
+templ searchSuggestions() {
+	<div
+		x-show="showTagSuggestions"
+		class="dropdown-container text-sm"
+		x-cloak
+	>
+		<div class="flex border-b border-gray-200 px-4 py-2 justify-between items-center">
+			<div class="flex space-x-4">
+				<template x-for="(category, index) in filterCategories" :key="index">
+					<button
+						class="px-2 py-1 rounded"
+						:class="category.active ? 'bg-black text-white' : 'text-gray-600 hover:bg-gray-200'"
+						x-text="category.name"
+						@click="setActiveCategory(index)"
+					></button>
+				</template>
+			</div>
+			<!-- Custom value input for tag values mode -->
+			<template x-if="isInTagValuesMode()">
+				<input
+					x-model="customValue"
+					@keydown.enter="addCustomValue()"
+					placeholder="Type custom tag value and press Enter"
+					class="px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 w-80"
+				/>
+			</template>
+		</div>
+		<div class="py-2">
+			<template x-for="category in filterCategories" :key="category.name || 'default'">
+				<template x-if="category.active">
+					<div>
+						<template x-for="item in category.items" :key="item.value">
+							<div
+								@click="addFilterFromCategory(item)"
+								class="px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm"
+							>
+								<span x-text="item.key === item.value ? item.value : item.key + ':' + item.value"></span>
+							</div>
+						</template>
+					</div>
+				</template>
+			</template>
+		</div>
+	</div>
+	<div
+		x-show="showTagMatch"
+		class="dropdown-container text-sm"
+		x-cloak
+	>
+		<div class="py-2">
+			<div
+				@click="selectMatchedTag()"
+				class="px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm"
+			>
+				<span x-text="matchedTag ? matchedTag.key : ''"></span>
+			</div>
+		</div>
+	</div>
+}
+
+templ operatorDropdown() {
+	<div
+		x-show="showOperatorDropdown"
+		class="operator-dropdown text-sm"
+		:style="`top: ${operatorDropdownPosition.top}px; left: ${operatorDropdownPosition.left}px;`"
+		x-cloak
+	>
+		<div
+			class="operator-option"
+			:class="{'selected': tokens[activeTokenIndex]?.operator === 'is'}"
+			@click="changeOperator(activeTokenIndex, 'is')"
+		>
+			<svg x-show="tokens[activeTokenIndex]?.operator === 'is'" class="h-5 w-5 mr-2 text-black" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+				<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+			</svg>
+			<span x-show="tokens[activeTokenIndex]?.operator !== 'is'" class="h-5 w-5 mr-2"></span>
+			<span>is</span>
+		</div>
+		<div
+			class="operator-option"
+			:class="{'selected': tokens[activeTokenIndex]?.operator === 'is not'}"
+			@click="changeOperator(activeTokenIndex, 'is not')"
+		>
+			<svg x-show="tokens[activeTokenIndex]?.operator === 'is not'" class="h-5 w-5 mr-2 text-black" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+				<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+			</svg>
+			<span x-show="tokens[activeTokenIndex]?.operator !== 'is not'" class="h-5 w-5 mr-2"></span>
+			<span>is not</span>
+		</div>
+	</div>
+}
+
+templ issuesPagination(_ *warnly.ListIssuesResult) {
+	<div class="p-4 border-t border-border flex items-center justify-between text-sm text-gray-600">
+		<span x-text="getPaginationSummary()" class="font-medium"></span>
+		<div class="flex gap-3">
+			<button
+				@click="paginatePrev()"
+				:disabled="!canGoPrev()"
+				class="px-4 py-2 cursor-pointer rounded-md border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white transition-colors flex items-center gap-2"
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+				</svg>
+				<span class="font-medium">Previous</span>
+			</button>
+			<button
+				@click="paginateNext()"
+				:disabled="!canGoNext()"
+				class="px-4 py-2 cursor-pointer rounded-md border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white transition-colors flex items-center gap-2"
+			>
+				<span class="font-medium">Next</span>
+				<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
 				</svg>
 			</button>
 		</div>
-	</main>
+	</div>
 }
 
-templ gettingStarted(_ *warnly.Project) {
-	<main>
-		<div class="rounded-lg mb-8">
-			@templ.Raw(`
-<p class="text-sm mt-4 mb-4">Verify Warnly captures a message:</p>
-
-<div x-data="{ active: 'example1' }" class="flex gap-2">
-	<button :class="{ 'bg-black text-white': active === 'example1' }" @click="active = 'example1'; showExample('example1')" class="px-3 text-xs py-1.5 border rounded-lg">slog</button>
-	<button :class="{ 'bg-black text-white': active === 'example2' }" @click="active = 'example2'; showExample('example2')" class="px-3 text-xs py-1.5 border rounded-lg">zap</button>
-	<button :class="{ 'bg-black text-white': active === 'example3' }" @click="active = 'example3'; showExample('example3')" class="px-3 text-xs py-1.5 border rounded-lg">zerolog</button>
-</div>
-
-<div id="example1" class="code-snippet text-xs">
-	<pre><code class="language-go">
-package main
-
-import (
-	"log"
-	"time"
-	"github.com/getsentry/sentry-go"
-)
-
-func main() {
-	err := sentry.Init(sentry.ClientOptions{
-			Dsn: "${SENTRY_DSN}",
-			TracesSampleRate: 1.0,
-	})
-	if err != nil {
-			log.Fatalf("sentry.Init: %s", err)
-	}
-	defer sentry.Flush(2 * time.Second)
-	
-	sentry.CaptureMessage("It works!")
-}
-	</code></pre>
-</div>
-
-<div id="example2" class="code-snippet text-xs hidden">
-	<pre><code class="language-go">
-package main
-
-import (
-	"log"
-	"time"
-	"github.com/getsentry/sentry-go"
-)
-
-func main() {
-	err := sentry.Init(sentry.ClientOptions{
-			Dsn: "${SENTRY_DSN}",
-			TracesSampleRate: 0.5,
-	})
-	if err != nil {
-			log.Fatalf("sentry.Init: %s", err)
-	}
-	defer sentry.Flush(2 * time.Second)
-
-	sentry.CaptureMessage("Example 2 works!")
-}
-	</code></pre>
-</div>
-
-<div id="example3" class="code-snippet text-xs hidden">
-	<pre><code class="language-go">
-package main
-
-import (
-	"log"
-	"time"
-	"github.com/getsentry/sentry-go"
-)
-
-func main() {
-	err := sentry.Init(sentry.ClientOptions{
-			Dsn: "${SENTRY_DSN}",
-			TracesSampleRate: 0.1,
-	})
-	if err != nil {
-			log.Fatalf("sentry.Init: %s", err)
-	}
-	defer sentry.Flush(2 * time.Second)
-
-	sentry.CaptureMessage("Example 3 works!")
-}
-	</code></pre>
-</div>
-
-<script>
-	hljs.highlightAll();
-
-	function showExample(exampleId) {
-		document.querySelectorAll('.code-snippet').forEach(el => el.classList.add('hidden'));
-		document.getElementById(exampleId).classList.remove('hidden');
-	}
-</script>
-`)
-		</div>
-	</main>
+templ issuesTable(res *warnly.ListIssuesResult) {
+	<div class="overflow-x-auto border border-border rounded-lg">
+		<table class="w-full">
+			<thead>
+				<tr class="border-b border-border bg-gray-50">
+					<th class="px-4 py-2 text-left text-sm font-medium text-gray-500">ISSUE</th>
+					<th class="px-4 py-2 text-left text-sm font-medium text-gray-500">PROJECT</th>
+					<th class="px-4 py-2 text-left text-sm font-medium text-gray-500">EVENTS</th>
+					<th class="px-4 py-2 text-left text-sm font-medium text-gray-500">USERS</th>
+					<th class="px-4 py-2 text-left text-sm font-medium text-gray-500">FIRST SEEN</th>
+					<th class="px-4 py-2 text-left text-sm font-medium text-gray-500">LAST SEEN</th>
+				</tr>
+			</thead>
+			<tbody>
+				for _, issue := range res.Issues {
+					<tr class="border-b border-border hover:bg-gray-50">
+						<td class="px-4 py-3">
+							<a
+								hx-get={ fmt.Sprintf("/projects/%d/issues/%d?period=14d", issue.ProjectID, issue.ID) }
+								hx-target="#main-content"
+								hx-swap="outerHTML settle:0"
+								hx-push-url="true"
+								class="cursor-pointer block"
+							>
+								<div class="flex items-center gap-2">
+									<span class="text-sm font-medium text-gray-900">{ issue.Type }</span>
+								</div>
+								<div class="text-xs text-gray-500 mt-1">{ issue.Message }</div>
+							</a>
+						</td>
+						<td class="px-4 py-3 text-sm text-gray-700">
+							{ getProjectName(res.Projects, issue.ProjectID) }
+						</td>
+						<td class="px-4 py-3 text-sm text-gray-900 font-medium">
+							{ warnly.NumFormatted(issue.TimesSeen) }
+						</td>
+						<td class="px-4 py-3 text-sm text-gray-900">
+							{ warnly.NumFormatted(issue.UserCount) }
+						</td>
+						<td class="px-4 py-3 text-sm text-gray-500">
+							{ warnly.TimeAgo(func() time.Time { return time.Now() }, issue.FirstSeen, false) }
+						</td>
+						<td class="px-4 py-3 text-sm text-gray-500">
+							{ warnly.TimeAgo(func() time.Time { return time.Now() }, issue.LastSeen, false) }
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
 }
 
-// issuePaginationSummary returns a summary string for the pagination status.
-func issuePaginationSummary(res *warnly.ListIssuesResult) string {
-	const limit = 25
-
-	if res.TotalIssues == 0 {
-		return "0 of 0"
+// Helper functions
+func getIssuesAlpineData(res *warnly.ListIssuesResult) string {
+	period := "14d"
+	if res.Request.Period != "" {
+		period = res.Request.Period
 	}
 
-	start := res.Request.Offset + 1
-	end := res.Request.Offset + len(res.Issues)
+	filters := "[]"
+	if res.Request.Query != "" {
+		filters = "[]"
+	}
 
-	return fmt.Sprintf("%d-%d of %d", start, end, res.TotalIssues)
+	return fmt.Sprintf(`issueFilters({
+		filters: %s,
+		searchQuery: '%s',
+		period: '%s',
+		projectName: '%s',
+		offset: %d,
+		totalIssues: %d,
+		tokens: %s
+	})`, filters, res.Request.Query, period, res.RequestedProject, res.Request.Offset, res.TotalIssues, getSearchTokens(res.Request))
+}
+
+func getSelectedProjectName(requestedProject string) string {
+	if requestedProject == "" {
+		return "All Projects"
+	}
+	return requestedProject
+}
+
+func getPeriodOrDefault(period string) string {
+	if period == "" {
+		return "14d"
+	}
+	return period
+}
+
+func getSearchTokens(req *warnly.ListIssuesRequest) string {
+	return "[]"
+}
+
+func getPopularTagsCategories(tags []warnly.TagCount) string {
+	items := []map[string]string{}
+	for _, t := range tags {
+		items = append(items, map[string]string{
+			"key":   t.Tag,
+			"value": t.Tag,
+		})
+	}
+	categories := []map[string]any{
+		{
+			"name":   "Tags",
+			"active": true,
+			"items":  items,
+		},
+	}
+
+	jsonBytes, _ := json.Marshal(categories)
+
+	return string(jsonBytes)
+}
+
+func getProjectName(projects []warnly.Project, projectID int) string {
+	for _, p := range projects {
+		if p.ID == projectID {
+			return p.Name
+		}
+	}
+	return "Unknown"
 }

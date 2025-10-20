@@ -81,11 +81,15 @@ func (s *IssueStore) GetIssueByID(ctx context.Context, issueID int64) (*warnly.I
 }
 
 // ListIssues returns a list of issues for given project IDs and time range.
-func (s *IssueStore) ListIssues(ctx context.Context, criteria warnly.ListIssuesCriteria) ([]warnly.Issue, error) {
+func (s *IssueStore) ListIssues(ctx context.Context, criteria *warnly.ListIssuesCriteria) ([]warnly.Issue, error) {
 	query := `SELECT id, uuid, first_seen, last_seen, hash, message, view, num_comments,
-					  project_id, priority, error_type 
-			   FROM issue WHERE project_id IN (?` + strings.Repeat(",?", len(criteria.ProjectIDs)-1) + `) 
-			   AND ((last_seen BETWEEN ? AND ?) OR (first_seen BETWEEN ? AND ?))`
+project_id, priority, error_type
+FROM issue WHERE project_id IN (?` + strings.Repeat(",?", len(criteria.ProjectIDs)-1) + `)
+AND ((last_seen BETWEEN ? AND ?) OR (first_seen BETWEEN ? AND ?))`
+
+	if len(criteria.GroupIDs) > 0 {
+		query += ` AND id IN (?` + strings.Repeat(",?", len(criteria.GroupIDs)-1) + `)`
+	}
 
 	args := make([]any, len(criteria.ProjectIDs)+4)
 	for i, id := range criteria.ProjectIDs {
@@ -95,6 +99,13 @@ func (s *IssueStore) ListIssues(ctx context.Context, criteria warnly.ListIssuesC
 	args[len(criteria.ProjectIDs)+1] = criteria.To
 	args[len(criteria.ProjectIDs)+2] = criteria.From
 	args[len(criteria.ProjectIDs)+3] = criteria.To
+
+	if len(criteria.GroupIDs) > 0 {
+		for _, gid := range criteria.GroupIDs {
+			//nolint:makezero // false positive
+			args = append(args, gid)
+		}
+	}
 
 	rows, err := s.db.QueryContext(ctx, query, args...)
 	if err != nil {
