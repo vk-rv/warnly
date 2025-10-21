@@ -2,7 +2,7 @@ name: Release
 on:
   push:
     tags:
-      - "v0*"
+      - "*"
 
 permissions:
   contents: write
@@ -101,6 +101,7 @@ jobs:
           owner: ${{ github.repository_owner }}
 
       - name: GoReleaser
+        if: startsWith(github.ref, 'refs/tags/')
         uses: goreleaser/goreleaser-action@v6
         with:
           distribution: goreleaser
