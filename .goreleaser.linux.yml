@@ -14,7 +14,6 @@ builds:
   - main: ./cmd/warnly
     ldflags:
       - -s -w
-      - -X main.version={{ .PrefixedTag }}
       - -X main.commit={{ .Commit }}
       - -X main.date={{ .Date }}
       - -linkmode external -extldflags "-static"
