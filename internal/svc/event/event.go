@@ -131,44 +131,32 @@ func (s *EventService) IngestEvent(ctx context.Context, req warnly.IngestRequest
 		s.cache.Set(cacheKey, issueInfo, cache.DefaultExpiration)
 	}
 
-	tkv := makeTags(event)
+	tkv, ckv := makeTags(event), makeContexts(event)
 
 	ev := &warnly.EventClickhouse{
-		EventID:       event.EventID,
-		Deleted:       0,
-		GroupID:       uint64(issueInfo.ID),
-		RetentionDays: opts.RetentionDays,
-		User:          makeUser(event),
-		UserEmail:     event.User.Email,
-		UserName:      event.User.Name,
-		UserUsername:  event.User.Username,
-		ProjectID:     uint16(req.ProjectID),
-		Type:          warnly.EventTypeException,
-		CreatedAt:     s.now().UTC(),
-		Platform:      uint8(warnly.PlatformByName(event.Platform)),
-		Env:           event.Environment,
-		Release:       event.Release,
-		Message:       event.Message,
-		Level:         warnly.GetLevel(event.Level),
-		SDKID:         warnly.GetSDKID(event.SDK.Name),
-		SDKVersion:    event.SDK.Version,
-		Title:         exceptionType + ": " + exceptionValue,
-		IPv4:          ipv4,
-		IPv6:          ipv6,
-		ContextsKey: []string{
-			"device.arch",
-			"device.num_cpu",
-			"os.name",
-			"trace.span_id",
-			"trace.trace_id",
-		},
-		ContextsValue: []string{
-			event.Contexts.Device.Arch,
-			strconv.Itoa(event.Contexts.Device.NumCPU),
-			event.Contexts.OS.Name,
-			event.Contexts.Trace.SpanID,
-			event.Contexts.Trace.TraceID,
-		},
+		EventID:                 event.EventID,
+		Deleted:                 0,
+		GroupID:                 uint64(issueInfo.ID),
+		RetentionDays:           opts.RetentionDays,
+		User:                    makeUser(event),
+		UserEmail:               event.User.Email,
+		UserName:                event.User.Name,
+		UserUsername:            event.User.Username,
+		ProjectID:               uint16(req.ProjectID),
+		Type:                    warnly.EventTypeException,
+		CreatedAt:               s.now().UTC(),
+		Platform:                uint8(warnly.PlatformByName(event.Platform)),
+		Env:                     event.Environment,
+		Release:                 event.Release,
+		Message:                 event.Message,
+		Level:                   warnly.GetLevel(event.Level),
+		SDKID:                   warnly.GetSDKID(event.SDK.Name),
+		SDKVersion:              event.SDK.Version,
+		Title:                   exceptionType + ": " + exceptionValue,
+		IPv4:                    ipv4,
+		IPv6:                    ipv6,
+		ContextsKey:             ckv.keys,
+		ContextsValue:           ckv.values,
 		TagsKey:                 tkv.keys,
 		TagsValue:               tkv.values,
 		PrimaryHash:             issueInfo.UUID,
@@ -191,12 +179,56 @@ func (s *EventService) IngestEvent(ctx context.Context, req warnly.IngestRequest
 	return res, nil
 }
 
-type tagsKeyValue struct {
+type kv struct {
 	keys   []string
 	values []string
 }
 
-func makeTags(event *warnly.EventBody) tagsKeyValue {
+func makeContexts(event *warnly.EventBody) kv {
+	contextsKeys := []string{}
+	contextsValues := []string{}
+
+	if event.User.IPAddress != "" {
+		contextsKeys = append(contextsKeys, "user.ip")
+		contextsValues = append(contextsValues, event.User.IPAddress)
+	}
+	if event.Contexts.Device.Arch != "" {
+		contextsKeys = append(contextsKeys, "device.arch")
+		contextsValues = append(contextsValues, event.Contexts.Device.Arch)
+	}
+	if event.Contexts.Device.NumCPU != 0 {
+		contextsKeys = append(contextsKeys, "device.num_cpu")
+		contextsValues = append(contextsValues, strconv.Itoa(event.Contexts.Device.NumCPU))
+	}
+	if event.Contexts.Runtime.Name != "" {
+		contextsKeys = append(contextsKeys, "runtime.name")
+		contextsValues = append(contextsValues, event.Contexts.Runtime.Name)
+	}
+	if event.Contexts.Runtime.Version != "" {
+		contextsKeys = append(contextsKeys, "runtime.version")
+		contextsValues = append(contextsValues, event.Contexts.Runtime.Version)
+	}
+	if event.Contexts.Runtime.GoMaxProcs != 0 {
+		contextsKeys = append(contextsKeys, "runtime.go_maxprocs")
+		contextsValues = append(contextsValues, strconv.Itoa(event.Contexts.Runtime.GoMaxProcs))
+	}
+	if event.Contexts.Runtime.GoNumCgoCalls != 0 {
+		contextsKeys = append(contextsKeys, "runtime.go_numcgocalls")
+		contextsValues = append(contextsValues, strconv.Itoa(event.Contexts.Runtime.GoNumCgoCalls))
+	}
+	if event.Contexts.Runtime.GoNumRoutines != 0 {
+		contextsKeys = append(contextsKeys, "runtime.go_numroutines")
+		contextsValues = append(contextsValues, strconv.Itoa(event.Contexts.Runtime.GoNumRoutines))
+	}
+	if event.Contexts.OS.Name != "" {
+		contextsKeys = append(contextsKeys, "os.name")
+		contextsValues = append(contextsValues, event.Contexts.OS.Name)
+	}
+
+	return kv{keys: contextsKeys, values: contextsValues}
+}
+
+func makeTags(event *warnly.EventBody) kv {
 	tagsKeys := []string{}
 	tagsValues := []string{}
 
@@ -228,7 +260,7 @@ func makeTags(event *warnly.EventBody) tagsKeyValue {
 		}
 	}
 
-	return tagsKeyValue{keys: tagsKeys, values: tagsValues}
+	return kv{keys: tagsKeys, values: tagsValues}
 }
 
 func makeUser(event *warnly.EventBody) string {

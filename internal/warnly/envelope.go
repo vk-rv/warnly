@@ -39,7 +39,6 @@ type (
 
 // Contexts represents the various context details.
 type Contexts struct {
-	Trace   TraceContext   `json:"trace"`
 	OS      OSContext      `json:"os"`
 	Device  DeviceContext  `json:"device"`
 	Runtime RuntimeContext `json:"runtime"`
@@ -63,14 +62,6 @@ type RuntimeContext struct {
 	GoMaxProcs    int    `json:"go_maxprocs"`
 	GoNumCgoCalls int    `json:"go_numcgocalls"`
 	GoNumRoutines int    `json:"go_numroutines"`
-}
-
-// TraceContext represents trace-specific information.
-type TraceContext struct {
-	// SpanID is the span identifier, e.g. 82b91192e7f31444
-	SpanID string `json:"span_id"`
-	// TraceID is the trace identifier, e.g. 39661477c71d285eb7109ed3317e6a54
-	TraceID string `json:"trace_id"`
 }
 
 // SDKBody represents SDK details.
