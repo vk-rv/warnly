@@ -34,6 +34,14 @@ jobs:
           registry: ghcr.io
           username: "${{ github.repository_owner }}"
           password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Generate token
+        id: generate_token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.WARNLY_RELEASE_BOT_APP_ID }}
+          private-key: ${{ secrets.WARNLY_RELEASE_BOT_APP_PEM }}
+          owner: ${{ github.repository_owner }}
 
       - name: Release on Github
         uses: goreleaser/goreleaser-action@v5
@@ -41,4 +49,4 @@ jobs:
           version: latest
           args: release --clean
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
