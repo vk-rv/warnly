@@ -11,13 +11,9 @@ builds:
 - goos:
   - linux
   - darwin
-  - windows
   goarch:
   - amd64
   - arm64
-  ignore:
-    - goos: windows
-      goarch: arm64
   main: ./cmd/warnly
   ldflags: -s -w
   binary: warnly
@@ -31,9 +27,6 @@ archives:
     files:
     - LICENSE
     - README.md
-    format_overrides:
-      - goos: windows
-        format: zip
 
 checksum:
   name_template: '{{ .ProjectName }}_{{ .Version }}_checksums.txt'
