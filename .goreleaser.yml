@@ -1,103 +1,99 @@
-# yaml-language-server: $schema=https://goreleaser.com/static/schema-pro.json
-version: 2
-
 project_name: warnly
-
+release:
+  github:
+    owner: vk-rv
+    name: warnly
+  name_template: '{{.Tag}}'
+  prerelease: auto
+  draft: false
 
 builds:
-  - builder: prebuilt
-    goos:
-      - linux
-    goarch:
-      - amd64
-      - arm64
-    goamd64:
-      - v1
-    prebuilt:
-      path: tmp/dist/warnly_{{ .Os }}_{{ .Arch }}{{ with .Amd64 }}_{{ . }}{{ end }}{{ with .Arm64 }}_{{ . }}{{ end }}/warnly
-    binary: warnly
-
-sboms:
-  - artifacts: archive
+- goos:
+  - linux
+  - darwin
+  - windows
+  goarch:
+  - amd64
+  - arm64
+  ignore:
+    - goos: windows
+      goarch: arm64
+  main: ./cmd/warnly
+  ldflags: -s -w
+  binary: warnly
+  env:
+    - CGO_ENABLED=0
 
 archives:
-  - id: main
-    name_template: >-
-      {{ .ProjectName }}_
-      {{- tolower .Os }}_
-      {{- if eq .Arch "amd64" }}x86_64
-      {{- else }}{{ .Arch }}{{ end }}
+  - id: warnly
+    name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
+    format: tar.gz
     files:
-      - LICENSE
+    - LICENSE
+    - README.md
+    format_overrides:
+      - goos: windows
+        format: zip
 
 checksum:
-  name_template: "checksums.txt"
+  name_template: '{{ .ProjectName }}_{{ .Version }}_checksums.txt'
 
-release:
-  prerelease: auto # enable rc releases (e.g. v1.0.0-rc.1)
-  target_commitish: "{{ .Commit }}"
-  footer: |
-    ## Installation
-    ### Docker Image :whale:
-    ```bash
-      docker pull ghcr.io/vk-rv/warnly:v{{ .Tag }}
-    ```
-    ## Thank you!
-    We hope you :heart: this release! Feel free to open issues/discussions if you have any questions or feedback.
-    - [Github Discussions](https://github.com/vk-rv/warnly/discussions)
-    - [Github Issues](https://github.com/vk-rv/warnly/issues)
-    - [Website](https://warnly.io)
-
-changelog:
-  use: github
-  format: "{{.SHA}}: {{.Message}} (@{{.AuthorUsername}})"
-  sort: asc
-  groups:
-    - title: "Features"
-      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
-      order: 0
-    - title: "Bug Fixes"
-      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
-      order: 1
-    - title: "Dependencies"
-      regexp: '^.*?deps(\([[:word:]]+\))??!?:.+$'
-      order: 999
-    - title: "Other"
-      order: 3
+dist: dist
 
 dockers:
-  - dockerfile: ./build/Dockerfile
-    use: buildx
+  - ids:
+      - warnly
     goos: linux
     goarch: amd64
+    dockerfile: build/Dockerfile
     image_templates:
-      - "ghcr.io/vk-rv/warnly:v{{ .Tag }}-amd64"
-      - "ghcr.io/vk-rv/warnly:v{{ .Major }}-amd64"
-    build_flag_templates:
-      - "--platform=linux/amd64"
-      - "--label=org.opencontainers.image.created={{.Date}}"
-      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{.Version}}"
-
-  - dockerfile: ./build/Dockerfile
+    - "ghcr.io/vk-rv/warnly:{{ .Tag }}-amd64"
+    - "ghcr.io/vk-rv/warnly:v{{ .Major }}-amd64"
+    - "ghcr.io/vk-rv/warnly:v{{ .Major }}.{{ .Minor }}-amd64"
+    - "ghcr.io/vk-rv/warnly:latest-amd64"
     use: buildx
+    build_flag_templates:
+    - "--pull"
+    - "--label=org.opencontainers.image.created={{.Date}}"
+    - "--label=org.opencontainers.image.name={{.ProjectName}}"
+    - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+    - "--label=org.opencontainers.image.version={{.Version}}"
+    - "--label=org.opencontainers.image.source={{.GitURL}}"
+    - "--platform=linux/amd64"
+  - ids:
+      - warnly
     goos: linux
     goarch: arm64
+    dockerfile: build/Dockerfile
     image_templates:
-      - "ghcr.io/vk-rv/warnly:v{{ .Tag }}-arm64"
-      - "ghcr.io/vk-rv/warnly:v{{ .Major }}-arm64"
+    - "ghcr.io/vk-rv/warnly:{{ .Tag }}-arm64v8"
+    - "ghcr.io/vk-rv/warnly:v{{ .Major }}-arm64v8"
+    - "ghcr.io/vk-rv/warnly:v{{ .Major }}.{{ .Minor }}-arm64v8"
+    - "ghcr.io/vk-rv/warnly:latest-arm64v8"
+    use: buildx
     build_flag_templates:
-      - "--platform=linux/arm64"
-      - "--label=org.opencontainers.image.created={{.Date}}"
-      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{.Version}}"
+    - "--pull"
+    - "--label=org.opencontainers.image.created={{.Date}}"
+    - "--label=org.opencontainers.image.name={{.ProjectName}}"
+    - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+    - "--label=org.opencontainers.image.version={{.Version}}"
+    - "--label=org.opencontainers.image.source={{.GitURL}}"
+    - "--platform=linux/arm64/v8"
 
 docker_manifests:
-  - name_template: "ghcr.io/vk-rv/warnly:v{{ .Tag }}"
+  - name_template: ghcr.io/vk-rv/warnly:{{ .Tag }}
     image_templates:
-      - "ghcr.io/vk-rv/warnly:v{{ .Tag }}-amd64"
-      - "ghcr.io/vk-rv/warnly:v{{ .Tag }}-arm64"
-  - name_template: "ghcr.io/vk-rv/warnly:v{{ .Major }}"
+      - ghcr.io/vk-rv/warnly:{{ .Tag }}-arm64v8
+      - ghcr.io/vk-rv/warnly:{{ .Tag }}-amd64
+  - name_template: ghcr.io/vk-rv/warnly:v{{ .Major }}
     image_templates:
-      - "ghcr.io/vk-rv/warnly:v{{ .Major }}-amd64"
-      - "ghcr.io/vk-rv/warnly:v{{ .Major }}-arm64"
+      - ghcr.io/vk-rv/warnly:v{{ .Major }}-arm64v8
+      - ghcr.io/vk-rv/warnly:v{{ .Major }}-amd64
+  - name_template: ghcr.io/vk-rv/warnly:v{{ .Major }}.{{ .Minor }}
+    image_templates:
+      - ghcr.io/vk-rv/warnly:v{{ .Major }}.{{ .Minor }}-arm64v8
+      - ghcr.io/vk-rv/warnly:v{{ .Major }}.{{ .Minor }}-amd64
+  - name_template: ghcr.io/vk-rv/warnly:latest
+    image_templates:
+      - ghcr.io/vk-rv/warnly:latest-arm64v8
+      - ghcr.io/vk-rv/warnly:latest-amd64
