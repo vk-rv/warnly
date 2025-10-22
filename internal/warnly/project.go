@@ -441,6 +441,8 @@ type IssueEvent struct {
 	Release                 string
 	TagsKey                 []string
 	TagsValue               []string
+	ContextsKey             []string
+	ContextsValue           []string
 	Message                 string
 	ExceptionFramesAbsPath  []string
 	ExceptionFramesColno    []int
@@ -505,6 +507,18 @@ func (id *IssueDetails) TagKeyValue() []TagKeyValue {
 		})
 	}
 
+	return res
+}
+
+func (id *IssueDetails) Contexts() map[string]string {
+	if len(id.LastEvent.ContextsKey) == 0 {
+		return nil
+	}
+
+	res := make(map[string]string, len(id.LastEvent.ContextsKey))
+	for i := range id.LastEvent.ContextsKey {
+		res[id.LastEvent.ContextsKey[i]] = id.LastEvent.ContextsValue[i]
+	}
 	return res
 }
 

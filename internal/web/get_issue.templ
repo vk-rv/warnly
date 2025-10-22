@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/vk-rv/warnly/internal/warnly"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -171,80 +172,39 @@ templ GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) {
 			</div>
 			<div class="max-w-4xl mx-auto mb-6">
 				<div class="grid grid-cols-2 gap-4">
-					<!-- User Context Card -->
-					<div class="border border-gray-200 rounded-lg p-4 bg-white">
-						<div class="flex items-center justify-between mb-3">
-							<h3 class="text-sm font-semibold text-gray-900">User</h3>
-							<svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-								<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clip-rule="evenodd"></path>
-							</svg>
-						</div>
-						<div class="space-y-2 text-xs">
-							<div class="flex justify-between">
-								<span class="text-gray-500">Geography</span>
-								<span class="font-mono text-gray-900">Amsterdam, The Netherlands (NL)</span>
+					for prefix, fields := range groupContexts(issue.Contexts()) {
+						<div class="border border-gray-200 rounded-lg p-4 bg-white">
+							<div class="flex items-center justify-between mb-3">
+								<h3 class="text-sm font-semibold text-gray-900">{ strings.Title(prefix) }</h3>
+								if prefix == "os" {
+									if fields["name"] == "darwin" {
+										<svg class="w-4 h-4" viewBox="0 0 16 16" fill="currentColor">
+											<path d="M11.182.008C11.148-.03 9.923.023 8.857 1.18c-1.066 1.156-.902 2.482-.878 2.516.024.034 1.52.087 2.475-1.258.955-1.345.762-2.391.728-2.43zm3.314 11.733c-.048-.096-2.325-1.234-2.113-3.422.212-2.189 1.675-2.789 1.698-2.854.023-.065-.597-.79-1.254-1.157a3.692 3.692 0 0 0-1.563-.434c-.108-.003-.483-.095-1.254.116-.508.139-1.653.589-1.968.607-.316.018-1.256-.522-2.267-.665-.647-.125-1.333.131-1.824.328-.49.196-1.422.754-2.074 2.237-.652 1.482-.311 3.83-.067 4.56.244.729.625 1.924 1.273 2.796.576.984 1.34 1.667 1.659 1.899.319.232 1.219.386 1.843.067.502-.308 1.408-.485 1.766-.472.357.013 1.061.154 1.782.539.571.197 1.111.115 1.652-.105.541-.221 1.324-1.059 2.238-2.758.347-.79.505-1.217.473-1.282z"></path>
+										</svg>
+									} else {
+										<!-- Default OS icon -->
+										<svg class="w-4 h-4" viewBox="0 0 16 16" fill="currentColor">
+											<path d="M8 0C3.58 0 0 3.58 0 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"></path>
+											<path d="M8 4c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"></path>
+											<path d="M8 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"></path>
+										</svg>
+									}
+								} else if prefix == "user" {
+									<svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+										<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clip-rule="evenodd"></path>
+									</svg>
+								}
+							</div>
+							<div class="space-y-2 text-xs">
+								for key, value := range fields {
+									<div class="flex justify-between">
+										<span class="text-gray-500">{ key }</span>
+										<span class="font-mono text-gray-900">{ value }</span>
+									</div>
+								}
 							</div>
 						</div>
-					</div>
-					<!-- Device Context Card -->
-					<div class="border border-gray-200 rounded-lg p-4 bg-white">
-						<div class="flex items-center justify-between mb-3">
-							<h3 class="text-sm font-semibold text-gray-900">Device</h3>
-						</div>
-						<div class="space-y-2 text-xs">
-							<div class="flex justify-between">
-								<span class="text-gray-500">Architecture</span>
-								<span class="font-mono text-gray-900">arm64</span>
-							</div>
-							<div class="flex justify-between">
-								<span class="text-gray-500">num_cpu</span>
-								<span class="font-mono text-gray-900">8</span>
-							</div>
-						</div>
-					</div>
-					<!-- Runtime Context Card -->
-					<div class="border border-gray-200 rounded-lg p-4 bg-white">
-						<div class="flex items-center justify-between mb-3">
-							<h3 class="text-sm font-semibold text-gray-900">Runtime</h3>
-						</div>
-						<div class="space-y-2 text-xs">
-							<div class="flex justify-between">
-								<span class="text-gray-500">go_maxprocs</span>
-								<span class="font-mono text-gray-900">8</span>
-							</div>
-							<div class="flex justify-between">
-								<span class="text-gray-500">go_numgocalls</span>
-								<span class="font-mono text-gray-900">0</span>
-							</div>
-							<div class="flex justify-between">
-								<span class="text-gray-500">go_numroutines</span>
-								<span class="font-mono text-gray-900">5</span>
-							</div>
-							<div class="flex justify-between">
-								<span class="text-gray-500">Name</span>
-								<span class="font-mono text-gray-900">go</span>
-							</div>
-							<div class="flex justify-between">
-								<span class="text-gray-500">Version</span>
-								<span class="font-mono text-gray-900">go1.24.1</span>
-							</div>
-						</div>
-					</div>
-					<!-- Operating System Context Card -->
-					<div class="border border-gray-200 rounded-lg p-4 bg-white">
-						<div class="flex items-center justify-between mb-3">
-							<h3 class="text-sm font-semibold text-gray-900">Operating System</h3>
-							<svg class="w-4 h-4" viewBox="0 0 16 16" fill="currentColor">
-								<path d="M11.182.008C11.148-.03 9.923.023 8.857 1.18c-1.066 1.156-.902 2.482-.878 2.516.024.034 1.52.087 2.475-1.258.955-1.345.762-2.391.728-2.43zm3.314 11.733c-.048-.096-2.325-1.234-2.113-3.422.212-2.189 1.675-2.789 1.698-2.854.023-.065-.597-.79-1.254-1.157a3.692 3.692 0 0 0-1.563-.434c-.108-.003-.483-.095-1.254.116-.508.139-1.653.589-1.968.607-.316.018-1.256-.522-2.267-.665-.647-.125-1.333.131-1.824.328-.49.196-1.422.754-2.074 2.237-.652 1.482-.311 3.83-.067 4.56.244.729.625 1.924 1.273 2.796.576.984 1.34 1.667 1.659 1.899.319.232 1.219.386 1.843.067.502-.308 1.408-.485 1.766-.472.357.013 1.061.154 1.782.539.571.197 1.111.115 1.652-.105.541-.221 1.324-1.059 2.238-2.758.347-.79.505-1.217.473-1.282z"></path>
-							</svg>
-						</div>
-						<div class="space-y-2 text-xs">
-							<div class="flex justify-between">
-								<span class="text-gray-500">Name</span>
-								<span class="font-mono text-gray-900">darwin</span>
-							</div>
-						</div>
-					</div>
+					}
 				</div>
 			</div>
 			if issue.HasStackDetails() {
@@ -433,4 +393,20 @@ func unassignClickPrevent(projectID int, issueID int64) string {
 		"selected = 'Unassigned'; open = false; htmx.ajax('DELETE', '/projects/%d/issues/%d/assignments', { headers: { } })",
 		projectID,
 		issueID)
+}
+
+func groupContexts(contexts map[string]string) map[string]map[string]string {
+	groups := make(map[string]map[string]string)
+	for k, v := range contexts {
+		parts := strings.SplitN(k, ".", 2)
+		if len(parts) == 2 {
+			prefix := parts[0]
+			key := parts[1]
+			if groups[prefix] == nil {
+				groups[prefix] = make(map[string]string)
+			}
+			groups[prefix][key] = v
+		}
+	}
+	return groups
 }

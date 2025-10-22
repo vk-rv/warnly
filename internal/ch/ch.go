@@ -217,7 +217,7 @@ func (s *ClickhouseStore) GetIssueEvent(ctx context.Context, c *warnly.EventDefC
 		query = `SELECT replaceAll(toString(event_id), '-', '') AS event_id,
 			env, release,
 			user, user_username, user_name, user_email,
-			tags.key, tags.value, message,
+			tags.key, tags.value, contexts.key, contexts.value, message,
 			exception_frames.abs_path, exception_frames.colno,
 			exception_frames.function, exception_frames.lineno,
 			exception_frames.in_app
@@ -232,7 +232,7 @@ func (s *ClickhouseStore) GetIssueEvent(ctx context.Context, c *warnly.EventDefC
 		query = `SELECT replaceAll(toString(event_id), '-', '') AS event_id,
 			env, release,
 			user, user_username, user_name, user_email,
-			tags.key, tags.value, message,
+			tags.key, tags.value, contexts.key, contexts.value, message,
 			exception_frames.abs_path, exception_frames.colno,
 			exception_frames.function, exception_frames.lineno,
 			exception_frames.in_app
@@ -268,6 +268,8 @@ func (s *ClickhouseStore) GetIssueEvent(ctx context.Context, c *warnly.EventDefC
 			&i.UserEmail,
 			&i.TagsKey,
 			&i.TagsValue,
+			&i.ContextsKey,
+			&i.ContextsValue,
 			&i.Message,
 			&i.ExceptionFramesAbsPath,
 			&i.ExceptionFramesColno,
