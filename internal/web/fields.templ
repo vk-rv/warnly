@@ -2,19 +2,20 @@ package web
 
 import "github.com/vk-rv/warnly/internal/warnly"
 import "strconv"
+import "fmt"
 
 templ Fields(res *warnly.ListFieldsResult) {
 	<div id="issue_content" class="mt-6">
 		<div class="max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-6">
 			for _, tc := range res.TagCount {
-				<div class="bg-white rounded-lg border border-gray-200 p-4">
-					<h2 class="text-black font-medium mb-3">{ tc.Tag }</h2>
+				<div class="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+					<h2 class="text-gray-900 font-medium mb-3">{ tc.Tag }</h2>
 					<div class="space-y-2">
 						for _, t := range warnly.ListTagValues(tc.Tag, res.FieldValueNum) {
-							<div class="flex items-center justify-between bg-gray-100 cursor-pointer rounded px-3 py-2">
-								<span class="text-gray-700">{ t.Value }</span>
+							<a hx-get={ fmt.Sprintf("/?project_name=%s&issues=all&period=14d&query=%s:%s", res.ProjectName, tc.Tag, t.Value) } hx-target="#content" hx-swap="outerHTML settle:0" hx-push-url="true" class="flex items-center justify-between bg-gray-50 cursor-pointer rounded px-3 py-2 hover:bg-gray-100 transition-colors">
+								<span class="text-gray-800">{ t.Value }</span>
 								<span class="text-gray-600 text-sm ml-1">{ strconv.Itoa(int(t.Count)) }</span>
-							</div>
+							</a>
 						}
 					</div>
 				</div>

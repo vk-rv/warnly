@@ -402,6 +402,7 @@ func (s *ProjectService) ListFields(ctx context.Context, req *warnly.ListFieldsR
 	}
 
 	return &warnly.ListFieldsResult{
+		ProjectName:   project.Name,
 		TagCount:      fieldCount,
 		FieldValueNum: fieldValue,
 	}, nil

@@ -384,6 +384,7 @@ type ListFieldsRequest struct {
 }
 
 type ListFieldsResult struct {
+	ProjectName   string
 	TagCount      []TagCount
 	FieldValueNum []FieldValueNum
 }
