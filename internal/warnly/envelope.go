@@ -118,6 +118,7 @@ type EventBody struct {
 	Environment string            `json:"environment"`
 	SDK         SDKBody           `json:"sdk"`
 	Exception   []Exception       `json:"exception"`
+	Extra       map[string]any    `json:"extra"`
 	Contexts    Contexts          `json:"contexts"`
 }
 

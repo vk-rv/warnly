@@ -11,6 +11,7 @@ import templruntime "github.com/a-h/templ/runtime"
 import (
 	"fmt"
 	"github.com/vk-rv/warnly/internal/warnly"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -97,7 +98,7 @@ func GetIssueHtmx(issue *warnly.IssueDetails, user *warnly.User, source string) 
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(IssueDetailsTitle)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 24, Col: 27}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 25, Col: 27}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -110,7 +111,7 @@ func GetIssueHtmx(issue *warnly.IssueDetails, user *warnly.User, source string) 
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(AppName)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 24, Col: 41}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 25, Col: 41}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
@@ -133,7 +134,7 @@ func GetIssueHtmx(issue *warnly.IssueDetails, user *warnly.User, source string) 
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/projects/%d?issues=all&period=14d", issue.ProjectID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 34, Col: 158}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 35, Col: 158}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
@@ -146,7 +147,7 @@ func GetIssueHtmx(issue *warnly.IssueDetails, user *warnly.User, source string) 
 			var templ_7745c5c3_Var6 string
 			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(issue.ProjectName)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 37, Col: 62}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 38, Col: 62}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {
@@ -159,7 +160,7 @@ func GetIssueHtmx(issue *warnly.IssueDetails, user *warnly.User, source string) 
 			var templ_7745c5c3_Var7 string
 			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(issue.ErrorType)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 44, Col: 58}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 45, Col: 58}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
@@ -172,7 +173,7 @@ func GetIssueHtmx(issue *warnly.IssueDetails, user *warnly.User, source string) 
 			var templ_7745c5c3_Var8 string
 			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(issue.View)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 45, Col: 71}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 46, Col: 71}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
@@ -185,7 +186,7 @@ func GetIssueHtmx(issue *warnly.IssueDetails, user *warnly.User, source string) 
 			var templ_7745c5c3_Var9 string
 			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(issue.View)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 45, Col: 86}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 46, Col: 86}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 			if templ_7745c5c3_Err != nil {
@@ -213,7 +214,7 @@ func GetIssueHtmx(issue *warnly.IssueDetails, user *warnly.User, source string) 
 			var templ_7745c5c3_Var10 string
 			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.NumFormatted(issue.TimesSeen))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 54, Col: 88}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 55, Col: 88}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 			if templ_7745c5c3_Err != nil {
@@ -226,7 +227,7 @@ func GetIssueHtmx(issue *warnly.IssueDetails, user *warnly.User, source string) 
 			var templ_7745c5c3_Var11 string
 			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.NumFormatted(issue.UserCount))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 58, Col: 88}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 59, Col: 88}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 			if templ_7745c5c3_Err != nil {
@@ -239,7 +240,7 @@ func GetIssueHtmx(issue *warnly.IssueDetails, user *warnly.User, source string) 
 			var templ_7745c5c3_Var12 string
 			templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(issue.ErrorValue)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 65, Col: 30}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 66, Col: 30}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 			if templ_7745c5c3_Err != nil {
@@ -252,7 +253,7 @@ func GetIssueHtmx(issue *warnly.IssueDetails, user *warnly.User, source string) 
 			var templ_7745c5c3_Var13 string
 			templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/projects/%d/issues/%d?period=14d&source=issue&event_id=%s", issue.ProjectID, issue.IssueID, issue.Request.EventID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 69, Col: 226}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 70, Col: 226}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 			if templ_7745c5c3_Err != nil {
@@ -265,7 +266,7 @@ func GetIssueHtmx(issue *warnly.IssueDetails, user *warnly.User, source string) 
 			var templ_7745c5c3_Var14 string
 			templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/projects/%d/issues/%d/discussions", issue.ProjectID, issue.IssueID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 70, Col: 156}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 71, Col: 156}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 			if templ_7745c5c3_Err != nil {
@@ -278,7 +279,7 @@ func GetIssueHtmx(issue *warnly.IssueDetails, user *warnly.User, source string) 
 			var templ_7745c5c3_Var15 string
 			templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", issue.MessagesCount))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 70, Col: 469}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 71, Col: 469}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 			if templ_7745c5c3_Err != nil {
@@ -291,7 +292,7 @@ func GetIssueHtmx(issue *warnly.IssueDetails, user *warnly.User, source string) 
 			var templ_7745c5c3_Var16 string
 			templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/projects/%d/issues/%d/fields", issue.ProjectID, issue.IssueID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 71, Col: 151}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 72, Col: 151}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 			if templ_7745c5c3_Err != nil {
@@ -304,7 +305,7 @@ func GetIssueHtmx(issue *warnly.IssueDetails, user *warnly.User, source string) 
 			var templ_7745c5c3_Var17 string
 			templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/projects/%d/issues/%d/events", issue.ProjectID, issue.IssueID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 72, Col: 151}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 73, Col: 151}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 			if templ_7745c5c3_Err != nil {
@@ -356,7 +357,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 			var templ_7745c5c3_Var19 string
 			templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/projects/%d/issues/%d?period=14d&source=issue&event_id=%s", issue.ProjectID, issue.IssueID, issue.Request.EventID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 84, Col: 240}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 85, Col: 240}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
 			if templ_7745c5c3_Err != nil {
@@ -378,7 +379,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 		var templ_7745c5c3_Var20 string
 		templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs("{ copyToClipboard(text) { navigator.clipboard.writeText(text); showToast('Copied to clipboard'); } }")
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 87, Col: 149}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 88, Col: 149}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 		if templ_7745c5c3_Err != nil {
@@ -391,7 +392,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 		var templ_7745c5c3_Var21 string
 		templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(issue.EventID())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 92, Col: 71}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 93, Col: 71}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 		if templ_7745c5c3_Err != nil {
@@ -404,7 +405,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 		var templ_7745c5c3_Var22 string
 		templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("copyToClipboard('%s')", issue.EventID()))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 92, Col: 136}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 93, Col: 136}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
 		if templ_7745c5c3_Err != nil {
@@ -417,7 +418,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 		var templ_7745c5c3_Var23 string
 		templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(issue.EventID()[:6])
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 92, Col: 160}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 93, Col: 160}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
 		if templ_7745c5c3_Err != nil {
@@ -430,7 +431,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 		var templ_7745c5c3_Var24 string
 		templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("copyToClipboard('%s')", issue.EventID()))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 93, Col: 216}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 94, Col: 216}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var24))
 		if templ_7745c5c3_Err != nil {
@@ -448,7 +449,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 			var templ_7745c5c3_Var25 string
 			templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(issue.LastEvent.UserID)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 104, Col: 77}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 105, Col: 77}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var25))
 			if templ_7745c5c3_Err != nil {
@@ -466,7 +467,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				var templ_7745c5c3_Var26 string
 				templ_7745c5c3_Var26, templ_7745c5c3_Err = templ.JoinStringErrs(issue.LastEvent.UserName)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 109, Col: 80}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 110, Col: 80}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var26))
 				if templ_7745c5c3_Err != nil {
@@ -485,7 +486,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				var templ_7745c5c3_Var27 string
 				templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(issue.LastEvent.UserUsername)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 115, Col: 84}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 116, Col: 84}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var27))
 				if templ_7745c5c3_Err != nil {
@@ -504,7 +505,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				var templ_7745c5c3_Var28 string
 				templ_7745c5c3_Var28, templ_7745c5c3_Err = templ.JoinStringErrs(issue.LastEvent.UserEmail)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 121, Col: 81}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 122, Col: 81}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var28))
 				if templ_7745c5c3_Err != nil {
@@ -527,7 +528,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 		var templ_7745c5c3_Var29 string
 		templ_7745c5c3_Var29, templ_7745c5c3_Err = templ.JoinStringErrs(issue.Message)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 135, Col: 20}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 136, Col: 20}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var29))
 		if templ_7745c5c3_Err != nil {
@@ -546,7 +547,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				var templ_7745c5c3_Var30 string
 				templ_7745c5c3_Var30, templ_7745c5c3_Err = templ.JoinStringErrs(kv.Key)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 148, Col: 71}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 149, Col: 71}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var30))
 				if templ_7745c5c3_Err != nil {
@@ -559,7 +560,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				var templ_7745c5c3_Var31 string
 				templ_7745c5c3_Var31, templ_7745c5c3_Err = templ.JoinStringErrs(kv.Key)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 148, Col: 82}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 149, Col: 82}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var31))
 				if templ_7745c5c3_Err != nil {
@@ -572,7 +573,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				var templ_7745c5c3_Var32 string
 				templ_7745c5c3_Var32, templ_7745c5c3_Err = templ.JoinStringErrs(kv.Value)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 149, Col: 78}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 150, Col: 78}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var32))
 				if templ_7745c5c3_Err != nil {
@@ -585,7 +586,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				var templ_7745c5c3_Var33 string
 				templ_7745c5c3_Var33, templ_7745c5c3_Err = templ.JoinStringErrs(kv.Value)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 149, Col: 91}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 150, Col: 91}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var33))
 				if templ_7745c5c3_Err != nil {
@@ -598,7 +599,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				var templ_7745c5c3_Var34 string
 				templ_7745c5c3_Var34, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/?project_name=%s&issues=all&period=14d&query=%s:%s", issue.ProjectName, kv.Key, kv.Value))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 151, Col: 124}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 152, Col: 124}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var34))
 				if templ_7745c5c3_Err != nil {
@@ -611,7 +612,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				var templ_7745c5c3_Var35 string
 				templ_7745c5c3_Var35, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("copyToClipboard(%q); $nextTick(() => open = false)", kv.Value))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 152, Col: 113}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 153, Col: 113}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var35))
 				if templ_7745c5c3_Err != nil {
@@ -629,7 +630,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				var templ_7745c5c3_Var36 string
 				templ_7745c5c3_Var36, templ_7745c5c3_Err = templ.JoinStringErrs(kv.Key)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 157, Col: 71}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 158, Col: 71}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var36))
 				if templ_7745c5c3_Err != nil {
@@ -642,7 +643,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				var templ_7745c5c3_Var37 string
 				templ_7745c5c3_Var37, templ_7745c5c3_Err = templ.JoinStringErrs(kv.Key)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 157, Col: 82}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 158, Col: 82}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var37))
 				if templ_7745c5c3_Err != nil {
@@ -655,7 +656,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				var templ_7745c5c3_Var38 string
 				templ_7745c5c3_Var38, templ_7745c5c3_Err = templ.JoinStringErrs(kv.Value)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 158, Col: 78}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 159, Col: 78}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var38))
 				if templ_7745c5c3_Err != nil {
@@ -668,7 +669,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				var templ_7745c5c3_Var39 string
 				templ_7745c5c3_Var39, templ_7745c5c3_Err = templ.JoinStringErrs(kv.Value)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 158, Col: 91}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 159, Col: 91}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var39))
 				if templ_7745c5c3_Err != nil {
@@ -681,7 +682,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				var templ_7745c5c3_Var40 string
 				templ_7745c5c3_Var40, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/?project_name=%s&issues=all&period=14d&query=%s:%s", issue.ProjectName, kv.Key, kv.Value))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 160, Col: 124}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 161, Col: 124}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var40))
 				if templ_7745c5c3_Err != nil {
@@ -694,7 +695,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				var templ_7745c5c3_Var41 string
 				templ_7745c5c3_Var41, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("copyToClipboard(%q); $nextTick(() => open = false)", kv.Value))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 161, Col: 113}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 162, Col: 113}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var41))
 				if templ_7745c5c3_Err != nil {
@@ -710,15 +711,15 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		for prefix, fields := range groupContexts(issue.Contexts()) {
+		for _, kv := range sortedGroupContexts(issue.Contexts()) {
 			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 59, "<div class=\"border border-gray-200 rounded-lg p-4 bg-white\"><div class=\"flex items-center justify-between mb-3\"><h3 class=\"text-sm font-semibold text-gray-900\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var42 string
-			templ_7745c5c3_Var42, templ_7745c5c3_Err = templ.JoinStringErrs(strings.Title(prefix))
+			templ_7745c5c3_Var42, templ_7745c5c3_Err = templ.JoinStringErrs(strings.Title(kv.Prefix))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 178, Col: 79}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 179, Col: 82}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var42))
 			if templ_7745c5c3_Err != nil {
@@ -728,8 +729,8 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			if prefix == "os" {
-				if fields["name"] == "darwin" {
+			if kv.Prefix == "os" {
+				if kv.Fields["name"] == "darwin" {
 					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 61, "<svg class=\"w-4 h-4\" viewBox=\"0 0 16 16\" fill=\"currentColor\"><path d=\"M11.182.008C11.148-.03 9.923.023 8.857 1.18c-1.066 1.156-.902 2.482-.878 2.516.024.034 1.52.087 2.475-1.258.955-1.345.762-2.391.728-2.43zm3.314 11.733c-.048-.096-2.325-1.234-2.113-3.422.212-2.189 1.675-2.789 1.698-2.854.023-.065-.597-.79-1.254-1.157a3.692 3.692 0 0 0-1.563-.434c-.108-.003-.483-.095-1.254.116-.508.139-1.653.589-1.968.607-.316.018-1.256-.522-2.267-.665-.647-.125-1.333.131-1.824.328-.49.196-1.422.754-2.074 2.237-.652 1.482-.311 3.83-.067 4.56.244.729.625 1.924 1.273 2.796.576.984 1.34 1.667 1.659 1.899.319.232 1.219.386 1.843.067.502-.308 1.408-.485 1.766-.472.357.013 1.061.154 1.782.539.571.197 1.111.115 1.652-.105.541-.221 1.324-1.059 2.238-2.758.347-.79.505-1.217.473-1.282z\"></path></svg>")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
@@ -740,7 +741,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 						return templ_7745c5c3_Err
 					}
 				}
-			} else if prefix == "user" {
+			} else if kv.Prefix == "user" {
 				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 63, "<svg class=\"w-4 h-4 text-gray-400\" fill=\"currentColor\" viewBox=\"0 0 20 20\"><path fill-rule=\"evenodd\" d=\"M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z\" clip-rule=\"evenodd\"></path></svg>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
@@ -750,7 +751,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			for key, value := range fields {
+			for _, key := range sortedKeys(kv.Fields) {
 				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 65, "<div class=\"flex justify-between\"><span class=\"text-gray-500\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
@@ -758,7 +759,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				var templ_7745c5c3_Var43 string
 				templ_7745c5c3_Var43, templ_7745c5c3_Err = templ.JoinStringErrs(key)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 201, Col: 43}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 202, Col: 43}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var43))
 				if templ_7745c5c3_Err != nil {
@@ -769,9 +770,9 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var44 string
-				templ_7745c5c3_Var44, templ_7745c5c3_Err = templ.JoinStringErrs(value)
+				templ_7745c5c3_Var44, templ_7745c5c3_Err = templ.JoinStringErrs(kv.Fields[key])
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 202, Col: 55}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 203, Col: 64}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var44))
 				if templ_7745c5c3_Err != nil {
@@ -807,7 +808,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 			var templ_7745c5c3_Var45 string
 			templ_7745c5c3_Var45, templ_7745c5c3_Err = templ.JoinStringErrs(issue.GetPlatform())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 246, Col: 53}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 249, Col: 53}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var45))
 			if templ_7745c5c3_Err != nil {
@@ -820,7 +821,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 			var templ_7745c5c3_Var46 string
 			templ_7745c5c3_Var46, templ_7745c5c3_Err = templ.JoinStringErrs(issue.StackDetails[0].Filepath)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 250, Col: 77}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 253, Col: 77}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var46))
 			if templ_7745c5c3_Err != nil {
@@ -833,7 +834,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 			var templ_7745c5c3_Var47 string
 			templ_7745c5c3_Var47, templ_7745c5c3_Err = templ.JoinStringErrs(issue.StackDetails[0].FunctionName)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 250, Col: 150}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 253, Col: 150}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var47))
 			if templ_7745c5c3_Err != nil {
@@ -851,7 +852,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				var templ_7745c5c3_Var48 string
 				templ_7745c5c3_Var48, templ_7745c5c3_Err = templ.JoinStringErrs(f.Filepath)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 259, Col: 61}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 262, Col: 61}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var48))
 				if templ_7745c5c3_Err != nil {
@@ -864,7 +865,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				var templ_7745c5c3_Var49 string
 				templ_7745c5c3_Var49, templ_7745c5c3_Err = templ.JoinStringErrs(f.FunctionName)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 261, Col: 55}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 264, Col: 55}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var49))
 				if templ_7745c5c3_Err != nil {
@@ -877,7 +878,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				var templ_7745c5c3_Var50 string
 				templ_7745c5c3_Var50, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(f.LineNo))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 263, Col: 63}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 266, Col: 63}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var50))
 				if templ_7745c5c3_Err != nil {
@@ -890,7 +891,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				var templ_7745c5c3_Var51 string
 				templ_7745c5c3_Var51, templ_7745c5c3_Err = templ.JoinStringErrs(f.InAppStr())
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 266, Col: 88}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 269, Col: 88}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var51))
 				if templ_7745c5c3_Err != nil {
@@ -913,7 +914,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				var templ_7745c5c3_Var52 string
 				templ_7745c5c3_Var52, templ_7745c5c3_Err = templ.JoinStringErrs(f.Filepath)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 274, Col: 62}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 277, Col: 62}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var52))
 				if templ_7745c5c3_Err != nil {
@@ -926,7 +927,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				var templ_7745c5c3_Var53 string
 				templ_7745c5c3_Var53, templ_7745c5c3_Err = templ.JoinStringErrs(f.FunctionName)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 276, Col: 56}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 279, Col: 56}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var53))
 				if templ_7745c5c3_Err != nil {
@@ -939,7 +940,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				var templ_7745c5c3_Var54 string
 				templ_7745c5c3_Var54, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(f.LineNo))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 278, Col: 64}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 281, Col: 64}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var54))
 				if templ_7745c5c3_Err != nil {
@@ -952,7 +953,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				var templ_7745c5c3_Var55 string
 				templ_7745c5c3_Var55, templ_7745c5c3_Err = templ.JoinStringErrs(f.InAppStr())
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 281, Col: 89}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 284, Col: 89}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var55))
 				if templ_7745c5c3_Err != nil {
@@ -975,7 +976,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 		var templ_7745c5c3_Var56 string
 		templ_7745c5c3_Var56, templ_7745c5c3_Err = templ.JoinStringErrs(teammateSelect(issue))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 300, Col: 40}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 303, Col: 40}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var56))
 		if templ_7745c5c3_Err != nil {
@@ -988,7 +989,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 		var templ_7745c5c3_Var57 string
 		templ_7745c5c3_Var57, templ_7745c5c3_Err = templ.JoinStringErrs(unassignClickPrevent(issue.ProjectID, issue.IssueID))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 315, Col: 79}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 318, Col: 79}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var57))
 		if templ_7745c5c3_Err != nil {
@@ -1007,7 +1008,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				var templ_7745c5c3_Var58 string
 				templ_7745c5c3_Var58, templ_7745c5c3_Err = templ.JoinStringErrs(teammateClickPrevent(teammate.Username, teammate.ID, issue.ProjectID, issue.IssueID))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 326, Col: 113}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 329, Col: 113}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var58))
 				if templ_7745c5c3_Err != nil {
@@ -1020,7 +1021,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				var templ_7745c5c3_Var59 string
 				templ_7745c5c3_Var59, templ_7745c5c3_Err = templ.JoinStringErrs(teammate.Name)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 329, Col: 33}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 332, Col: 33}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var59))
 				if templ_7745c5c3_Err != nil {
@@ -1038,7 +1039,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				var templ_7745c5c3_Var60 string
 				templ_7745c5c3_Var60, templ_7745c5c3_Err = templ.JoinStringErrs(teammateClickPrevent(teammate.Username, teammate.ID, issue.ProjectID, issue.IssueID))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 336, Col: 113}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 339, Col: 113}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var60))
 				if templ_7745c5c3_Err != nil {
@@ -1051,7 +1052,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				var templ_7745c5c3_Var61 string
 				templ_7745c5c3_Var61, templ_7745c5c3_Err = templ.JoinStringErrs(teammate.Name)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 339, Col: 27}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 342, Col: 27}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var61))
 				if templ_7745c5c3_Err != nil {
@@ -1070,7 +1071,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 		var templ_7745c5c3_Var62 string
 		templ_7745c5c3_Var62, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.NumFormatted(issue.Total24Hours))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 350, Col: 82}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 353, Col: 82}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var62))
 		if templ_7745c5c3_Err != nil {
@@ -1083,7 +1084,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 		var templ_7745c5c3_Var63 string
 		templ_7745c5c3_Var63, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.NumFormatted(issue.Total30Days))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 354, Col: 81}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 357, Col: 81}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var63))
 		if templ_7745c5c3_Err != nil {
@@ -1096,7 +1097,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 		var templ_7745c5c3_Var64 string
 		templ_7745c5c3_Var64, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.TimeAgo(time.Now, issue.LastSeen /* narrow */, false))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 358, Col: 81}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 361, Col: 81}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var64))
 		if templ_7745c5c3_Err != nil {
@@ -1109,7 +1110,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 		var templ_7745c5c3_Var65 string
 		templ_7745c5c3_Var65, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.TimeAgo(time.Now, issue.FirstSeen /* narrow */, false))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 362, Col: 82}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 365, Col: 82}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var65))
 		if templ_7745c5c3_Err != nil {
@@ -1127,7 +1128,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 			var templ_7745c5c3_Var66 string
 			templ_7745c5c3_Var66, templ_7745c5c3_Err = templ.JoinStringErrs(tc.Tag)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 373, Col: 62}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 376, Col: 62}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var66))
 			if templ_7745c5c3_Err != nil {
@@ -1140,7 +1141,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 			var templ_7745c5c3_Var67 string
 			templ_7745c5c3_Var67, templ_7745c5c3_Err = templ.JoinStringErrs(issue.Tag(tc.Tag))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 375, Col: 88}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 378, Col: 88}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var67))
 			if templ_7745c5c3_Err != nil {
@@ -1153,7 +1154,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 			var templ_7745c5c3_Var68 string
 			templ_7745c5c3_Var68, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.Cut(issue.Tag(tc.Tag), 13))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 375, Col: 126}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 378, Col: 126}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var68))
 			if templ_7745c5c3_Err != nil {
@@ -1193,7 +1194,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				var templ_7745c5c3_Var71 string
 				templ_7745c5c3_Var71, templ_7745c5c3_Err = templ.JoinStringErrs(t.Value)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 387, Col: 63}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 390, Col: 63}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var71))
 				if templ_7745c5c3_Err != nil {
@@ -1206,7 +1207,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				var templ_7745c5c3_Var72 string
 				templ_7745c5c3_Var72, templ_7745c5c3_Err = templ.JoinStringErrs(t.PercentsFormatted())
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 388, Col: 76}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 391, Col: 76}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var72))
 				if templ_7745c5c3_Err != nil {
@@ -1274,6 +1275,38 @@ func groupContexts(contexts map[string]string) map[string]map[string]string {
 		}
 	}
 	return groups
+}
+
+type contextGroup struct {
+	Prefix string
+	Fields map[string]string
+}
+
+func sortedGroupContexts(contexts map[string]string) []contextGroup {
+	grouped := groupContexts(contexts)
+	keys := make([]string, 0, len(grouped))
+	for k := range grouped {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	result := make([]contextGroup, 0, len(keys))
+	for _, k := range keys {
+		result = append(result, contextGroup{
+			Prefix: k,
+			Fields: grouped[k],
+		})
+	}
+	return result
+}
+
+func sortedKeys(m map[string]string) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return keys
 }
 
 var _ = templruntime.GeneratedTemplate

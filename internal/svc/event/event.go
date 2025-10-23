@@ -4,6 +4,7 @@ package event
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net"
@@ -131,7 +132,11 @@ func (s *EventService) IngestEvent(ctx context.Context, req warnly.IngestRequest
 		s.cache.Set(cacheKey, issueInfo, cache.DefaultExpiration)
 	}
 
-	tkv, ckv := makeTags(event), makeContexts(event)
+	tkv := makeTags(event)
+	ckv, err := makeContexts(event)
+	if err != nil {
+		return res, err
+	}
 
 	ev := &warnly.EventClickhouse{
 		EventID:                 event.EventID,
@@ -184,7 +189,7 @@ type kv struct {
 	values []string
 }
 
-func makeContexts(event *warnly.EventBody) kv {
+func makeContexts(event *warnly.EventBody) (kv, error) {
 	contextsKeys := []string{}
 	contextsValues := []string{}
 
@@ -225,7 +230,20 @@ func makeContexts(event *warnly.EventBody) kv {
 		contextsValues = append(contextsValues, event.Contexts.OS.Name)
 	}
 
-	return kv{keys: contextsKeys, values: contextsValues}
+	for k, v := range event.Extra {
+		contextsKeys = append(contextsKeys, "extra."+k)
+		if str, ok := v.(string); ok {
+			contextsValues = append(contextsValues, str)
+		} else {
+			jsonBytes, err := json.MarshalIndent(v, "", "  ")
+			if err != nil {
+				return kv{}, fmt.Errorf("makeContexts: json marshal indent: %w", err)
+			}
+			contextsValues = append(contextsValues, string(jsonBytes))
+		}
+	}
+
+	return kv{keys: contextsKeys, values: contextsValues}, nil
 }
 
 func makeTags(event *warnly.EventBody) kv {
