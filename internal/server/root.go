@@ -170,6 +170,8 @@ func (h *rootHandler) oidcCallback(w http.ResponseWriter, r *http.Request) {
 		h.writeError(ctx, w, http.StatusBadRequest, "oidc callback: no oidc states in session", nil)
 		return
 	}
+	
+	sess.Values.OIDCState = warnly.OIDCState{}
 
 	opts := []capoidc.Option{capoidc.WithState(cookieState.State), capoidc.WithNonce(cookieState.Nonce)}
 	if len(sess.Values.OIDCState.Scopes) > 0 {
@@ -471,6 +473,9 @@ func saveCookie(
 	sess, err := cookieStore.Get(r, "session")
 	if err != nil {
 		return fmt.Errorf("get session: %w", err)
+	}
+	if sess.Values.OIDCState.State != "" {
+		sess.Values.OIDCState = warnly.OIDCState{}
 	}
 	if rememberMe {
 		sess.Options.MaxAge = 86400 * sessionDays

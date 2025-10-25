@@ -14,11 +14,11 @@ services:
     volumes:
       - mysql_d:/var/lib/mysql
     healthcheck:
-            start_period: 5s
-            test: "/usr/bin/mysql --user=${MYSQL_USER} --password=${MYSQL_PASSWORD} --execute \"SHOW DATABASES;\""
-            interval: 5s
-            timeout: 30s
-            retries: 55
+      start_period: 5s
+      test: '/usr/bin/mysql --user=${MYSQL_USER} --password=${MYSQL_PASSWORD} --execute "SHOW DATABASES;"'
+      interval: 5s
+      timeout: 30s
+      retries: 55
 
   clickhouse:
     image: clickhouse/clickhouse-server:${CLICKHOUSE_TAG}
@@ -50,14 +50,26 @@ services:
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
-      KC_HTTP_PORT: '8090'
-      KC_HOSTNAME_STRICT: 'false'
-      KC_HOSTNAME_STRICT_HTTPS: 'false'
-      KC_CACHE: 'local'
+      KC_HTTP_PORT: "8090"
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+      KC_CACHE: "local"
     ports:
-      - '8090:8090'
+      - "8090:8090"
     volumes:
       - ./docker/keycloak/export:/opt/keycloak/data/import
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "curl",
+          "-I",
+          "-XGET",
+          "http://localhost:8090/auth/realms/master",
+        ]
+      interval: 30s
+      timeout: 30s
+      retries: 15
 
   warnly:
     labels:
@@ -88,9 +100,12 @@ services:
       - OIDC_REDIRECT_ADDRESS=${OIDC_REDIRECT_ADDRESS}
       - OIDC_SCOPES=${OIDC_SCOPES}
     depends_on:
-      - mysql
-      - clickhouse
-      - keycloak
+      mysql:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
     ports:
       - 8080:8080
     volumes:

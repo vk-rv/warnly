@@ -33,7 +33,6 @@ type Backend struct {
 	Reg                 *prometheus.Registry
 	Logger              *slog.Logger
 	CookieStore         *session.CookieStore
-	EmailMatches        []*regexp.Regexp
 	RememberSessionDays int
 	IsHTTPS             bool
 }
@@ -44,6 +43,7 @@ type OIDC struct {
 	Callback     string
 	Provider     *capoidc.Provider
 	Scopes       []string
+	EmailMatches []*regexp.Regexp
 	UsePkce      bool
 }
 
@@ -65,7 +65,7 @@ func NewHandler(b *Backend) (*Handler, error) {
 
 	prometheusMw := newPrometheusMW(b.Reg, b.Now)
 
-	emailMatcherMw := newEmailMatcherMW(b.EmailMatches, b.Logger)
+	emailMatcherMw := newEmailMatcherMW(b.OIDC.EmailMatches, b.Logger)
 
 	chainWithoutAuth := func(handler http.HandlerFunc) http.HandlerFunc {
 		handler = prometheusMw.recordLatency(handler)
@@ -77,7 +77,7 @@ func NewHandler(b *Backend) (*Handler, error) {
 
 	chain := func(handler http.HandlerFunc) http.HandlerFunc {
 		handler = authenticateMw.authenticate(handler)
-		if len(b.EmailMatches) > 0 {
+		if len(b.OIDC.EmailMatches) > 0 {
 			handler = emailMatcherMw.emailMatch(handler)
 		}
 		return chainWithoutAuth(handler)

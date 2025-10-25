@@ -249,8 +249,8 @@ func run(cfg *config, logger *slog.Logger) error {
 			UsePkce:      cfg.OIDCProvider.UsePKCE,
 			Scopes:       cfg.OIDCProvider.Scopes,
 			Callback:     oidcCallback,
+			EmailMatches: rgxsEmails,
 		},
-		EmailMatches: rgxsEmails,
 	})
 	if err != nil {
 		return err
