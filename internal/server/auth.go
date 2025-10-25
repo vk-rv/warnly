@@ -59,7 +59,7 @@ func NewContextWithUser(ctx context.Context, user warnly.User) context.Context {
 
 // getUser retrieves user from the session cookie.
 func (mw *authMw) getUser(r *http.Request) (warnly.User, error) {
-	sess, err := mw.cookieStore.Get(r, "sessid")
+	sess, err := mw.cookieStore.Get(r, "session")
 	if err != nil {
 		return warnly.User{}, fmt.Errorf("get session: %w", err)
 	}

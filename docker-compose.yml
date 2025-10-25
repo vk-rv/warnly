@@ -44,6 +44,21 @@ services:
       timeout: 5s
       retries: 5
 
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.3.2
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HTTP_PORT: '8090'
+      KC_HOSTNAME_STRICT: 'false'
+      KC_HOSTNAME_STRICT_HTTPS: 'false'
+      KC_CACHE: 'local'
+    ports:
+      - '8090:8090'
+    volumes:
+      - ./docker/keycloak/export:/opt/keycloak/data/import
+
   warnly:
     labels:
       - dev.orbstack.domains=warnly.local
@@ -66,11 +81,18 @@ services:
       - SESSION_KEY=${SESSION_KEY}
       - SERVER_PORT=${SERVER_PORT}
       - SERVER_HOST=${SERVER_HOST}
+      - OIDC_PROVIDER_NAME=${OIDC_PROVIDER_NAME}
+      - OIDC_ISSUER_URL=${OIDC_ISSUER_URL}
+      - OIDC_CLIENT_ID=${OIDC_CLIENT_ID}
+      - OIDC_CLIENT_SECRET=${OIDC_CLIENT_SECRET}
+      - OIDC_REDIRECT_ADDRESS=${OIDC_REDIRECT_ADDRESS}
+      - OIDC_SCOPES=${OIDC_SCOPES}
     depends_on:
       - mysql
       - clickhouse
+      - keycloak
     ports:
-      - 8030:8030
+      - 8080:8080
     volumes:
       - ./:/app
 

@@ -7,10 +7,19 @@ import (
 	"log/slog"
 	"net/http"
 	"strconv"
+	"strings"
+	"time"
 
+	capoidc "github.com/hashicorp/cap/oidc"
 	"github.com/vk-rv/warnly/internal/session"
 	"github.com/vk-rv/warnly/internal/warnly"
 	"github.com/vk-rv/warnly/internal/web"
+)
+
+const (
+	oidcStateTimeout = 2 * time.Minute
+	openid           = "openid"
+	sessionID        = "session"
 )
 
 const defaultPeriod = "14d"
@@ -29,6 +38,7 @@ type rootHandler struct {
 	svc          warnly.SessionService
 	projectSvc   warnly.ProjectService
 	cookieStore  *session.CookieStore
+	oidc         *OIDC
 	logger       *slog.Logger
 	rememberDays int
 }
@@ -39,6 +49,7 @@ func newRootHandler(
 	projectSvc warnly.ProjectService,
 	cookieStore *session.CookieStore,
 	rememberDays int,
+	oidc *OIDC,
 	logger *slog.Logger,
 ) *rootHandler {
 	return &rootHandler{
@@ -47,8 +58,185 @@ func newRootHandler(
 		projectSvc:   projectSvc,
 		rememberDays: rememberDays,
 		cookieStore:  cookieStore,
+		oidc:         oidc,
 		logger:       logger,
 	}
+}
+
+type claims struct {
+	Verified          *bool   `json:"email_verified"`
+	Email             *string `json:"email"`
+	GivenName         *string `json:"given_name"`
+	FamilyName        *string `json:"family_name"`
+	PrefferedUsername *string `json:"preferred_username"`
+	Name              *string `json:"name"`
+	Profile           *string `json:"profile"`
+	Picture           *string `json:"picture"`
+	Sub               *string `json:"sub"`
+	Nonce             *string `json:"nonce"`
+}
+
+// UserData returns user data from claims.
+func (c *claims) UserData() *warnly.GetOrCreateUserRequest {
+	req := &warnly.GetOrCreateUserRequest{}
+	if c.GivenName == nil && c.FamilyName == nil && c.Name != nil {
+		parts := strings.Split(*c.Name, " ")
+		if len(parts) > 1 {
+			req.Name = parts[0]
+			req.Surname = parts[1]
+		}
+	}
+	if c.GivenName != nil && c.FamilyName != nil {
+		req.Name = *c.GivenName
+		req.Surname = *c.FamilyName
+	}
+	if c.PrefferedUsername != nil {
+		req.Username = *c.PrefferedUsername
+	}
+	if c.Email != nil {
+		req.Email = *c.Email
+	}
+	return req
+}
+
+func newOIDCRequest(scopes []string, usePKCE bool, redirect string) (capoidc.Request, warnly.OIDCState, error) {
+	state, err := capoidc.NewID()
+	if err != nil {
+		return nil, warnly.OIDCState{}, fmt.Errorf("failed to generate state: %w", err)
+	}
+	nonce, err := capoidc.NewID()
+	if err != nil {
+		return nil, warnly.OIDCState{}, fmt.Errorf("failed to generate nonce: %w", err)
+	}
+	opts := []capoidc.Option{capoidc.WithState(state), capoidc.WithNonce(nonce)}
+	if len(scopes) > 0 {
+		opts = append(opts, capoidc.WithScopes(scopes...))
+	}
+	if usePKCE {
+		verifier, err := capoidc.NewCodeVerifier()
+		if err != nil {
+			return nil, warnly.OIDCState{}, fmt.Errorf("failed to make pkce verifier: %w", err)
+		}
+		opts = append(opts, capoidc.WithPKCE(verifier))
+	}
+
+	req, err := capoidc.NewRequest(
+		oidcStateTimeout,
+		redirect,
+		opts...,
+	)
+	if err != nil {
+		return nil, warnly.OIDCState{}, fmt.Errorf("failed to create OIDC request: %w", err)
+	}
+
+	oidcState := warnly.OIDCState{
+		State:  state,
+		Nonce:  nonce,
+		Scopes: scopes,
+	}
+	if usePKCE {
+		oidcState.CodeVerifier = req.PKCEVerifier().Verifier()
+	}
+
+	return req, oidcState, nil
+}
+
+func (h *rootHandler) oidcCallback(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	if h.oidc.ProviderName != r.PathValue("provider_name") {
+		h.writeError(ctx, w, http.StatusBadRequest, "oidc callback: invalid provider name", nil)
+		return
+	}
+
+	code, state := r.URL.Query().Get("code"), r.URL.Query().Get("state")
+	if code == "" {
+		h.writeError(ctx, w, http.StatusBadRequest, "oidc callback: no code", nil)
+		return
+	}
+	if state == "" {
+		h.writeError(ctx, w, http.StatusBadRequest, "oidc callback: no state", nil)
+		return
+	}
+
+	sess, err := h.cookieStore.Get(r, sessionID)
+	if err != nil {
+		h.writeError(ctx, w, http.StatusInternalServerError, "oidc callback: get session", err)
+		return
+	}
+
+	cookieState := sess.Values.OIDCState
+	if cookieState.State != state {
+		h.writeError(ctx, w, http.StatusBadRequest, "oidc callback: no oidc states in session", nil)
+		return
+	}
+
+	opts := []capoidc.Option{capoidc.WithState(cookieState.State), capoidc.WithNonce(cookieState.Nonce)}
+	if len(sess.Values.OIDCState.Scopes) > 0 {
+		opts = append(opts, capoidc.WithScopes(cookieState.Scopes...))
+	}
+	if cookieState.CodeVerifier != "" {
+		verifier, err := capoidc.NewCodeVerifier(capoidc.WithVerifier(cookieState.CodeVerifier))
+		if err != nil {
+			h.writeError(ctx, w, http.StatusInternalServerError, "oidc callback: recreate verifier", err)
+			return
+		}
+		opts = append(opts, capoidc.WithPKCE(verifier))
+	}
+	req, err := capoidc.NewRequest(
+		oidcStateTimeout,
+		h.oidc.Callback,
+		opts...,
+	)
+	if err != nil {
+		h.writeError(ctx, w, http.StatusInternalServerError, "oidc callback: recreate request", err)
+		return
+	}
+
+	token, err := h.oidc.Provider.Exchange(ctx, req, state, code)
+	if err != nil {
+		h.writeError(ctx, w, http.StatusInternalServerError, "oidc callback: exchange", err)
+		return
+	}
+	if token.IsExpired() {
+		h.writeError(ctx, w, http.StatusUnauthorized, "oidc callback: token expired", nil)
+		return
+	}
+
+	claims := claims{}
+	if err := token.IDToken().Claims(&claims); err != nil {
+		h.writeError(ctx, w, http.StatusInternalServerError, "oidc callback: claims", err)
+		return
+	}
+	if claims.Nonce == nil || *claims.Nonce != cookieState.Nonce {
+		h.writeError(ctx, w, http.StatusUnauthorized, "oidc callback: nonce mismatch", nil)
+		return
+	}
+
+	userData := claims.UserData()
+	if userData.Email == "" {
+		h.writeError(ctx, w, http.StatusUnauthorized, "oidc callback: email is empty", nil)
+		return
+	}
+
+	result, err := h.svc.GetOrCreateUser(ctx, userData)
+	if err != nil {
+		h.writeError(ctx, w, http.StatusInternalServerError, "oidc callback: get or create user", err)
+		return
+	}
+
+	if err := saveCookie(
+		w,
+		r,
+		h.cookieStore,
+		*result.User,
+		false,
+		h.rememberDays); err != nil {
+		h.writeError(ctx, w, http.StatusInternalServerError, "save cookie oidc callback", err)
+		return
+	}
+
+	http.Redirect(w, r, "/", http.StatusFound)
 }
 
 // index handles the HTTP request to render the main page with a list of issues.
@@ -175,7 +363,7 @@ func (h *rootHandler) destroy(w http.ResponseWriter, r *http.Request) {
 
 // destroySession removes the session cookie.
 func destroySession(w http.ResponseWriter, r *http.Request, cookieStore *session.CookieStore) error {
-	sess, err := cookieStore.Get(r, "sessid")
+	sess, err := cookieStore.Get(r, "session")
 	if err != nil {
 		return fmt.Errorf("get session: %w", err)
 	}
@@ -188,7 +376,35 @@ func destroySession(w http.ResponseWriter, r *http.Request, cookieStore *session
 
 // login handles the HTTP request to render the login page.
 func (h *rootHandler) login(w http.ResponseWriter, r *http.Request) {
-	if err := web.Hello("").Render(r.Context(), w); err != nil {
+	ctx := r.Context()
+
+	authURL := ""
+
+	if h.oidc.Provider != nil {
+		req, oidcState, err := newOIDCRequest(h.oidc.Scopes, h.oidc.UsePkce, h.oidc.Callback)
+		if err != nil {
+			h.writeError(ctx, w, http.StatusInternalServerError, "oidc: new request", err)
+			return
+		}
+		sess, err := h.cookieStore.Get(r, "session")
+		if err != nil {
+			h.writeError(ctx, w, http.StatusInternalServerError, "oidc: get session", err)
+			return
+		}
+		sess.Values.OIDCState = oidcState
+		if err := h.cookieStore.Save(r, w, sess); err != nil {
+			h.writeError(ctx, w, http.StatusInternalServerError, "oidc: save session", err)
+			return
+		}
+		url, err := h.oidc.Provider.AuthURL(ctx, req)
+		if err != nil {
+			h.writeError(ctx, w, http.StatusInternalServerError, "oidc: auth url", err)
+			return
+		}
+		authURL = url
+	}
+
+	if err := web.Login(authURL, h.oidc.ProviderName).Render(ctx, w); err != nil {
 		h.logger.Error("get session: hello web render", slog.Any("error", err))
 	}
 }
@@ -252,7 +468,7 @@ func saveCookie(
 	rememberMe bool,
 	sessionDays int,
 ) error {
-	sess, err := cookieStore.Get(r, "sessid")
+	sess, err := cookieStore.Get(r, "session")
 	if err != nil {
 		return fmt.Errorf("get session: %w", err)
 	}

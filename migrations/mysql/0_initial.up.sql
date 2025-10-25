@@ -4,7 +4,8 @@ CREATE TABLE IF NOT EXISTS `user` (
   `name` varchar(100) NOT NULL,
   `surname` varchar(100) NOT NULL,
   `username` varchar(39) NOT NULL UNIQUE,
-  `password` char(60) NOT NULL,
+  `password` char(60),
+  `auth_method` ENUM('internal', 'oidc') NOT NULL DEFAULT 'internal',
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`)
 );

@@ -1,0 +1,171 @@
+package web 
+
+import "strings"
+
+templ Login(authURL string, providerName string) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<title>Sign in - Warnly</title>
+			<link rel="icon" href="/static/favicon.svg" type="image/svg+xml"/>
+			<script src="https://cdn.tailwindcss.com"></script>
+			<style>
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #fafafa 0%, #f4f4f5 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+        .button-shadow {
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+        .oidc-button {
+            transition: all 0.15s ease;
+        }
+        .oidc-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.1);
+        }
+    </style>
+		</head>
+		<body class="bg-gray-50 min-h-screen font-inter">
+			<div class="min-h-screen flex">
+				<div class="flex-1 flex items-center justify-center px-6 py-12 lg:px-8">
+					<div class="w-full max-w-sm">
+						<div class="text-center mb-8">
+							<h1 class="text-2xl font-semibold text-gray-900 tracking-tight mb-2">
+								Sign in
+							</h1>
+						</div>
+						<div class="space-y-4">
+							<button
+								id="oidcSignIn"
+								onclick={ templ.JSFuncCall("oidcSignIn", templ.JSExpression("event"), authURL) }
+								class="oidc-button w-full flex items-center justify-center px-4 py-3 border border-gray-200 rounded-lg bg-white text-gray-700 font-medium text-sm hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 button-shadow"
+							>
+								<svg class="w-4 h-4 mr-3 text-gray-700" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+									<circle cx="12" cy="8" r="4"></circle>
+									<path d="M12 14c-6.1 0-8 4-8 4v2h16v-2s-1.9-4-8-4z"></path>
+								</svg>
+								Sign in with { strings.ToUpper(providerName[:1]) + providerName[1:] }
+							</button>
+						</div>
+						<p class="mt-8 text-xs text-gray-500 text-center">
+							Running into trouble? 😊 Check out our <a href="https://docs.warnly.io" target="_blank" class="text-gray-700 hover:text-gray-900 underline">documentation</a> — it has answers to most questions!
+						</p>
+					</div>
+				</div>
+				<div class="hidden lg:flex lg:flex-1 lg:flex-col lg:justify-between bg-white border-l border-gray-100">
+					<div class="flex-1 flex flex-col justify-center px-12">
+						<div class="mb-12">
+							<div class="flex items-center mb-8">
+								<br/>
+								<span class="ml-3 text-2xl font-bold text-gray-900 tracking-tight">
+									Warnly
+								</span>
+							</div>
+						</div>
+						<div class="space-y-6">
+							<div class="relative">
+								<div class="absolute left-0 top-2 w-2 h-2 bg-green-500 rounded-full"></div>
+								<div class="pl-6">
+									<h3 class="text-lg font-semibold text-gray-900 mb-2">
+										Self-Hosted Simplicity
+									</h3>
+									<p class="text-gray-600 text-sm leading-relaxed">
+										Take control with self-hosted monitoring that eliminates enterprise complexity and puts you in charge.
+									</p>
+								</div>
+							</div>
+							<div class="relative">
+								<div class="absolute left-0 top-2 w-2 h-2 bg-blue-500 rounded-full"></div>
+								<div class="pl-6">
+									<h3 class="text-lg font-semibold text-gray-900 mb-2">
+										Open-Source Excellence
+									</h3>
+									<p class="text-gray-600 text-sm leading-relaxed">
+										Categorize errors into issues, assign to team members, and keep your apps running smoothly.
+									</p>
+								</div>
+							</div>
+							<div class="relative">
+								<div class="absolute left-0 top-2 w-2 h-2 bg-purple-500 rounded-full"></div>
+								<div class="pl-6">
+									<h3 class="text-lg font-semibold text-gray-900 mb-2">
+										Single Binary Deployment
+									</h3>
+									<p class="text-gray-600 text-sm leading-relaxed">
+										Enjoy essential monitoring features without the overhead.
+									</p>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="px-12 pb-12">
+						<div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-xl p-6">
+							<div class="flex items-start space-x-3">
+								<div class="flex-shrink-0">
+									<div class="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+								</div>
+								<div class="flex-1 min-w-0">
+									<p class="text-sm font-medium text-gray-900 mb-1">
+										Warnly is a MIT-licensed project in alpha stage. If you find it useful, consider contributing to the project.
+									</p>
+									<a href="https://github.com/vk-rv/warnly" target="_blank" rel="noopener" class="inline-flex items-center text-sm text-blue-600 hover:text-blue-700 font-medium group transition-colors">
+										Contribute to the project
+										<svg class="ml-1 w-3 h-3 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6m0-6L10 14"></path>
+										</svg>
+									</a>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div id="loadingOverlay" class="hidden fixed inset-0 bg-white bg-opacity-75 flex items-center justify-center z-50">
+				<div class="flex flex-col items-center">
+					<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mb-4"></div>
+					<p class="text-sm text-gray-600">Redirecting to sign in...</p>
+				</div>
+			</div>
+			<script>
+            
+            function oidcSignIn(event, authURL) {
+                showLoading();
+                setTimeout(() => {
+                window.location.href = authURL;
+                }, 300);
+            }
+
+        function showLoading() {
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.add('hidden');
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const elements = document.querySelectorAll('.oidc-button, h1, p');
+            elements.forEach((el, index) => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(10px)';
+                setTimeout(() => {
+                    el.style.transition = 'all 0.3s ease';
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+        });
+    </script>
+		</body>
+	</html>
+}

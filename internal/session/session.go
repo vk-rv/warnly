@@ -35,7 +35,8 @@ type Session struct {
 }
 
 type Values struct {
-	User warnly.User `cbor:"user"`
+	User      warnly.User      `cbor:"user"`
+	OIDCState warnly.OIDCState `cbor:"oidc"`
 }
 
 type Options struct {

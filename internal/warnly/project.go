@@ -726,6 +726,8 @@ type TeamStore interface {
 	ListTeams(ctx context.Context, userID int) ([]Team, error)
 	// ListTeammates returns a list of teammates for the given team.
 	ListTeammates(ctx context.Context, teamIDs []int) ([]Teammate, error)
+	// AddUserToTeam adds a user to a team.
+	AddUserToTeam(ctx context.Context, createdAt time.Time, userID int64, teamID int) error
 }
 
 // Platform represents the platform of the project.

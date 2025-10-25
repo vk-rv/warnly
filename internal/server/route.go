@@ -6,9 +6,11 @@ import (
 	"io/fs"
 	"log/slog"
 	"net/http"
+	"regexp"
 	"strconv"
 	"time"
 
+	capoidc "github.com/hashicorp/cap/oidc"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/vk-rv/warnly/internal/session"
 	"github.com/vk-rv/warnly/internal/warnly"
@@ -27,11 +29,22 @@ type Backend struct {
 	EventService        warnly.EventService
 	ProjectService      warnly.ProjectService
 	SystemService       warnly.SystemService
+	OIDC                *OIDC
 	Reg                 *prometheus.Registry
 	Logger              *slog.Logger
 	CookieStore         *session.CookieStore
+	EmailMatches        []*regexp.Regexp
 	RememberSessionDays int
 	IsHTTPS             bool
+}
+
+type OIDC struct {
+	ProviderName string
+	Nonce        string
+	Callback     string
+	Provider     *capoidc.Provider
+	Scopes       []string
+	UsePkce      bool
 }
 
 // Handler is a collection of all the service handlers.
@@ -52,9 +65,11 @@ func NewHandler(b *Backend) (*Handler, error) {
 
 	prometheusMw := newPrometheusMW(b.Reg, b.Now)
 
+	emailMatcherMw := newEmailMatcherMW(b.EmailMatches, b.Logger)
+
 	chainWithoutAuth := func(handler http.HandlerFunc) http.HandlerFunc {
-		handler = recoverMw.recover(handler)
 		handler = prometheusMw.recordLatency(handler)
+		handler = recoverMw.recover(handler)
 		csrfMiddleware := http.NewCrossOriginProtection()
 		handler = http.HandlerFunc(csrfMiddleware.Handler(handler).ServeHTTP)
 		return handler
@@ -62,6 +77,9 @@ func NewHandler(b *Backend) (*Handler, error) {
 
 	chain := func(handler http.HandlerFunc) http.HandlerFunc {
 		handler = authenticateMw.authenticate(handler)
+		if len(b.EmailMatches) > 0 {
+			handler = emailMatcherMw.emailMatch(handler)
+		}
 		return chainWithoutAuth(handler)
 	}
 
@@ -82,6 +100,7 @@ func NewHandler(b *Backend) (*Handler, error) {
 		b.ProjectService,
 		b.CookieStore,
 		b.RememberSessionDays,
+		b.OIDC,
 		b.Logger.With(
 			slog.String("handler", "session"),
 		))
@@ -167,6 +186,7 @@ func NewHandler(b *Backend) (*Handler, error) {
 	mux.HandleFunc("GET /login", chainWithoutAuth(rootHandler.login))
 	mux.HandleFunc("POST /login", chainWithoutAuth(rootHandler.create))
 	mux.HandleFunc("GET /", chain(rootHandler.index))
+	mux.HandleFunc("GET /oidc/{provider_name}/callback", chainWithoutAuth(rootHandler.oidcCallback))
 	mux.HandleFunc("GET /api/search/tag-values", chain(rootHandler.listTagValues))
 	mux.HandleFunc("DELETE /session", chain(rootHandler.destroy))
 

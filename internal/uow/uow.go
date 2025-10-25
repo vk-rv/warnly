@@ -30,6 +30,8 @@ type UnitOfWork interface {
 	Mentions() warnly.MentionStore
 	Messages() warnly.MessageStore
 	Assignments() warnly.AssingmentStore
+	Users() warnly.UserStore
+	Teams() warnly.TeamStore
 }
 
 // StartUnitOfWork is a function that starts a UnitOfWork (e.g. database transaction).

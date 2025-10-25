@@ -5,9 +5,13 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/vk-rv/warnly/internal/warnly"
+)
+
+const (
+	authMethodInternal = "internal"
+	authMethodOIDC     = "oidc"
 )
 
 // UserStore provides user operations.
@@ -36,16 +40,36 @@ func (s *UserStore) GetUser(ctx context.Context, email string) (*warnly.User, er
 }
 
 // CreateUser creates a user in the database.
-func (s *UserStore) CreateUser(ctx context.Context, email string, hashedPassword []byte) error {
+func (s *UserStore) CreateUser(ctx context.Context, email, username string, hashedPassword []byte) error {
 	const query = `INSERT INTO user (name, surname, email, password, username) VALUES (?, ?, ?, ?, ?)`
-	atIndex := strings.Index(email, "@")
-	if atIndex == -1 {
-		return fmt.Errorf("invalid email format: %s", email)
-	}
-	username := email[:atIndex]
+
 	_, err := s.db.ExecContext(ctx, query, "John", "Doe", email, hashedPassword, username)
 	if err != nil {
 		return fmt.Errorf("mysql user store: create user: %w", err)
 	}
 	return nil
+}
+
+func (s *UserStore) CreateUserOIDC(ctx context.Context, r *warnly.GetOrCreateUserRequest) (int64, error) {
+	const query = `INSERT INTO user (name, surname, email, username, auth_method) 
+				   VALUES (?, ?, ?, ?, ?)`
+
+	res, err := s.db.ExecContext(
+		ctx,
+		query,
+		r.Name,
+		r.Surname,
+		r.Email,
+		r.Username,
+		authMethodOIDC)
+	if err != nil {
+		return 0, fmt.Errorf("mysql user store: create user: %w", err)
+	}
+
+	id, err := res.LastInsertId()
+	if err != nil {
+		return 0, fmt.Errorf("mysql user store: create user: %w", err)
+	}
+
+	return id, nil
 }

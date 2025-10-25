@@ -2,8 +2,10 @@ package server
 
 import (
 	"bufio"
+	"log/slog"
 	"net"
 	"net/http"
+	"regexp"
 	"strconv"
 	"time"
 
@@ -85,4 +87,44 @@ func (rec *statusRecorder) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 		return nil, nil, http.ErrNotSupported
 	}
 	return hj.Hijack()
+}
+
+type emailMatcherMW struct {
+	logger     *slog.Logger
+	rgxsEmails []*regexp.Regexp
+}
+
+func newEmailMatcherMW(rgxsEmails []*regexp.Regexp, logger *slog.Logger) *emailMatcherMW {
+	return &emailMatcherMW{
+		rgxsEmails: rgxsEmails,
+		logger:     logger,
+	}
+}
+
+func (mw *emailMatcherMW) emailMatch(handler http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
+		user := getUser(ctx)
+
+		matched := false
+		for i := range mw.rgxsEmails {
+			if matched = mw.rgxsEmails[i].MatchString(user.Email); matched {
+				break
+			}
+		}
+		if !matched {
+			mw.logger.Error("authenticate: email matcher, email is not allowed",
+				slog.String("method", r.Method),
+				slog.String("url", r.URL.String()))
+			if r.Header.Get(htmxHeader) != "" {
+				w.Header().Add("Hx-Redirect", "/login")
+			} else {
+				http.Redirect(w, r, "/login", http.StatusSeeOther)
+			}
+			return
+		}
+
+		handler.ServeHTTP(w, r)
+	}
 }

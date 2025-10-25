@@ -9,10 +9,13 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"regexp"
 	"runtime"
 	"strings"
 	"time"
 
+	"github.com/coreos/go-oidc/v3/oidc"
+	capoidc "github.com/hashicorp/cap/oidc"
 	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/patrickmn/go-cache"
@@ -166,7 +169,7 @@ func run(cfg *config, logger *slog.Logger) error {
 
 	now := time.Now
 
-	sessionService := session.NewSessionService(sessionStore, userStore)
+	sessionService := session.NewSessionService(sessionStore, userStore, teamStore, startUOW, now)
 	projectService := project.NewProjectService(
 		projectStore,
 		assingmentStore,
@@ -191,6 +194,41 @@ func run(cfg *config, logger *slog.Logger) error {
 
 	cookieStore := sessionstore.NewCookieStore(now, cfg.SessionKey)
 
+	var (
+		oidcProvider *capoidc.Provider
+		oidcCallback string
+		rgxsEmails   []*regexp.Regexp
+	)
+	if cfg.OIDCProvider.ProviderName != "" {
+		if len(cfg.OIDCProvider.EmailMatches) > 0 {
+			rgxsEmails = make([]*regexp.Regexp, 0, len(cfg.OIDCProvider.EmailMatches))
+			for _, em := range cfg.OIDCProvider.EmailMatches {
+				rgx, err := regexp.Compile(em)
+				if err != nil {
+					return fmt.Errorf("failed compiling email matches string for pattern: %s: %w", em, err)
+				}
+				rgxsEmails = append(rgxsEmails, rgx)
+			}
+		}
+		cfg.OIDCProvider.RedirectAddress = strings.TrimSuffix(cfg.OIDCProvider.RedirectAddress, "/")
+		oidcCallback = cfg.OIDCProvider.RedirectAddress + "/oidc/" + cfg.OIDCProvider.ProviderName + "/callback"
+		oidcCfg, err := capoidc.NewConfig(
+			cfg.OIDCProvider.IssuerURL,
+			cfg.OIDCProvider.ClientID,
+			capoidc.ClientSecret(cfg.OIDCProvider.ClientSecret),
+			[]capoidc.Alg{oidc.RS256},
+			[]string{oidcCallback},
+		)
+		if err != nil {
+			return fmt.Errorf("create oidc config: %w", err)
+		}
+		oidcProvider, err = capoidc.NewProvider(oidcCfg)
+		if err != nil {
+			return fmt.Errorf("create oidc provider: %w", err)
+		}
+		defer oidcProvider.Done()
+	}
+
 	var handler http.Handler
 	handler, err = server.NewHandler(&server.Backend{
 		SessionStore:        sessionStore,
@@ -205,6 +243,14 @@ func run(cfg *config, logger *slog.Logger) error {
 		Reg:                 reg,
 		Now:                 now,
 		Logger:              logger,
+		OIDC: &server.OIDC{
+			ProviderName: cfg.OIDCProvider.ProviderName,
+			Provider:     oidcProvider,
+			UsePkce:      cfg.OIDCProvider.UsePKCE,
+			Scopes:       cfg.OIDCProvider.Scopes,
+			Callback:     oidcCallback,
+		},
+		EmailMatches: rgxsEmails,
 	})
 	if err != nil {
 		return err
@@ -369,7 +415,18 @@ func startTracing(ctx context.Context, serviceName, reporterURI string, probabil
 	return traceProvider, nil
 }
 
+//nolint:tagalign // later
 type config struct {
+	OIDCProvider struct {
+		ProviderName    string   `env:"OIDC_PROVIDER_NAME"`
+		IssuerURL       string   `env:"OIDC_ISSUER_URL"`
+		ClientID        string   `env:"OIDC_CLIENT_ID"`
+		ClientSecret    string   `env:"OIDC_CLIENT_SECRET"`
+		RedirectAddress string   `env:"OIDC_REDIRECT_ADDRESS"`
+		Scopes          []string `env:"OIDC_SCOPES"`
+		EmailMatches    []string `env:"OIDC_EMAIL_MATCHES"`
+		UsePKCE         bool     `env:"OIDC_USE_PKCE" env-default:"true"`
+	}
 	User struct {
 		Email    string `env:"USER_EMAIL"    env-required:"true"`
 		Password string `env:"USER_PASSWORD" env-required:"true"`

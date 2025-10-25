@@ -3,6 +3,7 @@ package mysql
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/vk-rv/warnly/internal/warnly"
 )
@@ -94,4 +95,14 @@ func (s *TeamStore) ListTeams(ctx context.Context, userID int) ([]warnly.Team, e
 	}
 
 	return teams, nil
+}
+
+// AddUserToTeam adds a user to a team.
+func (s *TeamStore) AddUserToTeam(ctx context.Context, createdAt time.Time, userID int64, teamID int) error {
+	const query = `INSERT INTO team_relation (created_at, team_id, user_id) VALUES (?, ?, ?)`
+	_, err := s.db.ExecContext(ctx, query, createdAt, teamID, userID)
+	if err != nil {
+		return fmt.Errorf("mysql team store: add user to team: %w", err)
+	}
+	return nil
 }

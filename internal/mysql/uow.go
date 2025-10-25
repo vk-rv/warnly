@@ -16,6 +16,8 @@ type unitOfWork struct {
 	messageStore    *MessageStore
 	mentionStore    *MentionStore
 	assingmentStore *AssingmentStore
+	userStore       *UserStore
+	teamStore       *TeamStore
 	tx              *sql.Tx
 	t               uow.Type
 }
@@ -89,6 +91,12 @@ func (uw *unitOfWork) Mentions() warnly.MentionStore { return uw.mentionStore }
 //nolint:ireturn // temporary
 func (uw *unitOfWork) Assignments() warnly.AssingmentStore { return uw.assingmentStore }
 
+//nolint:ireturn // temporary
+func (uw *unitOfWork) Users() warnly.UserStore { return uw.userStore }
+
+//nolint:ireturn // temporary
+func (uw *unitOfWork) Teams() warnly.TeamStore { return uw.teamStore }
+
 // add adds repository to the unitOfWork
 // by setting its db field to the current transaction.
 func (uw *unitOfWork) add(r any) error {
@@ -112,6 +120,20 @@ func (uw *unitOfWork) add(r any) error {
 			r := *rep
 			r.db = uw.tx
 			uw.assingmentStore = &r
+		}
+		return nil
+	case *UserStore:
+		if uw.userStore == nil {
+			r := *rep
+			r.db = uw.tx
+			uw.userStore = &r
+		}
+		return nil
+	case *TeamStore:
+		if uw.teamStore == nil {
+			r := *rep
+			r.db = uw.tx
+			uw.teamStore = &r
 		}
 		return nil
 	default:
