@@ -170,7 +170,7 @@ func (h *rootHandler) oidcCallback(w http.ResponseWriter, r *http.Request) {
 		h.writeError(ctx, w, http.StatusBadRequest, "oidc callback: no oidc states in session", nil)
 		return
 	}
-	
+
 	sess.Values.OIDCState = warnly.OIDCState{}
 
 	opts := []capoidc.Option{capoidc.WithState(cookieState.State), capoidc.WithNonce(cookieState.Nonce)}
