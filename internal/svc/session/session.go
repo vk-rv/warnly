@@ -41,6 +41,18 @@ func NewSessionService(
 
 // SignIn authenticates a user by email and password.
 func (s *SessionService) SignIn(ctx context.Context, creds *warnly.Credentials) (*warnly.Session, error) {
+	user, err := s.userStore.GetUser(ctx, creds.Email)
+	if err != nil {
+		if errors.Is(err, warnly.ErrNotFound) {
+			return nil, warnly.ErrInvalidLoginCredentials
+		}
+		return nil, err
+	}
+
+	if user.AuthMethod == warnly.AuthMethodOIDC {
+		return nil, warnly.ErrInvalidAuthMethod
+	}
+
 	hashedPassword, err := s.sessionStore.GetHashedPassword(ctx, creds.Email)
 	if err != nil {
 		if errors.Is(err, warnly.ErrNotFound) {
@@ -54,14 +66,6 @@ func (s *SessionService) SignIn(ctx context.Context, creds *warnly.Credentials) 
 			return nil, warnly.ErrInvalidLoginCredentials
 		}
 		return nil, fmt.Errorf("bcrypt compare hash and password: %w", err)
-	}
-
-	user, err := s.userStore.GetUser(ctx, creds.Email)
-	if err != nil {
-		if errors.Is(err, warnly.ErrNotFound) {
-			return nil, warnly.ErrInvalidLoginCredentials
-		}
-		return nil, err
 	}
 
 	return &warnly.Session{User: user}, nil

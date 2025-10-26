@@ -53,6 +53,8 @@ func (mw *authMw) authenticate(handler http.HandlerFunc) http.HandlerFunc {
 }
 
 // NewContextWithUser is a helper function to add user to context.
+//
+//nolint:gocritic // This is safe because we ensure that the user is set in the context
 func NewContextWithUser(ctx context.Context, user warnly.User) context.Context {
 	return context.WithValue(ctx, userContextKey, user)
 }

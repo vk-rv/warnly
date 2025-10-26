@@ -9,11 +9,6 @@ import (
 	"github.com/vk-rv/warnly/internal/warnly"
 )
 
-const (
-	authMethodInternal = "internal"
-	authMethodOIDC     = "oidc"
-)
-
 // UserStore provides user operations.
 type UserStore struct {
 	db ExtendedDB
@@ -27,9 +22,15 @@ func NewUserStore(db ExtendedDB) *UserStore {
 // GetUser returns a user by email.
 // Returns warnly.ErrNotFound if user with the given email does not exist.
 func (s *UserStore) GetUser(ctx context.Context, email string) (*warnly.User, error) {
-	const query = `SELECT id, email, name, surname, username FROM user WHERE email = ?`
+	const query = `SELECT id, email, name, surname, username, auth_method FROM user WHERE email = ?`
 	user := warnly.User{}
-	err := s.db.QueryRowContext(ctx, query, email).Scan(&user.ID, &user.Email, &user.Name, &user.Surname, &user.Username)
+	err := s.db.QueryRowContext(ctx, query, email).Scan(
+		&user.ID,
+		&user.Email,
+		&user.Name,
+		&user.Surname,
+		&user.Username,
+		&user.AuthMethod)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, fmt.Errorf("%w: %s", warnly.ErrNotFound, email)
@@ -61,7 +62,7 @@ func (s *UserStore) CreateUserOIDC(ctx context.Context, r *warnly.GetOrCreateUse
 		r.Surname,
 		r.Email,
 		r.Username,
-		authMethodOIDC)
+		warnly.AuthMethodOIDC)
 	if err != nil {
 		return 0, fmt.Errorf("mysql user store: create user: %w", err)
 	}

@@ -9,10 +9,23 @@ import (
 	"strings"
 )
 
+// AuthMethod represents the authentication method.
+type AuthMethod string
+
+const (
+	// AuthMethodInternal is the default authentication method.
+	AuthMethodInternal AuthMethod = "internal"
+	// AuthMethodOIDC is the authentication method for OIDC.
+	AuthMethodOIDC AuthMethod = "oidc"
+)
+
 const DefaultTeamID = 1
 
 // ErrInvalidLoginCredentials is returned when the provided login credentials are invalid.
 var ErrInvalidLoginCredentials = errors.New("invalid login credentials")
+
+// ErrInvalidAuthMethod is returned when the provided authentication method is invalid.
+var ErrInvalidAuthMethod = errors.New("invalid authentication method")
 
 // ErrNotFound is returned when an entity is not found in the database.
 // It overrides sql.ErrNoRows to avoid leaking database implementation details.
@@ -20,11 +33,12 @@ var ErrNotFound = errors.New("entity was not found in database")
 
 // User represents a user in the system.
 type User struct {
-	Email    string `cbor:"email"`
-	Name     string `cbor:"name"`
-	Surname  string `cbor:"surname"`
-	Username string `cbor:"username"`
-	ID       int64  `cbor:"id"`
+	Email      string     `cbor:"email"`
+	Name       string     `cbor:"name"`
+	Surname    string     `cbor:"surname"`
+	Username   string     `cbor:"username"`
+	AuthMethod AuthMethod `cbor:"auth_method"`
+	ID         int64      `cbor:"id"`
 }
 
 type OIDCState struct {

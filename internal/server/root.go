@@ -29,6 +29,8 @@ const (
 	msgInvalidLoginCredentials = "Invalid login credentials."
 	// msgSomethingWentWrong is a generic error message displayed to the user when an unexpected error occurs.
 	msgSomethingWentWrong = "Something went wrong. Check application logs for more details."
+	// msgInvalidAuthMethod is a message displayed to the user when the authentication method is invalid.
+	msgInvalidAuthMethod = "Invalid authentication method. Ask your administrator to set up OIDC."
 )
 
 // rootHandler handles HTTP requests related to user sessions and the main page.
@@ -435,6 +437,13 @@ func (h *rootHandler) create(w http.ResponseWriter, r *http.Request) {
 				h.logger.Error("create new session: login web render", slog.Any("error", err))
 			}
 			return
+		case errors.Is(err, warnly.ErrInvalidAuthMethod):
+			h.logger.Error("create new session: invalid auth method",
+				slog.Any("error", err),
+				slog.String("email", credentials.Email))
+			if err = web.Login(msgInvalidAuthMethod, "", h.oidc.ProviderName).Render(ctx, w); err != nil {
+				h.logger.Error("create new session: login web render", slog.Any("error", err))
+			}
 		default:
 			h.logger.Error("create new session: sign in", slog.Any("error", err))
 			if err = web.Login(msgSomethingWentWrong, "", h.oidc.ProviderName).Render(ctx, w); err != nil {
@@ -462,6 +471,8 @@ func (h *rootHandler) create(w http.ResponseWriter, r *http.Request) {
 }
 
 // saveCookie saves the user information in a session cookie.
+//
+//nolint:gocritic // This is safe because we ensure that the user is set in the context
 func saveCookie(
 	w http.ResponseWriter,
 	r *http.Request,
