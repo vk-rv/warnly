@@ -62,6 +62,8 @@ func (u *User) FullName() string {
 type UserStore interface {
 	// GetUser retrieves a user by email.
 	GetUser(ctx context.Context, email string) (*User, error)
+	// GetUserByIdentifier retrieves a user by identifier (email or username).
+	GetUserByIdentifier(ctx context.Context, identifier UserIdentifier) (*User, error)
 	// CreateUser creates a new user with the provided email and hashed password.
 	CreateUser(ctx context.Context, email, username string, hashedPassword []byte) error
 	// CreateUserOIDC creates a new user with the provided email and oidc claims.
@@ -77,11 +79,13 @@ type Session struct {
 type SessionStore interface {
 	// GetHashedPassword retrieves the hashed password for a given email.
 	GetHashedPassword(ctx context.Context, email string) ([]byte, error)
+	// GetHashedPasswordByIdentifier retrieves the hashed password for a given identifier.
+	GetHashedPasswordByIdentifier(ctx context.Context, identifier UserIdentifier) ([]byte, error)
 }
 
 // SessionService defines methods for session management.
 type SessionService interface {
-	// SignIn authenticates a user by email and password.
+	// SignIn authenticates a user by email or username and password.
 	SignIn(ctx context.Context, credentials *Credentials) (*Session, error)
 	// GetOrCreateUser creates a new user if it does not exist in the database
 	// or returns the existing user.
@@ -98,10 +102,16 @@ type GetOrCreateUserRequest struct {
 
 // Credentials represents user login credentials.
 type Credentials struct {
-	Email      string
+	Identifier string // Can be email or username
 	Password   string
 	Token      string
 	RememberMe bool
+}
+
+// UserIdentifier represents a user identifier that can be either email or username.
+type UserIdentifier struct {
+	Value   string
+	IsEmail bool
 }
 
 // UsernameFromEmail returns the username from the email.

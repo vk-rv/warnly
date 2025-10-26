@@ -40,6 +40,32 @@ func (s *UserStore) GetUser(ctx context.Context, email string) (*warnly.User, er
 	return &user, nil
 }
 
+// GetUserByIdentifier returns a user by identifier (email or username).
+// Returns warnly.ErrNotFound if user with the given identifier does not exist.
+func (s *UserStore) GetUserByIdentifier(ctx context.Context, identifier warnly.UserIdentifier) (*warnly.User, error) {
+	var query string
+	if identifier.IsEmail {
+		query = `SELECT id, email, name, surname, username, auth_method FROM user WHERE email = ?`
+	} else {
+		query = `SELECT id, email, name, surname, username, auth_method FROM user WHERE username = ?`
+	}
+	user := warnly.User{}
+	err := s.db.QueryRowContext(ctx, query, identifier.Value).Scan(
+		&user.ID,
+		&user.Email,
+		&user.Name,
+		&user.Surname,
+		&user.Username,
+		&user.AuthMethod)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, fmt.Errorf("%w: %s", warnly.ErrNotFound, identifier.Value)
+		}
+		return nil, fmt.Errorf("mysql user store: get user by identifier: %w", err)
+	}
+	return &user, nil
+}
+
 // CreateUser creates a user in the database.
 func (s *UserStore) CreateUser(ctx context.Context, email, username string, hashedPassword []byte) error {
 	const query = `INSERT INTO user (name, surname, email, password, username) VALUES (?, ?, ?, ?, ?)`

@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/vk-rv/warnly/internal/uow"
@@ -39,9 +40,14 @@ func NewSessionService(
 	}
 }
 
-// SignIn authenticates a user by email and password.
+// SignIn authenticates a user by email or username and password.
 func (s *SessionService) SignIn(ctx context.Context, creds *warnly.Credentials) (*warnly.Session, error) {
-	user, err := s.userStore.GetUser(ctx, creds.Email)
+	identifier := warnly.UserIdentifier{
+		Value:   creds.Identifier,
+		IsEmail: strings.Contains(creds.Identifier, "@"),
+	}
+
+	user, err := s.userStore.GetUserByIdentifier(ctx, identifier)
 	if err != nil {
 		if errors.Is(err, warnly.ErrNotFound) {
 			return nil, warnly.ErrInvalidLoginCredentials
@@ -53,7 +59,7 @@ func (s *SessionService) SignIn(ctx context.Context, creds *warnly.Credentials) 
 		return nil, warnly.ErrInvalidAuthMethod
 	}
 
-	hashedPassword, err := s.sessionStore.GetHashedPassword(ctx, creds.Email)
+	hashedPassword, err := s.sessionStore.GetHashedPasswordByIdentifier(ctx, identifier)
 	if err != nil {
 		if errors.Is(err, warnly.ErrNotFound) {
 			return nil, warnly.ErrInvalidLoginCredentials

@@ -421,7 +421,7 @@ func (h *rootHandler) create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	credentials := &warnly.Credentials{
-		Email:      r.PostFormValue("email"),
+		Identifier: r.PostFormValue("identifier"),
 		Password:   r.PostFormValue("password"),
 		RememberMe: r.PostFormValue("remember-me") == "on",
 	}
@@ -432,7 +432,7 @@ func (h *rootHandler) create(w http.ResponseWriter, r *http.Request) {
 		case errors.Is(err, warnly.ErrInvalidLoginCredentials):
 			h.logger.Error("create new session: invalid login credentials",
 				slog.Any("error", err),
-				slog.String("email", credentials.Email))
+				slog.String("identifier", credentials.Identifier))
 			if err = web.Login(msgInvalidLoginCredentials, "", h.oidc.ProviderName).Render(ctx, w); err != nil {
 				h.logger.Error("create new session: login web render", slog.Any("error", err))
 			}
@@ -440,7 +440,7 @@ func (h *rootHandler) create(w http.ResponseWriter, r *http.Request) {
 		case errors.Is(err, warnly.ErrInvalidAuthMethod):
 			h.logger.Error("create new session: invalid auth method",
 				slog.Any("error", err),
-				slog.String("email", credentials.Email))
+				slog.String("identifier", credentials.Identifier))
 			if err = web.Login(msgInvalidAuthMethod, "", h.oidc.ProviderName).Render(ctx, w); err != nil {
 				h.logger.Error("create new session: login web render", slog.Any("error", err))
 			}

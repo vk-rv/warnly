@@ -33,3 +33,23 @@ func (s *SessionStore) GetHashedPassword(ctx context.Context, email string) ([]b
 	}
 	return hashedPassword, nil
 }
+
+// GetHashedPasswordByIdentifier returns a hashed password by identifier (email or username).
+// Returns warnly.ErrNotFound if user with the given identifier does not exist.
+func (s *SessionStore) GetHashedPasswordByIdentifier(ctx context.Context, identifier warnly.UserIdentifier) ([]byte, error) {
+	var query string
+	if identifier.IsEmail {
+		query = `SELECT password FROM user WHERE email = ?`
+	} else {
+		query = `SELECT password FROM user WHERE username = ?`
+	}
+	var hashedPassword []byte
+	err := s.db.QueryRowContext(ctx, query, identifier.Value).Scan(&hashedPassword)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, fmt.Errorf("%w: %s", warnly.ErrNotFound, identifier.Value)
+		}
+		return nil, fmt.Errorf("mysql session store: get hashed password by identifier: %w", err)
+	}
+	return hashedPassword, nil
+}
