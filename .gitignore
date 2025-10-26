@@ -8,3 +8,4 @@ tmp
 *.db
 .trunk
 warnly
+cmd/simulate_load.sh

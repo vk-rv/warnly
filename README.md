@@ -23,9 +23,9 @@ Enterprise-focused solutions tend to prioritize complex features that create unn
 
 For more details, see [About Warnly](https://docs.warnly.io/).
 
-## Download
+## Demo
 
-See the [download page](https://warnly.io/download) on the Warnly website.
+Try the demo application at [https://demo.warnly.io](https://demo.warnly.io). The infrastructure is graciously provided by VPSDime. Use username `admin` and password `admin` to sign in.
 
 ## Documentation
 
