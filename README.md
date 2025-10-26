@@ -25,7 +25,7 @@ For more details, see [About Warnly](https://docs.warnly.io/).
 
 ## Demo
 
-Try the demo application at [https://demo.warnly.io](https://demo.warnly.io). The infrastructure is graciously provided by [VPSDime](https://vpsdime.com/). Use username `admin` and password `admin` to sign in.
+Try the demo application at [https://demo.warnly.io](https://demo.warnly.io). Use username `admin` and password `admin` to sign in. The infrastructure is graciously provided by [VPSDime](https://vpsdime.com/).
 
 ## Documentation
 
