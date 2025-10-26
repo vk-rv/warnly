@@ -251,6 +251,7 @@ func run(cfg *config, logger *slog.Logger) error {
 			Callback:     oidcCallback,
 			EmailMatches: rgxsEmails,
 		},
+		IsDemo: cfg.IsDemo,
 	})
 	if err != nil {
 		return err
@@ -460,4 +461,5 @@ type config struct {
 	Database           mysql.DBConfig
 	RemeberSessionDays int  `env:"REMEMBER_SESSION_DAYS" env-default:"30"`
 	ForceMigrate       bool `env:"FORCE_MIGRATE"         env-default:"false"`
+	IsDemo             bool `env:"IS_DEMO"               env-default:"false"`
 }

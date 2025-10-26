@@ -2,7 +2,7 @@ package web
 
 import "strings"
 
-templ Login(errorMsg string, authURL string, providerName string) {
+templ Login(errorMsg string, authURL string, providerName string, isDemo bool) {
 	<!DOCTYPE html>
 	<html lang="en">
 		<head>
@@ -163,17 +163,31 @@ templ Login(errorMsg string, authURL string, providerName string) {
 								<div class="flex-shrink-0">
 									<div class="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
 								</div>
-								<div class="flex-1 min-w-0">
-									<p class="text-sm font-medium text-gray-900 mb-1">
-										Warnly is a MIT-licensed project in alpha stage. If you find it useful, consider contributing to the project.
-									</p>
-									<a href="https://github.com/vk-rv/warnly" target="_blank" rel="noopener" class="inline-flex items-center text-sm text-blue-600 hover:text-blue-700 font-medium group transition-colors">
-										Contribute to the project
-										<svg class="ml-1 w-3 h-3 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6m0-6L10 14"></path>
-										</svg>
-									</a>
-								</div>
+								if isDemo {
+									<div class="flex-1 min-w-0">
+										<p class="text-sm font-medium text-gray-900 mb-1">
+											This demo is graciously sponsored by VPSDime ❤️
+										</p>
+										<a href="https://vpsdime.com/" target="_blank" rel="noopener" class="inline-flex items-center text-sm text-blue-600 hover:text-blue-700 font-medium group transition-colors">
+											Visit VPSDime
+											<svg class="ml-1 w-3 h-3 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6m0-6L10 14"></path>
+											</svg>
+										</a>
+									</div>
+								} else {
+									<div class="flex-1 min-w-0">
+										<p class="text-sm font-medium text-gray-900 mb-1">
+											Warnly is a MIT-licensed project in alpha stage. If you find it useful, consider contributing to the project.
+										</p>
+										<a href="https://github.com/vk-rv/warnly" target="_blank" rel="noopener" class="inline-flex items-center text-sm text-blue-600 hover:text-blue-700 font-medium group transition-colors">
+											Contribute to the project
+											<svg class="ml-1 w-3 h-3 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6m0-6L10 14"></path>
+											</svg>
+										</a>
+									</div>
+								}
 							</div>
 						</div>
 					</div>

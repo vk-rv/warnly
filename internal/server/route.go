@@ -35,6 +35,7 @@ type Backend struct {
 	CookieStore         *session.CookieStore
 	RememberSessionDays int
 	IsHTTPS             bool
+	IsDemo              bool
 }
 
 type OIDC struct {
@@ -101,6 +102,7 @@ func NewHandler(b *Backend) (*Handler, error) {
 		b.CookieStore,
 		b.RememberSessionDays,
 		b.OIDC,
+		b.IsDemo,
 		b.Logger.With(
 			slog.String("handler", "session"),
 		))

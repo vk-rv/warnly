@@ -43,6 +43,7 @@ type rootHandler struct {
 	oidc         *OIDC
 	logger       *slog.Logger
 	rememberDays int
+	isDemo       bool
 }
 
 // newRootHandler creates a new rootHandler instance.
@@ -52,6 +53,7 @@ func newRootHandler(
 	cookieStore *session.CookieStore,
 	rememberDays int,
 	oidc *OIDC,
+	isDemo bool,
 	logger *slog.Logger,
 ) *rootHandler {
 	return &rootHandler{
@@ -61,6 +63,7 @@ func newRootHandler(
 		rememberDays: rememberDays,
 		cookieStore:  cookieStore,
 		oidc:         oidc,
+		isDemo:       isDemo,
 		logger:       logger,
 	}
 }
@@ -356,7 +359,7 @@ func (h *rootHandler) writeIndex(w http.ResponseWriter, r *http.Request, res *wa
 func (h *rootHandler) destroy(w http.ResponseWriter, r *http.Request) {
 	if err := destroySession(w, r, h.cookieStore); err != nil {
 		h.logger.Error("destroy session: destroy", slog.Any("error", err))
-		if err = web.Login("", "", h.oidc.ProviderName).Render(r.Context(), w); err != nil {
+		if err = web.Login("", "", h.oidc.ProviderName, h.isDemo).Render(r.Context(), w); err != nil {
 			h.logger.Error("destroy session: login web render", slog.Any("error", err))
 		}
 		return
@@ -408,7 +411,7 @@ func (h *rootHandler) login(w http.ResponseWriter, r *http.Request) {
 		authURL = url
 	}
 
-	if err := web.Login("", authURL, h.oidc.ProviderName).Render(ctx, w); err != nil {
+	if err := web.Login("", authURL, h.oidc.ProviderName, h.isDemo).Render(ctx, w); err != nil {
 		h.logger.Error("get session: hello web render", slog.Any("error", err))
 	}
 }
@@ -433,7 +436,7 @@ func (h *rootHandler) create(w http.ResponseWriter, r *http.Request) {
 			h.logger.Error("create new session: invalid login credentials",
 				slog.Any("error", err),
 				slog.String("identifier", credentials.Identifier))
-			if err = web.Login(msgInvalidLoginCredentials, "", h.oidc.ProviderName).Render(ctx, w); err != nil {
+			if err = web.Login(msgInvalidLoginCredentials, "", h.oidc.ProviderName, h.isDemo).Render(ctx, w); err != nil {
 				h.logger.Error("create new session: login web render", slog.Any("error", err))
 			}
 			return
@@ -441,12 +444,12 @@ func (h *rootHandler) create(w http.ResponseWriter, r *http.Request) {
 			h.logger.Error("create new session: invalid auth method",
 				slog.Any("error", err),
 				slog.String("identifier", credentials.Identifier))
-			if err = web.Login(msgInvalidAuthMethod, "", h.oidc.ProviderName).Render(ctx, w); err != nil {
+			if err = web.Login(msgInvalidAuthMethod, "", h.oidc.ProviderName, h.isDemo).Render(ctx, w); err != nil {
 				h.logger.Error("create new session: login web render", slog.Any("error", err))
 			}
 		default:
 			h.logger.Error("create new session: sign in", slog.Any("error", err))
-			if err = web.Login(msgSomethingWentWrong, "", h.oidc.ProviderName).Render(ctx, w); err != nil {
+			if err = web.Login(msgSomethingWentWrong, "", h.oidc.ProviderName, h.isDemo).Render(ctx, w); err != nil {
 				h.logger.Error("create new session: login web render", slog.Any("error", err))
 			}
 			return
@@ -461,7 +464,7 @@ func (h *rootHandler) create(w http.ResponseWriter, r *http.Request) {
 		credentials.RememberMe,
 		h.rememberDays); err != nil {
 		h.logger.Error("create new session: save cookie", slog.Any("error", err))
-		if err = web.Login(msgSomethingWentWrong, "", h.oidc.ProviderName).Render(ctx, w); err != nil {
+		if err = web.Login(msgSomethingWentWrong, "", h.oidc.ProviderName, h.isDemo).Render(ctx, w); err != nil {
 			h.logger.Error("create new session: login web render", slog.Any("error", err))
 		}
 		return
