@@ -128,6 +128,8 @@ func TestServer_HandleProjectDetails(t *testing.T) {
 				bluemonday.NewPolicy(),
 				testBaseURL,
 				testBaseScheme,
+				testBaseURL,
+				testBaseScheme,
 				nowTime,
 				logger,
 			)

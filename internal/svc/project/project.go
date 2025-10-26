@@ -36,6 +36,8 @@ type ProjectService struct {
 	logger          *slog.Logger
 	baseURL         string
 	scheme          string
+	publicBaseURL   string
+	publicScheme    string
 }
 
 // NewProjectService is a constructor of project service.
@@ -51,6 +53,8 @@ func NewProjectService(
 	policy *bluemonday.Policy,
 	baseURL string,
 	scheme string,
+	publicBaseURL string,
+	publicScheme string,
 	now func() time.Time,
 	logger *slog.Logger,
 ) *ProjectService {
@@ -64,6 +68,8 @@ func NewProjectService(
 		analyticsStore:  analyticsStore,
 		baseURL:         baseURL,
 		scheme:          scheme,
+		publicBaseURL:   publicBaseURL,
+		publicScheme:    publicScheme,
 		uow:             uw,
 		sanitizerPolicy: policy,
 		logger:          logger,
@@ -114,7 +120,7 @@ func (s *ProjectService) CreateProject(
 	return &warnly.ProjectInfo{
 		ID:   project.ID,
 		Name: project.Name,
-		DSN:  projectDSN(project.ID, project.Key, s.baseURL, s.scheme),
+		DSN:  projectDSN(project.ID, project.Key, s.publicBaseURL, s.publicScheme),
 	}, nil
 }
 

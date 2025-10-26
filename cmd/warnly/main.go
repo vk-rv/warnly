@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
 	"regexp"
@@ -169,6 +170,19 @@ func run(cfg *config, logger *slog.Logger) error {
 
 	now := time.Now
 
+	var publicBaseURL, publicScheme string
+	if cfg.PublicIngestURL == "" {
+		publicBaseURL = net.JoinHostPort(cfg.Server.Host, cfg.Server.Port)
+		publicScheme = cfg.Server.Scheme
+	} else {
+		u, err := url.Parse(cfg.PublicIngestURL)
+		if err != nil {
+			return fmt.Errorf("parse public ingest URL: %w", err)
+		}
+		publicScheme = u.Scheme
+		publicBaseURL = u.Host
+	}
+
 	sessionService := session.NewSessionService(sessionStore, userStore, teamStore, startUOW, now)
 	projectService := project.NewProjectService(
 		projectStore,
@@ -182,6 +196,8 @@ func run(cfg *config, logger *slog.Logger) error {
 		sanitizerPolicy,
 		net.JoinHostPort(cfg.Server.Host, cfg.Server.Port),
 		cfg.Server.Scheme,
+		publicBaseURL,
+		publicScheme,
 		now,
 		logger.With(slog.String("service", "project")))
 	systemService := system.NewSystemService(olap, now, logger.With(slog.String("service", "system")))
@@ -457,6 +473,7 @@ type config struct {
 		ServiceName string  `env:"TRACING_SERVICE_NAME" env-default:"warnly"`
 		Probability float64 `env:"TRACING_PROBABILITY"  env-default:"1.0"`
 	}
+	PublicIngestURL    string `env:"PUBLIC_INGEST_URL"`
 	SessionKey         []byte `env:"SESSION_KEY" env-required:"true"`
 	Database           mysql.DBConfig
 	RemeberSessionDays int  `env:"REMEMBER_SESSION_DAYS" env-default:"30"`
