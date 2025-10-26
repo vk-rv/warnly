@@ -116,11 +116,11 @@ templ htmlHeader(title string) {
 templ sidebar(currentPage string, user *warnly.User) {
 	<aside id="sidebar" class="sidebar" x-data={ fmt.Sprintf("{ activePage: '%s' }", currentPage) }>
 		<a href="" hx-get="/" hx-target="#content" hx-swap="outerHTML settle:0" hx-push-url="true" @click="activePage = '/'" class="p-4 flex items-center gap-2 cursor-pointer">
-			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" class="h-8 w-8 bg-gray-700" fill="none" stroke="gray" stroke-width="1.2" aria-labelledby="birdBellEye">
+			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" class="h-8 w-8" fill="none" stroke="currentColor" stroke-width="1.2" aria-labelledby="birdBellEye">
 				<title id="birdBellEye">Bird carrying a bell with elegant eye</title>
 				<path
 					fill="none"
-					stroke="black"
+					stroke="currentColor"
 					stroke-width="1.2"
 					fill-rule="evenodd"
 					clip-rule="evenodd"
