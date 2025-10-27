@@ -36,7 +36,33 @@ templ Layout(title string, content templ.Component, activePage string, user *war
 	<!DOCTYPE html>
 	<html lang="en">
 		@htmlHeader(title)
-		<body>
+		<body class="mobile-body">
+			<div class="mobile-header">
+				<button id="mobile-menu-toggle" class="mobile-menu-btn" onclick="toggleMobileMenu()">
+					<svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+					</svg>
+				</button>
+				<div class="mobile-logo">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.2">
+						<path
+							fill="none"
+							stroke="currentColor"
+							stroke-width="1.2"
+							fill-rule="evenodd"
+							clip-rule="evenodd"
+							d="M10.5 2.6C9.4 2.6 8.5 3.1 7.8 3.8C7.2 4.5 6.9 5.4 7 6.3L4.2 5.2C3.9 5.1 3.6 5.2 3.5 5.5C3.3 5.9 3.2 6.4 3.2 6.9C3.2 8 3.8 9 4.9 9.5C4.5 9.6 4.2 9.6 3.9 9.5C4.1 10.7 5 11.7 6.1 11.9C5.1 12.5 3.8 12.8 2.5 12.7C3.7 13.4 5.2 13.8 6.8 13.8C9.6 13.8 12.1 12.2 13.1 9.3C13.4 8.4 13.6 7.4 13.6 6.5C13.6 6.3 13.6 6 13.5 5.8L14.1 5.3C14.4 5.1 14.3 4.7 13.9 4.6L12.6 4.4C12.2 3.6 11.4 2.6 10.5 2.6ZM11.1 3.5C11.7 3.5 12.2 4 12.2 4.6C12.2 5.2 11.7 5.7 11.1 5.7C10.6 5.7 10.1 5.2 10.1 4.6C10.1 4 10.6 3.5 11.1 3.5ZM11 4.3C11 4.1 11.2 3.9 11.4 3.9C11.6 3.9 11.8 4.1 11.8 4.3C11.8 4.5 11.6 4.7 11.4 4.7C11.2 4.7 11 4.5 11 4.3ZM13.9 8.8L14.8 9.5C15 9.7 15.3 10.1 15.3 10.4C15.3 11.1 14.6 11.6 13.9 11.6C13.2 11.6 12.5 11.1 12.5 10.4C12.5 10.1 12.8 9.7 13 9.5L13.9 8.8Z"
+						></path>
+					</svg>
+					<span class="text-lg font-bold">{ AppName }</span>
+				</div>
+				<div class="mobile-user-avatar">
+					<span class="text-sm font-medium">{ user.AvatarInitials() }</span>
+				</div>
+			</div>
+
+			<div id="mobile-overlay" class="mobile-overlay" onclick="toggleMobileMenu()"></div>
+
 			@sidebar(activePage, user)
 			<div id="main-content" class="main-content">
 				@content
@@ -66,8 +92,134 @@ templ htmlHeader(title string) {
 		.warnly-preview .u-legend {
 			font-size: 13px;
 		}
-		</style>
-		<style>
+
+		/* Mobile Styles */
+		.mobile-body {
+			margin: 0;
+			padding: 0;
+		}
+
+		.mobile-header {
+			display: none;
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			height: 56px;
+			background: white;
+			border-bottom: 1px solid #e5e7eb;
+			align-items: center;
+			padding: 0 16px;
+			z-index: 1000;
+			gap: 12px;
+		}
+
+		.mobile-menu-btn {
+			background: none;
+			border: none;
+			padding: 8px;
+			cursor: pointer;
+			color: #374151;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		.mobile-logo {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			flex: 1;
+		}
+
+		.mobile-user-avatar {
+			width: 32px;
+			height: 32px;
+			border-radius: 50%;
+			background: #e5e7eb;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		.mobile-overlay {
+			display: none;
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			background: rgba(0, 0, 0, 0.5);
+			z-index: 998;
+			opacity: 0;
+			transition: opacity 0.3s ease;
+		}
+
+		.mobile-overlay.active {
+			opacity: 1;
+		}
+
+		.sidebar {
+			position: fixed;
+			left: 0;
+			top: 0;
+			bottom: 0;
+			width: 260px;
+			background: white;
+			border-right: 1px solid #e5e7eb;
+			overflow-y: auto;
+			z-index: 100;
+			transition: transform 0.3s ease;
+		}
+
+		.main-content {
+			margin-left: 260px;
+			min-height: 100vh;
+			transition: margin 0.3s ease;
+		}
+
+		@media (max-width: 768px) {
+			.mobile-header {
+				display: flex;
+			}
+
+			.sidebar {
+				transform: translateX(-100%);
+				z-index: 999;
+				box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+			}
+
+			.sidebar.mobile-open {
+				transform: translateX(0);
+			}
+
+			.main-content {
+				margin-left: 0;
+				padding-top: 56px;
+			}
+
+			.mobile-overlay.active {
+				display: block;
+			}
+
+			/* Hide desktop-only text on small screens */
+			.sidebar-text {
+				display: inline;
+			}
+		}
+
+		/* Tablet */
+		@media (max-width: 1024px) and (min-width: 769px) {
+			.sidebar {
+				width: 220px;
+			}
+
+			.main-content {
+				margin-left: 220px;
+			}
+		}
+
+		/* Toast Styles */
 		.toast-container {
 			position: fixed;
 			bottom: 20px;
@@ -109,7 +261,36 @@ templ htmlHeader(title string) {
 			opacity: 0;
 			transform: translateY(12px) scale(0.97);
 		}
-</style>
+
+		@media (max-width: 768px) {
+			.toast-container {
+				bottom: 76px; /* Above mobile navigation if present */
+			}
+		}
+		</style>
+		<script>
+		function toggleMobileMenu() {
+			const sidebar = document.getElementById('sidebar');
+			const overlay = document.getElementById('mobile-overlay');
+			
+			sidebar.classList.toggle('mobile-open');
+			overlay.classList.toggle('active');
+		}
+		
+		document.addEventListener('DOMContentLoaded', function() {
+			const sidebar = document.getElementById('sidebar');
+			const overlay = document.getElementById('mobile-overlay');
+			
+			sidebar.addEventListener('click', function(e) {
+				if (e.target.tagName === 'A' || e.target.closest('a')) {
+					if (window.innerWidth <= 768) {
+						sidebar.classList.remove('mobile-open');
+						overlay.classList.remove('active');
+					}
+				}
+			});
+		});
+		</script>
 	</head>
 }
 
@@ -225,11 +406,11 @@ templ sidebar(currentPage string, user *warnly.User) {
 				</button>
 				<script>
 				 document.body.addEventListener('htmx:beforeSwap', function(evt) {
-    if(evt.detail.xhr.status === 400 || evt.detail.xhr.status === 500) {
-        evt.detail.shouldSwap = true;
-        evt.detail.isError = false;
-    }
-});
+					if(evt.detail.xhr.status === 400 || evt.detail.xhr.status === 500) {
+						evt.detail.shouldSwap = true;
+						evt.detail.isError = false;
+					}
+				});
 				function deleteSession() {
 					fetch('/session', {
 						method: 'DELETE',
