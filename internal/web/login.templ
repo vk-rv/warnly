@@ -10,6 +10,14 @@ templ Login(errorMsg string, authURL string, providerName string, isDemo bool) {
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 			<title>Sign in - Warnly</title>
 			<link rel="icon" href="/static/favicon.svg" type="image/svg+xml"/>
+			<style>
+        body { 
+            visibility: hidden; 
+        }
+        body.loaded { 
+            visibility: visible; 
+        }
+    </style>
 			<link href="/static/tailwind.css" rel="stylesheet"/>
 			<style>
         body {
@@ -32,6 +40,13 @@ templ Login(errorMsg string, authURL string, providerName string, isDemo bool) {
         .oidc-button:hover {
             transform: translateY(-1px);
             box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.1);
+        }
+        @media (max-width: 1023px) {
+            .fade-in-element {
+                opacity: 1 !important;
+                transform: translateY(0) !important;
+                transition: none !important;
+            }
         }
     </style>
 		</head>
@@ -215,18 +230,22 @@ templ Login(errorMsg string, authURL string, providerName string, isDemo bool) {
         function hideLoading() {
             document.getElementById('loadingOverlay').classList.add('hidden');
         }
+
+        document.body.classList.add('loaded');
         
         document.addEventListener('DOMContentLoaded', function() {
-            const elements = document.querySelectorAll('.oidc-button, h1, p');
-            elements.forEach((el, index) => {
-                el.style.opacity = '0';
-                el.style.transform = 'translateY(10px)';
-                setTimeout(() => {
-                    el.style.transition = 'all 0.3s ease';
-                    el.style.opacity = '1';
-                    el.style.transform = 'translateY(0)';
-                }, index * 100);
-            });
+            if (window.innerWidth >= 1024) {
+                const elements = document.querySelectorAll('.oidc-button, h1, p');
+                elements.forEach((el, index) => {
+                    el.style.opacity = '0';
+                    el.style.transform = 'translateY(10px)';
+                    setTimeout(() => {
+                        el.style.transition = 'all 0.3s ease';
+                        el.style.opacity = '1';
+                        el.style.transform = 'translateY(0)';
+                    }, index * 100);
+                });
+            }
         });
     </script>
 		</body>
