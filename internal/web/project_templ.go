@@ -91,7 +91,7 @@ func ProjectContentHtmx(user *warnly.User, res *warnly.ListProjectsResult) templ
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</title><div id=\"content\" class=\"flex-grow p-8 overflow-y-auto h-screen\"><header class=\"flex justify-between items-center mb-6\"><h1 class=\"text-2xl font-semibold\">Projects</h1></header><p class=\"text-gray-600\">You need at least one project to use this page</p><a href=\"\" hx-swap=\"outerHTML settle:0\" hx-target=\"#content\" hx-get=\"/projects/new\" hx-push-url=\"true\"><button class=\"px-4 py-2 mt-4 bg-black text-white rounded text-sm transition hover:bg-gray-800 cursor-pointer\">Create Project</button></a></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</title><div id=\"content\" class=\"flex-grow p-4 md:p-8 overflow-y-auto h-screen\"><header class=\"flex justify-between items-center mb-6\"><h1 class=\"text-xl md:text-2xl font-semibold\">Projects</h1></header><p class=\"text-gray-600 text-sm md:text-base\">You need at least one project to use this page</p><a href=\"\" hx-swap=\"outerHTML settle:0\" hx-target=\"#content\" hx-get=\"/projects/new\" hx-push-url=\"true\"><button class=\"px-4 py-2 mt-4 bg-black text-white rounded text-sm transition hover:bg-gray-800 cursor-pointer w-full md:w-auto\">Create Project</button></a></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -122,7 +122,7 @@ func ProjectContentHtmx(user *warnly.User, res *warnly.ListProjectsResult) templ
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</title><div id=\"content\" class=\" flex-grow p-8 overflow-y-auto h-screen\"><header class=\"flex justify-between items-center mb-8\"><h1 class=\"text-2xl font-semibold\">Projects</h1><div class=\"flex gap-2\"><button hx-target=\"#content\" hx-get=\"/projects/1/getting-started\" class=\"px-4 cursor-pointer py-2 border border-black rounded text-sm transition hover:bg-black hover:text-white flex items-center\">Join a team</button> <a href=\"\" hx-target=\"#content\" hx-swap=\"outerHTML settle:0\" hx-get=\"/projects/new\" hx-push-url=\"true\"><button class=\"px-4 cursor-pointer py-2 bg-black text-white rounded text-sm transition hover:bg-gray-800 cursor-pointer\">Create Project</button></a></div></header><div class=\"flex mb-8\"><div class=\"flex\"><div x-data=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</title><div id=\"content\" class=\" flex-grow p-4 sm:p-8 overflow-y-auto h-screen\"><header class=\"flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4\"><h1 class=\"text-xl sm:text-2xl font-semibold\">Projects</h1><div class=\"flex gap-2 w-full sm:w-auto\"><button hx-target=\"#content\" hx-get=\"/projects/1/getting-started\" class=\"px-3 md:px-4 cursor-pointer py-2 border border-black rounded text-xs md:text-sm transition hover:bg-black hover:text-white flex items-center flex-1 md:flex-none justify-center\">Join a team</button> <a href=\"\" hx-target=\"#content\" hx-swap=\"outerHTML settle:0\" hx-get=\"/projects/new\" hx-push-url=\"true\" class=\"flex-1 md:flex-none\"><button class=\"px-4 cursor-pointer py-2 bg-black text-white rounded text-xs md:text-sm transition hover:bg-gray-800 cursor-pointer w-full\">Create Project</button></a></div></header><div class=\"flex flex-col md:flex-row mb-6 md:mb-8 gap-2\"><div class=\"flex w-full md:w-auto\"><div x-data=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -135,7 +135,7 @@ func ProjectContentHtmx(user *warnly.User, res *warnly.ListProjectsResult) templ
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "\"><button @click=\"open = !open\" class=\"inline-flex items-center p-2.5 mr-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 cursor-pointer\"><span x-text=\"selected\"></span> <svg class=\"ml-2 h-5 w-5 text-gray-400\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M19 9l-7 7-7-7\"></path></svg></button><div x-show=\"open\" @click.away=\"open = false\" class=\"absolute mt-2 w-48 rounded-md bg-white shadow-lg z-10\"><ul class=\"py-1 text-sm text-gray-700\"><li><a href=\"#\" @click.prevent=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "\" class=\"w-full md:w-auto\"><button @click=\"open = !open\" class=\"inline-flex items-center justify-between w-full md:w-auto p-2.5 mr-0 md:mr-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 cursor-pointer\"><span x-text=\"selected\" class=\"truncate max-w-[150px] md:max-w-none\"></span> <svg class=\"ml-2 h-5 w-5 text-gray-400 flex-shrink-0\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M19 9l-7 7-7-7\"></path></svg></button><div x-show=\"open\" @click.away=\"open = false\" class=\"absolute mt-2 w-full md:w-48 rounded-md bg-white shadow-lg z-10 max-w-xs\"><ul class=\"py-1 text-sm text-gray-700\"><li><a href=\"#\" @click.prevent=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -299,14 +299,14 @@ func ProjectGrid(res *warnly.ListProjectsResult) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "\" class=\"bg-white border border-gray-200 rounded-lg overflow-hidden\"><div class=\"border-b border-gray-300 p-4 flex justify-between items-center\"><div class=\"flex items-center gap-3\"><div class=\"w-8 h-8 bg-gray-100 rounded flex items-center justify-center\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "\" class=\"bg-white border border-gray-200 rounded-lg overflow-hidden\"><div class=\"border-b border-gray-300 p-3 md:p-4 flex justify-between items-center\"><div class=\"flex items-center gap-2 md:gap-3 flex-1 min-w-0\"><div class=\"w-8 h-8 bg-gray-100 rounded flex items-center justify-center flex-shrink-0\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var15 string
 			templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(string(project.Name[0]))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project.templ`, Line: 112, Col: 105}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project.templ`, Line: 112, Col: 119}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 			if templ_7745c5c3_Err != nil {
@@ -325,14 +325,14 @@ func ProjectGrid(res *warnly.ListProjectsResult) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "\" hx-target=\"#content\" hx-swap=\"outerHTML settle:0\" hx-push-url=\"true\" class=\"cursor-pointer\"><h3 class=\"font-medium\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "\" hx-target=\"#content\" hx-swap=\"outerHTML settle:0\" hx-push-url=\"true\" class=\"cursor-pointer min-w-0 flex-1\"><h3 class=\"font-medium text-sm md:text-base truncate\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var17 string
 			templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(project.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project.templ`, Line: 114, Col: 45}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project.templ`, Line: 114, Col: 75}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 			if templ_7745c5c3_Err != nil {
@@ -351,7 +351,7 @@ func ProjectGrid(res *warnly.ListProjectsResult) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, " | Last 24 hours</p></a></div><div class=\"flex gap-1\"><a hx-get=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, " | Last 24 hours</p></a></div><div class=\"flex gap-1 flex-shrink-0\"><a hx-get=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
