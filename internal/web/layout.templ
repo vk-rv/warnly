@@ -43,7 +43,7 @@ templ Layout(title string, content templ.Component, activePage string, user *war
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
 					</svg>
 				</button>
-				<div class="mobile-logo">
+				<a href="/" class="mobile-logo">
 					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.2">
 						<path
 							fill="none"
@@ -55,14 +55,12 @@ templ Layout(title string, content templ.Component, activePage string, user *war
 						></path>
 					</svg>
 					<span class="text-lg font-bold">{ AppName }</span>
-				</div>
+				</a>
 				<div class="mobile-user-avatar">
 					<span class="text-sm font-medium">{ user.AvatarInitials() }</span>
 				</div>
 			</div>
-
 			<div id="mobile-overlay" class="mobile-overlay" onclick="toggleMobileMenu()"></div>
-
 			@sidebar(activePage, user)
 			<div id="main-content" class="main-content">
 				@content
@@ -276,7 +274,7 @@ templ htmlHeader(title string) {
 			sidebar.classList.toggle('mobile-open');
 			overlay.classList.toggle('active');
 		}
-		
+
 		document.addEventListener('DOMContentLoaded', function() {
 			const sidebar = document.getElementById('sidebar');
 			const overlay = document.getElementById('mobile-overlay');
