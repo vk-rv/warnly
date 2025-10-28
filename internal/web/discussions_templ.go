@@ -39,20 +39,20 @@ func Discussion(discussion *warnly.Discussion) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div id=\"issue_content\" class=\"max-w-3xl w-2/3 mt-6\" x-data=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div id=\"issue_content\" class=\"w-full px-3 md:px-0 md:max-w-3xl md:w-2/3 mt-6\" x-data=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(discussionState(discussion))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/discussions.templ`, Line: 14, Col: 90}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/discussions.templ`, Line: 14, Col: 116}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\"><div class=\"bg-white rounded-lg border border-gray-200 mb-4\"><div class=\"border-b border-gray-200\"><div class=\"flex\"><button @click=\"activeTab = 'write'\" :class=\"{'border-vercel-purple text-vercel-purple border-b-2': activeTab === 'write'}\" class=\"px-4 py-2 text-sm cursor-pointer font-medium\">Write</button> <button @click=\"activeTab = 'preview'\" :class=\"{'border-vercel-purple text-vercel-purple border-b-2': activeTab === 'preview'}\" class=\"px-4 py-2 text-sm cursor-pointer font-medium\">Preview</button></div></div><div class=\"p-4\"><div x-show=\"activeTab === 'write'\" class=\"relative\"><textarea rows=\"10\" x-model=\"comment\" @input=\"showMentions = comment.endsWith('@'); mentionFilter = comment.split('@').pop()\" class=\"w-full text-sm min-h-[250px] p-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-vercel-purple focus:border-transparent\" placeholder=\"Write your comment... You can tag users with @\"></textarea><div x-show=\"showMentions\" class=\"absolute left-0 mt-1 w-64 bg-white border border-gray-200 rounded-md shadow-lg\"><template x-for=\"user in filteredUsers()\" :key=\"user.id\"><button @click=\"addMention(user)\" class=\"w-full cursor-pointer px-4 py-2 text-left hover:bg-vercel-purple-light text-sm\" x-text=\"user.name\"></button></template></div></div><div x-show=\"activeTab === 'preview'\" class=\"min-h-[100px] p-2\"><template x-if=\"comment\"><div x-html=\"formatComment(comment)\" class=\"whitespace-pre-line\"></div></template><template x-if=\"!comment\"><p>Nothing to preview</p></template></div></div><div class=\"border-t border-gray-200 p-4 flex justify-between items-center\"><div class=\"flex items-center text-sm text-gray-500\"><p class=\"text-gray-900 text-xs\">First Noticed ")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\"><div class=\"bg-white rounded-lg border border-gray-200 mb-4\"><div class=\"border-b border-gray-200\"><div class=\"flex\"><button @click=\"activeTab = 'write'\" :class=\"{'border-vercel-purple text-vercel-purple border-b-2': activeTab === 'write'}\" class=\"py-3 md:px-4 md:py-2 text-sm cursor-pointer font-medium flex-1 md:flex-initial\">Write</button> <button @click=\"activeTab = 'preview'\" :class=\"{'border-vercel-purple text-vercel-purple border-b-2': activeTab === 'preview'}\" class=\"py-3 md:px-4 md:py-2 text-sm cursor-pointer font-medium flex-1 md:flex-initial\">Preview</button></div></div><div class=\"p-3 md:p-4\"><div x-show=\"activeTab === 'write'\" class=\"relative\"><textarea rows=\"10\" x-model=\"comment\" @input=\"showMentions = comment.endsWith('@'); mentionFilter = comment.split('@').pop()\" class=\"w-full text-sm min-h-[200px] md:min-h-[250px] p-3 md:p-2 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-vercel-purple focus:border-transparent\" placeholder=\"Write your comment... You can tag users with @\"></textarea><div x-show=\"showMentions\" class=\"absolute left-0 mt-1 w-full md:w-64 bg-white border border-gray-200 rounded-md shadow-lg z-10\"><template x-for=\"user in filteredUsers()\" :key=\"user.id\"><button @click=\"addMention(user)\" class=\"w-full cursor-pointer px-4 py-3 md:py-2 text-left hover:bg-vercel-purple-light text-sm\" x-text=\"user.name\"></button></template></div></div><div x-show=\"activeTab === 'preview'\" class=\"min-h-[100px] p-2\"><template x-if=\"comment\"><div x-html=\"formatComment(comment)\" class=\"whitespace-pre-line\"></div></template><template x-if=\"!comment\"><p>Nothing to preview</p></template></div></div><div class=\"border-t border-gray-200 p-3 md:p-4 flex flex-col-reverse md:flex-row justify-between items-stretch md:items-center gap-3 md:gap-0\"><div class=\"hidden md:flex items-center text-sm text-gray-500\"><p class=\"text-gray-900 text-xs\">First Noticed ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -65,7 +65,7 @@ func Discussion(discussion *warnly.Discussion) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, " ago</p></div><button @click=\"postComment()\" class=\"bg-vercel-purple cursor-pointer text-black px-4 py-2 rounded-lg text-sm font-medium hover:bg-opacity-90 transition-colors\">Post</button></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, " ago</p></div><button @click=\"postComment()\" class=\"bg-vercel-purple cursor-pointer text-black px-4 py-3 md:py-2 rounded-lg text-sm font-medium hover:bg-opacity-90 transition-colors\">Post</button></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -187,7 +187,7 @@ func renderMessage(message warnly.IssueMessage, info warnly.DiscussionInfo) temp
 			templ_7745c5c3_Var6 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<div class=\"border rounded-lg bg-white shadow-sm mb-4 border-gray-300\" x-data=\"{ dropdownOpen: false }\"><div class=\"p-4\"><div class=\"flex items-center justify-between border-b p-1 border-gray-300\"><div class=\"flex items-center gap-3\"><div class=\"w-8 h-8 rounded flex items-center justify-center text-white bg-black font-medium\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<div class=\"border rounded-lg bg-white shadow-sm mb-4 border-gray-300\" x-data=\"{ dropdownOpen: false }\"><div class=\"p-3 md:p-4\"><div class=\"flex items-center justify-between border-b p-1 border-gray-300\"><div class=\"flex items-center gap-2 md:gap-3 min-w-0\"><div class=\"w-8 h-8 rounded flex items-center justify-center text-white bg-black font-medium flex-shrink-0\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -200,7 +200,7 @@ func renderMessage(message warnly.IssueMessage, info warnly.DiscussionInfo) temp
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</div><span class=\"text-sm text-gray-900 font-medium\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</div><span class=\"text-sm text-gray-900 font-medium truncate\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -213,7 +213,7 @@ func renderMessage(message warnly.IssueMessage, info warnly.DiscussionInfo) temp
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</span></div><div class=\"flex items-center gap-4\"><span class=\"text-sm text-gray-500\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</span></div><div class=\"flex items-center gap-2 md:gap-4 flex-shrink-0\"><span class=\"text-xs md:text-sm text-gray-500 whitespace-nowrap\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -226,7 +226,7 @@ func renderMessage(message warnly.IssueMessage, info warnly.DiscussionInfo) temp
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, " ago</span><div class=\"relative\"><button @click=\"dropdownOpen = !dropdownOpen\" class=\"h-8 w-8 flex items-center justify-center rounded-md hover:bg-gray-100 cursor-pointer\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"1\"></circle><circle cx=\"19\" cy=\"12\" r=\"1\"></circle><circle cx=\"5\" cy=\"12\" r=\"1\"></circle></svg></button><div x-show=\"dropdownOpen\" @click.away=\"dropdownOpen = false\" class=\"absolute border-gray-300 right-0 mt-1 w-36 bg-white rounded-md shadow-lg border py-1\"><a hx-delete=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, " ago</span><div class=\"relative\"><button @click=\"dropdownOpen = !dropdownOpen\" class=\"h-8 w-8 flex items-center justify-center rounded-md hover:bg-gray-100 cursor-pointer\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"1\"></circle><circle cx=\"19\" cy=\"12\" r=\"1\"></circle><circle cx=\"5\" cy=\"12\" r=\"1\"></circle></svg></button><div x-show=\"dropdownOpen\" @click.away=\"dropdownOpen = false\" class=\"absolute border-gray-300 right-0 mt-1 w-36 bg-white rounded-md shadow-lg border py-1 z-20\"><a hx-delete=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -239,7 +239,7 @@ func renderMessage(message warnly.IssueMessage, info warnly.DiscussionInfo) temp
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "\" hx-swap=\"outerHTML settle:0\" hx-target=\"#messages\" class=\"block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 cursor-pointer\">Delete</a></div></div></div></div><div class=\"mt-4 w-full min-h-[100px] resize-none rounded-md p-3 text-sm whitespace-pre-line\"><!-- we used bluemonday sanitizer to prevent XSS on posting this message -->")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "\" hx-swap=\"outerHTML settle:0\" hx-target=\"#messages\" class=\"block px-4 py-2 text-sm text-red-600 hover:bg-gray-100 cursor-pointer\">Delete</a></div></div></div></div><div class=\"mt-4 w-full min-h-[100px] resize-none rounded-md p-3 text-sm whitespace-pre-line break-words\"><!-- we used bluemonday sanitizer to prevent XSS on posting this message -->")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
