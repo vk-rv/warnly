@@ -27,50 +27,50 @@ templ GetIssueHtmx(issue *warnly.IssueDetails, user *warnly.User, source string)
 		@GetIssueContent(issue, user)
 	} else {
 		<div id="main-content" x-data="{ activeTab: 'details' }" class="main-content">
-			<div id="content" class="flex-grow bg-white p-4">
+			<div id="content" class="flex-grow bg-white p-4 max-lg:p-2">
 				<header class="border-b border-gray-200">
-					<div class="px-4 py-2">
-						<div class="flex items-center space-x-4">
-							<nav class="flex items-center space-x-2">
-								<span hx-target="#content" hx-swap="outerHTML settle:0" hx-push-url="true" hx-get={ fmt.Sprintf("/projects/%d?issues=all&period=14d", issue.ProjectID) } class="text-gray-600 text-sm cursor-pointer">Issues</span>
-								<span class="flex items-center space-x-2">
+					<div class="px-4 py-2 max-lg:px-2">
+						<div class="flex items-center space-x-4 max-lg:space-x-2">
+							<nav class="flex items-center space-x-2 text-sm max-lg:space-x-1 max-lg:text-xs">
+								<span hx-target="#content" hx-swap="outerHTML settle:0" hx-push-url="true" hx-get={ fmt.Sprintf("/projects/%d?issues=all&period=14d", issue.ProjectID) } class="text-gray-600 cursor-pointer">Issues</span>
+								<span class="flex items-center space-x-2 max-lg:space-x-1">
 									<svg data-testid="geist-icon" height="10" stroke-linejoin="round" style="color: currentcolor;" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" clip-rule="evenodd" d="M5.50001 1.93933L6.03034 2.46966L10.8536 7.29288C11.2441 7.68341 11.2441 8.31657 10.8536 8.7071L6.03034 13.5303L5.50001 14.0607L4.43935 13L4.96968 12.4697L9.43935 7.99999L4.96968 3.53032L4.43935 2.99999L5.50001 1.93933Z" fill="currentColor"></path></svg>
-									<span class="font-medium text-sm">{ issue.ProjectName }</span>
+									<span class="font-medium max-lg:truncate max-lg:max-w-[100px]">{ issue.ProjectName }</span>
 								</span>
 							</nav>
 						</div>
 					</div>
-					<div class="px-4 py-2 mt-2 flex items-center justify-between">
-						<div class="flex items-center space-x-4">
-							<h1 class="text-lg font-semibold">{ issue.ErrorType }</h1>
-							<span class="text-gray-600 truncate max-w-xs" title={ issue.View }>{ issue.View }</span>
+					<div class="px-4 py-2 mt-2 flex items-center justify-between max-lg:px-2">
+						<div class="flex items-center space-x-4 flex-wrap max-lg:space-x-2">
+							<h1 class="text-lg font-semibold max-lg:text-base">{ issue.ErrorType }</h1>
+							<span class="text-gray-600 truncate max-w-xs max-lg:max-w-[120px] max-lg:text-xs" title={ issue.View }>{ issue.View }</span>
 							if issue.IsNew {
-								<span class="px-2 py-1 bg-yellow-100 rounded text-sm">New</span>
+								<span class="px-2 py-1 bg-yellow-100 rounded text-sm max-lg:text-xs">New</span>
 							} else {
-								<span class="px-2 py-1 bg-gray-100 rounded text-sm">Ongoing</span>
+								<span class="px-2 py-1 bg-gray-100 rounded text-sm max-lg:text-xs">Ongoing</span>
 							}
 						</div>
-						<div class="flex items-center space-x-2 text-sm">
+						<div class="flex items-center space-x-2 text-sm max-lg:space-x-1 max-lg:text-xs">
 							<span class="text-gray-600">Errors</span>
-							<a class="text-black-500 text-lg" href="#">{ warnly.NumFormatted(issue.TimesSeen) }</a>
+							<a class="text-black-500 text-lg max-lg:text-sm" href="#">{ warnly.NumFormatted(issue.TimesSeen) }</a>
 						</div>
-						<div class="flex items-center space-x-2 text-sm">
+						<div class="flex items-center space-x-2 text-sm max-lg:space-x-1 max-lg:text-xs">
 							<span class="text-gray-600">Users</span>
-							<a class="text-black-500 text-lg" href="#">{ warnly.NumFormatted(issue.UserCount) }</a>
+							<a class="text-black-500 text-lg max-lg:text-sm" href="#">{ warnly.NumFormatted(issue.UserCount) }</a>
 						</div>
-						<div class="flex items-center space-x-2 text-sm"></div>
-						<div class="flex items-center space-x-2"></div>
+						<div class="flex items-center space-x-2 text-sm max-lg:hidden"></div>
+						<div class="flex items-center space-x-2 max-lg:hidden"></div>
 					</div>
-					<div class="px-4 flex items-center space-x-2">
-						<svg data-testid="geist-icon" height="16" stroke-linejoin="round" viewBox="0 0 16 16" width="16" style="color: currentcolor;"><path fill-rule="evenodd" clip-rule="evenodd" d="M14.5 8C14.5 11.5899 11.5899 14.5 8 14.5C4.41015 14.5 1.5 11.5899 1.5 8C1.5 4.41015 4.41015 1.5 8 1.5C11.5899 1.5 14.5 4.41015 14.5 8ZM16 8C16 12.4183 12.4183 16 8 16C3.58172 16 0 12.4183 0 8C0 3.58172 3.58172 0 8 0C12.4183 0 16 3.58172 16 8ZM10.5 5.5H5.5V10.5H10.5V5.5Z" fill="currentColor"></path></svg>
-						<span>{ issue.ErrorValue }</span>
+					<div class="px-4 flex items-center space-x-2 max-lg:px-2 max-lg:overflow-x-auto">
+						<svg data-testid="geist-icon" height="16" stroke-linejoin="round" viewBox="0 0 16 16" width="16" style="color: currentcolor;" class="max-lg:h-[14px] max-lg:w-[14px] max-lg:flex-shrink-0"><path fill-rule="evenodd" clip-rule="evenodd" d="M14.5 8C14.5 11.5899 11.5899 14.5 8 14.5C4.41015 14.5 1.5 11.5899 1.5 8C1.5 4.41015 4.41015 1.5 8 1.5C11.5899 1.5 14.5 4.41015 14.5 8ZM16 8C16 12.4183 12.4183 16 8 16C3.58172 16 0 12.4183 0 8C0 3.58172 3.58172 0 8 0C12.4183 0 16 3.58172 16 8ZM10.5 5.5H5.5V10.5H10.5V5.5Z" fill="currentColor"></path></svg>
+						<span class="max-lg:text-xs max-lg:whitespace-nowrap">{ issue.ErrorValue }</span>
 					</div>
-					<div class="px-4 mt-4">
-						<nav class="flex space-x-6 text-sm">
-							<a id="issue_information" hx-swap="outerHTML settle:0" hx-target="#issue_content" hx-get={ fmt.Sprintf("/projects/%d/issues/%d?period=14d&source=issue&event_id=%s", issue.ProjectID, issue.IssueID, issue.Request.EventID) } :class="{ 'border-black text-black': activeTab === 'details', 'border-transparent text-gray-500 cursor-pointer': activeTab !== 'details' }" @click="activeTab = 'details'" class="px-3 py-2 border-b-2">Info</a>
-							<a hx-swap="outerHTML settle:0" hx-target="#issue_content" hx-get={ fmt.Sprintf("/projects/%d/issues/%d/discussions", issue.ProjectID, issue.IssueID) } :class="{ 'border-black text-black': activeTab === 'activity', 'border-transparent text-gray-500 cursor-pointer': activeTab !== 'activity' }" @click="activeTab = 'activity'" class="px-3 py-2 text-gray-600 border-b-2">Discuss <span id="message_cnt" class="text-gray-400">{ fmt.Sprintf("%d", issue.MessagesCount) }</span></a>
-							<a hx-swap="outerHTML settle:0" hx-target="#issue_content" hx-get={ fmt.Sprintf("/projects/%d/issues/%d/fields", issue.ProjectID, issue.IssueID) } :class="{ 'border-black text-black': activeTab === 'tags', 'border-transparent text-gray-500 cursor-pointer': activeTab !== 'tags' }" @click="activeTab = 'tags'" class="px-3 py-2 text-gray-600 border-b-2">Fields</a>
-							<a hx-swap="outerHTML settle:0" hx-target="#issue_content" hx-get={ fmt.Sprintf("/projects/%d/issues/%d/events", issue.ProjectID, issue.IssueID) } :class="{ 'border-black text-black': activeTab === 'all', 'border-transparent text-gray-500 cursor-pointer': activeTab !== 'all' }" @click="activeTab = 'all'" class="px-3 py-2 text-gray-600 border-b-2">All Errors</a>
+					<div class="px-4 mt-4 max-lg:px-2 max-lg:overflow-x-auto">
+						<nav class="flex space-x-6 text-sm max-lg:space-x-3 max-lg:text-xs max-lg:whitespace-nowrap">
+							<a id="issue_information" hx-swap="outerHTML settle:0" hx-target="#issue_content" hx-get={ fmt.Sprintf("/projects/%d/issues/%d?period=14d&source=issue&event_id=%s", issue.ProjectID, issue.IssueID, issue.Request.EventID) } :class="{ 'border-black text-black': activeTab === 'details', 'border-transparent text-gray-500 cursor-pointer': activeTab !== 'details' }" @click="activeTab = 'details'" class="px-3 py-2 border-b-2 max-lg:px-2">Info</a>
+							<a hx-swap="outerHTML settle:0" hx-target="#issue_content" hx-get={ fmt.Sprintf("/projects/%d/issues/%d/discussions", issue.ProjectID, issue.IssueID) } :class="{ 'border-black text-black': activeTab === 'activity', 'border-transparent text-gray-500 cursor-pointer': activeTab !== 'activity' }" @click="activeTab = 'activity'" class="px-3 py-2 text-gray-600 border-b-2 max-lg:px-2">Discuss <span id="message_cnt" class="text-gray-400">{ fmt.Sprintf("%d", issue.MessagesCount) }</span></a>
+							<a hx-swap="outerHTML settle:0" hx-target="#issue_content" hx-get={ fmt.Sprintf("/projects/%d/issues/%d/fields", issue.ProjectID, issue.IssueID) } :class="{ 'border-black text-black': activeTab === 'tags', 'border-transparent text-gray-500 cursor-pointer': activeTab !== 'tags' }" @click="activeTab = 'tags'" class="px-3 py-2 text-gray-600 border-b-2 max-lg:px-2">Fields</a>
+							<a hx-swap="outerHTML settle:0" hx-target="#issue_content" hx-get={ fmt.Sprintf("/projects/%d/issues/%d/events", issue.ProjectID, issue.IssueID) } :class="{ 'border-black text-black': activeTab === 'all', 'border-transparent text-gray-500 cursor-pointer': activeTab !== 'all' }" @click="activeTab = 'all'" class="px-3 py-2 text-gray-600 border-b-2 max-lg:px-2">All Errors</a>
 						</nav>
 					</div>
 				</header>
@@ -85,64 +85,64 @@ templ GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) {
 		<a hx-swap-oob="true" id="issue_information" hx-swap="outerHTML settle:0" hx-target="#issue_content" hx-get={ fmt.Sprintf("/projects/%d/issues/%d?period=14d&source=issue&event_id=%s", issue.ProjectID, issue.IssueID, issue.Request.EventID) } :class="{ 'border-black text-black': activeTab === 'details', 'border-transparent text-gray-500 cursor-pointer': activeTab !== 'details' }" @click="activeTab = 'details'" class="px-3 py-2 border-b-2">Info</a>
 	}
 	@Toast()
-	<div id="issue_content" class="flex" x-data={ "{ copyToClipboard(text) { navigator.clipboard.writeText(text); showToast('Copied to clipboard'); } }" }>
-		<main class="flex-1 p-6">
-			<div class="flex items-center justify-between mb-6">
+	<div id="issue_content" class="flex max-lg:flex-col" x-data={ "{ copyToClipboard(text) { navigator.clipboard.writeText(text); showToast('Copied to clipboard'); } }" }>
+		<main class="flex-1 p-6 max-lg:p-3">
+			<div class="flex items-center justify-between mb-6 max-lg:mb-4">
 				<div class="flex items-center space-x-1">
-					<span class="font-semibold">ID:</span>
-					<span class="text-gray-600 cursor-pointer" title={ issue.EventID() } @click={ fmt.Sprintf("copyToClipboard('%s')", issue.EventID()) }>{ issue.EventID()[:6] }</span>
-					<svg data-testid="geist-icon" height="16" stroke-linejoin="round" viewBox="0 0 24 24" width="16" style="color: currentcolor;" class="cursor-pointer" @click={ fmt.Sprintf("copyToClipboard('%s')", issue.EventID()) }>
+					<span class="font-semibold max-lg:text-xs">ID:</span>
+					<span class="text-gray-600 cursor-pointer max-lg:text-xs" title={ issue.EventID() } @click={ fmt.Sprintf("copyToClipboard('%s')", issue.EventID()) }>{ issue.EventID()[:6] }</span>
+					<svg data-testid="geist-icon" height="16" stroke-linejoin="round" viewBox="0 0 24 24" width="16" style="color: currentcolor;" class="cursor-pointer max-lg:h-[14px] max-lg:w-[14px]" @click={ fmt.Sprintf("copyToClipboard('%s')", issue.EventID()) }>
 						<path fill-rule="evenodd" clip-rule="evenodd" d="M8 2H16C17.1 2 18 2.9 18 4V6H16V4H8V6H6V4C6 2.9 6.9 2 8 2ZM6 8H18C19.1 8 20 8.9 20 10V20C20 21.1 19.1 22 18 22H6C4.9 22 4 21.1 4 20V10C4 8.9 4.9 8 6 8ZM6 10V20H18V10H6Z" fill="currentColor"></path>
 					</svg>
 				</div>
 			</div>
 			if issue.LastEvent.UserID != "" {
-				<div class="bg-white rounded-lg mb-6">
-					<h2 class="text-sm font-medium text-gray-700 mb-2">User Info</h2>
-					<div class="flex items-center space-x-4">
-						<div class="flex flex-col">
+				<div class="bg-white rounded-lg mb-6 max-lg:mb-4">
+					<h2 class="text-sm font-medium text-gray-700 mb-2 max-lg:text-xs">User Info</h2>
+					<div class="flex items-center space-x-4 max-lg:flex-wrap max-lg:gap-2">
+						<div class="flex flex-col max-lg:min-w-[120px]">
 							<span class="text-xs text-gray-500">Identifier</span>
-							<span class="font-mono text-sm text-gray-800">{ issue.LastEvent.UserID }</span>
+							<span class="font-mono text-sm text-gray-800 max-lg:text-xs max-lg:truncate">{ issue.LastEvent.UserID }</span>
 						</div>
 						if issue.LastEvent.UserName != "" {
-							<div class="flex flex-col">
+							<div class="flex flex-col max-lg:min-w-[120px]">
 								<span class="text-xs text-gray-500">Name</span>
-								<span class="font-mono text-sm text-gray-800">{ issue.LastEvent.UserName }</span>
+								<span class="font-mono text-sm text-gray-800 max-lg:text-xs max-lg:truncate">{ issue.LastEvent.UserName }</span>
 							</div>
 						}
 						if issue.LastEvent.UserUsername != "" {
-							<div class="flex flex-col">
+							<div class="flex flex-col max-lg:min-w-[120px]">
 								<span class="text-xs text-gray-500">Username</span>
-								<span class="font-mono text-sm text-gray-800">{ issue.LastEvent.UserUsername }</span>
+								<span class="font-mono text-sm text-gray-800 max-lg:text-xs max-lg:truncate">{ issue.LastEvent.UserUsername }</span>
 							</div>
 						}
 						if issue.LastEvent.UserEmail != "" {
-							<div class="flex flex-col">
+							<div class="flex flex-col max-lg:min-w-[120px]">
 								<span class="text-xs text-gray-500">Email</span>
-								<span class="font-mono text-sm text-gray-800">{ issue.LastEvent.UserEmail }</span>
+								<span class="font-mono text-sm text-gray-800 max-lg:text-xs max-lg:truncate">{ issue.LastEvent.UserEmail }</span>
 							</div>
 						}
 					</div>
 				</div>
 			}
-			<div class="bg-gray-50 border-l-4 border-black-500 rounded-lg p-4 mb-6">
+			<div class="bg-gray-50 border-l-4 border-black-500 rounded-lg p-4 mb-6 max-lg:p-3 max-lg:mb-4">
 				<div class="flex items-center gap-2 mb-2">
-					<svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+					<svg class="w-4 h-4 text-blue-500 max-lg:w-3 max-lg:h-3" fill="currentColor" viewBox="0 0 20 20">
 						<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
 					</svg>
-					<h2 class="text-sm font-semibold text-gray-900">Log Message</h2>
+					<h2 class="text-sm font-semibold text-gray-900 max-lg:text-xs">Log Message</h2>
 				</div>
-				<div class="font-mono text-sm text-gray-800">
+				<div class="font-mono text-sm text-gray-800 max-lg:text-xs max-lg:break-words">
 					{ issue.Message }
 				</div>
 			</div>
-			<div class="space-y-2 mt-6">
+			<div class="space-y-2 mt-6 max-lg:mt-4">
 				<div class="flex items-center gap-2">
-					<h2 class="text-sm font-medium text-gray-700 mb-2">Fields</h2>
+					<h2 class="text-sm font-medium text-gray-700 mb-2 max-lg:text-xs">Fields</h2>
 				</div>
 			</div>
-			<div class="max-w-4xl mx-auto mb-6">
-				<div class="grid grid-cols-3 gap-2">
+			<div class="max-w-4xl mx-auto mb-6 max-lg:mb-4">
+				<div class="grid grid-cols-3 gap-2 max-lg:grid-cols-1">
 					for i, kv := range issue.TagKeyValue() {
 						if i % 2 == 0 {
 							<div x-data="{ open: false }" class="relative rounded p-2 bg-white hover:bg-gray-100 cursor-pointer" @click="open = !open">
@@ -166,17 +166,17 @@ templ GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) {
 					}
 				</div>
 			</div>
-			<div class="space-y-2 mt-6">
+			<div class="space-y-2 mt-6 max-lg:mt-4">
 				<div class="flex items-center gap-2">
-					<h2 class="text-sm font-medium text-gray-700 mb-2">Contexts</h2>
+					<h2 class="text-sm font-medium text-gray-700 mb-2 max-lg:text-xs">Contexts</h2>
 				</div>
 			</div>
-			<div class="max-w-4xl mx-auto mb-6">
-				<div class="grid grid-cols-2 gap-4">
+			<div class="max-w-4xl mx-auto mb-6 max-lg:mb-4">
+				<div class="grid grid-cols-2 gap-4 max-lg:grid-cols-1 max-lg:gap-3">
 					for _, kv := range sortedGroupContexts(issue.Contexts()) {
-						<div class="border border-gray-200 rounded-lg p-4 bg-white">
-							<div class="flex items-center justify-between mb-3">
-								<h3 class="text-sm font-semibold text-gray-900">{ strings.Title(kv.Prefix) }</h3>
+						<div class="border border-gray-200 rounded-lg p-4 bg-white max-lg:p-3">
+							<div class="flex items-center justify-between mb-3 max-lg:mb-2">
+								<h3 class="text-sm font-semibold text-gray-900 max-lg:text-xs">{ strings.Title(kv.Prefix) }</h3>
 								if kv.Prefix == "os" {
 									if kv.Fields["name"] == "darwin" {
 										<svg class="w-4 h-4" viewBox="0 0 16 16" fill="currentColor">
@@ -211,49 +211,49 @@ templ GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) {
 			if issue.HasStackDetails() {
 				<div x-data="{ showAll: false }" class="bg-white rounded-lg">
 					<div class="max-w-5xl mx-auto bg-white rounded-lg shadow-sm border border-gray-200">
-						<div class="p-1 border-b border-gray-100 flex items-center gap-4">
-							<div class="bg-black text-white rounded p-2 shrink-0">
-								<span class="font-mono">{ issue.GetPlatform() }</span>
+						<div class="p-1 border-b border-gray-100 flex items-center gap-4 max-lg:p-2 max-lg:flex-col max-lg:gap-2">
+							<div class="bg-black text-white rounded p-2 shrink-0 max-lg:p-1.5 max-lg:self-start">
+								<span class="font-mono max-lg:text-xs">{ issue.GetPlatform() }</span>
 							</div>
 							<div class="flex-1 text-gray-600">
-								<div class="text-xs">
+								<div class="text-xs max-lg:break-all">
 									Noticed in<span class="font-mono">: { issue.StackDetails[0].Filepath }</span> in <span class="font-mono">{ issue.StackDetails[0].FunctionName }</span>
 								</div>
 							</div>
 						</div>
 						<div class="divide-y divide-gray-100">
 							for _, f := range issue.StackVisible() {
-								<div class="p-4 hover:bg-gray-50 flex items-center justify-between">
-									<div class="flex-1">
-										<div class="text-xs">
+								<div class="p-4 hover:bg-gray-50 flex items-center justify-between max-lg:p-2 max-lg:flex-col max-lg:gap-2">
+									<div class="flex-1 max-lg:min-w-0">
+										<div class="text-xs max-lg:break-all">
 											<span class="font-mono text-gray-700">{ f.Filepath }</span>
-											<span class="text-gray-500">in</span>
+											<span class="text-gray-500 max-lg:mx-1">in</span>
 											<span class="text-gray-600">{ f.FunctionName }</span>
-											<span class="text-gray-500">at line</span>
+											<span class="text-gray-500 max-lg:mx-1">at line</span>
 											<span class="text-gray-700">{ strconv.Itoa(f.LineNo) }</span>
 										</div>
 									</div>
-									<span class="px-2 py-1 rounded text-xs bg-blue-50 text-blue-600">{ f.InAppStr() }</span>
+									<span class="px-2 py-1 rounded text-xs bg-blue-50 text-blue-600 max-lg:self-start">{ f.InAppStr() }</span>
 								</div>
 							}
 							<div x-show="showAll">
 								for _, f := range issue.StackHidden() {
-									<div class="p-4 hover:bg-gray-50 flex items-center justify-between">
-										<div class="flex-1">
-											<div class="text-xs">
+									<div class="p-4 hover:bg-gray-50 flex items-center justify-between max-lg:p-2 max-lg:flex-col max-lg:gap-2">
+										<div class="flex-1 max-lg:min-w-0">
+											<div class="text-xs max-lg:break-all">
 												<span class="font-mono text-gray-700">{ f.Filepath }</span>
-												<span class="text-gray-500">in</span>
+												<span class="text-gray-500 max-lg:mx-1">in</span>
 												<span class="text-gray-600">{ f.FunctionName }</span>
-												<span class="text-gray-500">at line</span>
+												<span class="text-gray-500 max-lg:mx-1">at line</span>
 												<span class="text-gray-700">{ strconv.Itoa(f.LineNo) }</span>
 											</div>
 										</div>
-										<span class="px-2 py-1 rounded text-xs bg-blue-50 text-blue-600">{ f.InAppStr() }</span>
+										<span class="px-2 py-1 rounded text-xs bg-blue-50 text-blue-600 max-lg:self-start">{ f.InAppStr() }</span>
 									</div>
 								}
 							</div>
-							<div class="p-4 text-center">
-								<button @click="showAll = !showAll" class="text-sm cursor-pointer text-blue-600 hover:text-blue-700">
+							<div class="p-4 text-center max-lg:p-3">
+								<button @click="showAll = !showAll" class="text-sm cursor-pointer text-blue-600 hover:text-blue-700 max-lg:text-xs">
 									<span x-show="!showAll">Show more</span>
 									<span x-show="showAll">Show less</span>
 								</button>
@@ -263,22 +263,22 @@ templ GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) {
 				</div>
 			}
 		</main>
-		<aside class="w-80 border-l border-gray-200 p-6">
-			<div class="space-y-6">
-				<div>
-					<h3 class="text-sm font-medium text-gray-600 mb-2">Assigned To</h3>
+		<aside class="w-80 border-l border-gray-200 p-6 max-lg:w-full max-lg:border-t max-lg:border-l-0 max-lg:p-4">
+			<div class="space-y-6 max-lg:space-y-3">
+				<div class="max-lg:bg-gray-50 max-lg:p-3 max-lg:rounded-lg">
+					<h3 class="text-sm font-medium text-gray-600 mb-2 max-lg:text-xs max-lg:mb-2">Assigned To</h3>
 					<div x-data={ teammateSelect(issue) }>
 						<button
 							@click="open = !open"
-							class="inline-flex items-center p-2.5 mr-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 cursor-pointer"
+							class="inline-flex items-center p-2.5 mr-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 cursor-pointer max-lg:w-full max-lg:justify-between max-lg:mr-0 max-lg:p-2 max-lg:text-xs"
 						>
-							<span x-text="selected"></span>
-							<svg class="ml-2 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<span x-text="selected" class="max-lg:truncate max-lg:max-w-[200px]"></span>
+							<svg class="ml-2 h-5 w-5 text-gray-400 max-lg:h-4 max-lg:w-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
 							</svg>
 						</button>
-						<div x-show="open" @click.away="open = false" class="absolute mt-2 w-48 rounded-md bg-white shadow-lg z-10">
-							<ul class="py-1 text-sm text-gray-700">
+						<div x-show="open" @click.away="open = false" class="absolute mt-2 w-48 rounded-md bg-white shadow-lg z-10 max-lg:w-full max-lg:max-w-sm">
+							<ul class="py-1 text-sm text-gray-700 max-lg:text-xs">
 								<li x-show="selected !== 'Unassigned'">
 									<a
 										href="#"
@@ -315,35 +315,37 @@ templ GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) {
 						</div>
 					</div>
 				</div>
-				<div>
-					<h3 class="text-sm font-medium text-gray-600 mb-2">Last 24 Hours</h3>
-					<div class="text-2xl font-semibold">{ warnly.NumFormatted(issue.Total24Hours) }</div>
-				</div>
-				<div>
-					<h3 class="text-sm font-medium text-gray-600 mb-2">Last 30 Days</h3>
-					<div class="text-2xl font-semibold">{ warnly.NumFormatted(issue.Total30Days) }</div>
-				</div>
-				<div>
-					<h3 class="text-sm font-medium text-gray-600 mb-2">Last Noticed</h3>
-					<div class="">{ warnly.TimeAgo(time.Now, issue.LastSeen, /* narrow */ false) } ago</div>
-				</div>
-				<div>
-					<h3 class="text-sm font-medium text-gray-600 mb-2">First Noticed</h3>
-					<div class="">{ warnly.TimeAgo(time.Now, issue.FirstSeen, /* narrow */ false) } ago</div>
+				<div class="max-lg:grid max-lg:grid-cols-2 max-lg:gap-3">
+					<div class="max-lg:bg-gray-50 max-lg:p-3 max-lg:rounded-lg">
+						<h3 class="text-sm font-medium text-gray-600 mb-2 max-lg:text-xs max-lg:mb-1">Last 24 Hours</h3>
+						<div class="text-2xl font-semibold max-lg:text-lg">{ warnly.NumFormatted(issue.Total24Hours) }</div>
+					</div>
+					<div class="max-lg:bg-gray-50 max-lg:p-3 max-lg:rounded-lg max-lg:mt-0 mt-6">
+						<h3 class="text-sm font-medium text-gray-600 mb-2 max-lg:text-xs max-lg:mb-1">Last 30 Days</h3>
+						<div class="text-2xl font-semibold max-lg:text-lg">{ warnly.NumFormatted(issue.Total30Days) }</div>
+					</div>
+					<div class="max-lg:bg-gray-50 max-lg:p-3 max-lg:rounded-lg max-lg:mt-0 mt-6">
+						<h3 class="text-sm font-medium text-gray-600 mb-2 max-lg:text-xs max-lg:mb-1">Last Noticed</h3>
+						<div class="max-lg:text-sm">{ warnly.TimeAgo(time.Now, issue.LastSeen, /* narrow */ false) } ago</div>
+					</div>
+					<div class="max-lg:bg-gray-50 max-lg:p-3 max-lg:rounded-lg max-lg:mt-0 mt-6">
+						<h3 class="text-sm font-medium text-gray-600 mb-2 max-lg:text-xs max-lg:mb-1">First Noticed</h3>
+						<div class="max-lg:text-sm">{ warnly.TimeAgo(time.Now, issue.FirstSeen, /* narrow */ false) } ago</div>
+					</div>
 				</div>
 				<div class="">
-					<div class="flex items-center justify-between mb-6">
+					<div class="flex items-center justify-between mb-6 max-lg:mb-4">
 						<div class="flex items-center gap-2">
-							<h2 class="text-lg font-semibold text-gray-900">Fields</h2>
+							<h2 class="text-lg font-semibold text-gray-900 max-lg:text-base">Fields</h2>
 						</div>
 					</div>
 					for _, tc := range issue.TagCount {
-						<div x-data="{ open: false }" class="mb-6">
+						<div x-data="{ open: false }" class="mb-6 max-lg:mb-4">
 							<div class="flex items-center justify-between mb-2">
-								<h3 class="text-sm font-medium text-gray-700">{ tc.Tag }</h3>
-								<div class="flex items-center gap-2 cursor-pointer" @click="open = !open">
-									<span class="text-sm text-gray-500 truncate max-w-xs" title={ issue.Tag(tc.Tag) }>{ warnly.Cut(issue.Tag(tc.Tag), 13) }</span>
-									<svg :class="{ 'rotate-180': open }" class="w-4 h-4 text-gray-400 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<h3 class="text-sm font-medium text-gray-700 max-lg:text-xs">{ tc.Tag }</h3>
+								<div class="flex items-center gap-2 cursor-pointer max-lg:gap-1" @click="open = !open">
+									<span class="text-sm text-gray-500 truncate max-w-xs max-lg:text-xs max-lg:max-w-[100px]" title={ issue.Tag(tc.Tag) }>{ warnly.Cut(issue.Tag(tc.Tag), 13) }</span>
+									<svg :class="{ 'rotate-180': open }" class="w-4 h-4 text-gray-400 transform transition-transform max-lg:w-3 max-lg:h-3 max-lg:flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 										<path stroke-width="2" d="M19 9l-7 7-7-7"></path>
 									</svg>
 								</div>
@@ -352,10 +354,10 @@ templ GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) {
 								<div class={ fmt.Sprintf("bg-gray-300 h-2 rounded-full %s", issue.ProgressLen(issue.Tag(tc.Tag))) }></div>
 							</div>
 							for _, t := range issue.ListTagValues(tc.Tag) {
-								<div x-show="open" class="flex items-center gap-2 pl-1">
-									<span class="w-2 h-2 bg-blue-600 rounded-full"></span>
-									<span class="text-sm truncate text-gray-600">{ t.Value }</span>
-									<span class="text-sm text-gray-400 ml-auto">{ t.PercentsFormatted() }%</span>
+								<div x-show="open" class="flex items-center gap-2 pl-1 max-lg:gap-1">
+									<span class="w-2 h-2 bg-blue-600 rounded-full max-lg:w-1.5 max-lg:h-1.5 max-lg:flex-shrink-0"></span>
+									<span class="text-sm truncate text-gray-600 max-lg:text-xs max-lg:flex-1 max-lg:min-w-0">{ t.Value }</span>
+									<span class="text-sm text-gray-400 max-lg:text-xs">{ t.PercentsFormatted() }%</span>
 								</div>
 							}
 						</div>

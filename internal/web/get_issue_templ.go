@@ -127,7 +127,7 @@ func GetIssueHtmx(issue *warnly.IssueDetails, user *warnly.User, source string) 
 				return templ_7745c5c3_Err
 			}
 		} else {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<div id=\"main-content\" x-data=\"{ activeTab: 'details' }\" class=\"main-content\"><div id=\"content\" class=\"flex-grow bg-white p-4\"><header class=\"border-b border-gray-200\"><div class=\"px-4 py-2\"><div class=\"flex items-center space-x-4\"><nav class=\"flex items-center space-x-2\"><span hx-target=\"#content\" hx-swap=\"outerHTML settle:0\" hx-push-url=\"true\" hx-get=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<div id=\"main-content\" x-data=\"{ activeTab: 'details' }\" class=\"main-content\"><div id=\"content\" class=\"flex-grow bg-white p-4 max-lg:p-2\"><header class=\"border-b border-gray-200\"><div class=\"px-4 py-2 max-lg:px-2\"><div class=\"flex items-center space-x-4 max-lg:space-x-2\"><nav class=\"flex items-center space-x-2 text-sm max-lg:space-x-1 max-lg:text-xs\"><span hx-target=\"#content\" hx-swap=\"outerHTML settle:0\" hx-push-url=\"true\" hx-get=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -140,40 +140,40 @@ func GetIssueHtmx(issue *warnly.IssueDetails, user *warnly.User, source string) 
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "\" class=\"text-gray-600 text-sm cursor-pointer\">Issues</span> <span class=\"flex items-center space-x-2\"><svg data-testid=\"geist-icon\" height=\"10\" stroke-linejoin=\"round\" style=\"color: currentcolor;\" viewBox=\"0 0 16 16\" width=\"16\"><path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M5.50001 1.93933L6.03034 2.46966L10.8536 7.29288C11.2441 7.68341 11.2441 8.31657 10.8536 8.7071L6.03034 13.5303L5.50001 14.0607L4.43935 13L4.96968 12.4697L9.43935 7.99999L4.96968 3.53032L4.43935 2.99999L5.50001 1.93933Z\" fill=\"currentColor\"></path></svg> <span class=\"font-medium text-sm\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "\" class=\"text-gray-600 cursor-pointer\">Issues</span> <span class=\"flex items-center space-x-2 max-lg:space-x-1\"><svg data-testid=\"geist-icon\" height=\"10\" stroke-linejoin=\"round\" style=\"color: currentcolor;\" viewBox=\"0 0 16 16\" width=\"16\"><path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M5.50001 1.93933L6.03034 2.46966L10.8536 7.29288C11.2441 7.68341 11.2441 8.31657 10.8536 8.7071L6.03034 13.5303L5.50001 14.0607L4.43935 13L4.96968 12.4697L9.43935 7.99999L4.96968 3.53032L4.43935 2.99999L5.50001 1.93933Z\" fill=\"currentColor\"></path></svg> <span class=\"font-medium max-lg:truncate max-lg:max-w-[100px]\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var6 string
 			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(issue.ProjectName)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 38, Col: 62}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 38, Col: 91}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</span></span></nav></div></div><div class=\"px-4 py-2 mt-2 flex items-center justify-between\"><div class=\"flex items-center space-x-4\"><h1 class=\"text-lg font-semibold\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</span></span></nav></div></div><div class=\"px-4 py-2 mt-2 flex items-center justify-between max-lg:px-2\"><div class=\"flex items-center space-x-4 flex-wrap max-lg:space-x-2\"><h1 class=\"text-lg font-semibold max-lg:text-base\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var7 string
 			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(issue.ErrorType)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 45, Col: 58}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 45, Col: 75}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</h1><span class=\"text-gray-600 truncate max-w-xs\" title=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</h1><span class=\"text-gray-600 truncate max-w-xs max-lg:max-w-[120px] max-lg:text-xs\" title=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var8 string
 			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(issue.View)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 46, Col: 71}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 46, Col: 107}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
@@ -186,7 +186,7 @@ func GetIssueHtmx(issue *warnly.IssueDetails, user *warnly.User, source string) 
 			var templ_7745c5c3_Var9 string
 			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(issue.View)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 46, Col: 86}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 46, Col: 122}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 			if templ_7745c5c3_Err != nil {
@@ -197,56 +197,56 @@ func GetIssueHtmx(issue *warnly.IssueDetails, user *warnly.User, source string) 
 				return templ_7745c5c3_Err
 			}
 			if issue.IsNew {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<span class=\"px-2 py-1 bg-yellow-100 rounded text-sm\">New</span>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<span class=\"px-2 py-1 bg-yellow-100 rounded text-sm max-lg:text-xs\">New</span>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			} else {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<span class=\"px-2 py-1 bg-gray-100 rounded text-sm\">Ongoing</span>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "<span class=\"px-2 py-1 bg-gray-100 rounded text-sm max-lg:text-xs\">Ongoing</span>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "</div><div class=\"flex items-center space-x-2 text-sm\"><span class=\"text-gray-600\">Errors</span> <a class=\"text-black-500 text-lg\" href=\"#\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "</div><div class=\"flex items-center space-x-2 text-sm max-lg:space-x-1 max-lg:text-xs\"><span class=\"text-gray-600\">Errors</span> <a class=\"text-black-500 text-lg max-lg:text-sm\" href=\"#\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var10 string
 			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.NumFormatted(issue.TimesSeen))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 55, Col: 88}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 55, Col: 103}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</a></div><div class=\"flex items-center space-x-2 text-sm\"><span class=\"text-gray-600\">Users</span> <a class=\"text-black-500 text-lg\" href=\"#\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</a></div><div class=\"flex items-center space-x-2 text-sm max-lg:space-x-1 max-lg:text-xs\"><span class=\"text-gray-600\">Users</span> <a class=\"text-black-500 text-lg max-lg:text-sm\" href=\"#\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var11 string
 			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.NumFormatted(issue.UserCount))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 59, Col: 88}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 59, Col: 103}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "</a></div><div class=\"flex items-center space-x-2 text-sm\"></div><div class=\"flex items-center space-x-2\"></div></div><div class=\"px-4 flex items-center space-x-2\"><svg data-testid=\"geist-icon\" height=\"16\" stroke-linejoin=\"round\" viewBox=\"0 0 16 16\" width=\"16\" style=\"color: currentcolor;\"><path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M14.5 8C14.5 11.5899 11.5899 14.5 8 14.5C4.41015 14.5 1.5 11.5899 1.5 8C1.5 4.41015 4.41015 1.5 8 1.5C11.5899 1.5 14.5 4.41015 14.5 8ZM16 8C16 12.4183 12.4183 16 8 16C3.58172 16 0 12.4183 0 8C0 3.58172 3.58172 0 8 0C12.4183 0 16 3.58172 16 8ZM10.5 5.5H5.5V10.5H10.5V5.5Z\" fill=\"currentColor\"></path></svg> <span>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "</a></div><div class=\"flex items-center space-x-2 text-sm max-lg:hidden\"></div><div class=\"flex items-center space-x-2 max-lg:hidden\"></div></div><div class=\"px-4 flex items-center space-x-2 max-lg:px-2 max-lg:overflow-x-auto\"><svg data-testid=\"geist-icon\" height=\"16\" stroke-linejoin=\"round\" viewBox=\"0 0 16 16\" width=\"16\" style=\"color: currentcolor;\" class=\"max-lg:h-[14px] max-lg:w-[14px] max-lg:flex-shrink-0\"><path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M14.5 8C14.5 11.5899 11.5899 14.5 8 14.5C4.41015 14.5 1.5 11.5899 1.5 8C1.5 4.41015 4.41015 1.5 8 1.5C11.5899 1.5 14.5 4.41015 14.5 8ZM16 8C16 12.4183 12.4183 16 8 16C3.58172 16 0 12.4183 0 8C0 3.58172 3.58172 0 8 0C12.4183 0 16 3.58172 16 8ZM10.5 5.5H5.5V10.5H10.5V5.5Z\" fill=\"currentColor\"></path></svg> <span class=\"max-lg:text-xs max-lg:whitespace-nowrap\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var12 string
 			templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(issue.ErrorValue)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 66, Col: 30}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 66, Col: 78}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "</span></div><div class=\"px-4 mt-4\"><nav class=\"flex space-x-6 text-sm\"><a id=\"issue_information\" hx-swap=\"outerHTML settle:0\" hx-target=\"#issue_content\" hx-get=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 18, "</span></div><div class=\"px-4 mt-4 max-lg:px-2 max-lg:overflow-x-auto\"><nav class=\"flex space-x-6 text-sm max-lg:space-x-3 max-lg:text-xs max-lg:whitespace-nowrap\"><a id=\"issue_information\" hx-swap=\"outerHTML settle:0\" hx-target=\"#issue_content\" hx-get=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -259,7 +259,7 @@ func GetIssueHtmx(issue *warnly.IssueDetails, user *warnly.User, source string) 
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "\" :class=\"{ 'border-black text-black': activeTab === 'details', 'border-transparent text-gray-500 cursor-pointer': activeTab !== 'details' }\" @click=\"activeTab = 'details'\" class=\"px-3 py-2 border-b-2\">Info</a> <a hx-swap=\"outerHTML settle:0\" hx-target=\"#issue_content\" hx-get=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 19, "\" :class=\"{ 'border-black text-black': activeTab === 'details', 'border-transparent text-gray-500 cursor-pointer': activeTab !== 'details' }\" @click=\"activeTab = 'details'\" class=\"px-3 py-2 border-b-2 max-lg:px-2\">Info</a> <a hx-swap=\"outerHTML settle:0\" hx-target=\"#issue_content\" hx-get=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -272,14 +272,14 @@ func GetIssueHtmx(issue *warnly.IssueDetails, user *warnly.User, source string) 
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "\" :class=\"{ 'border-black text-black': activeTab === 'activity', 'border-transparent text-gray-500 cursor-pointer': activeTab !== 'activity' }\" @click=\"activeTab = 'activity'\" class=\"px-3 py-2 text-gray-600 border-b-2\">Discuss <span id=\"message_cnt\" class=\"text-gray-400\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "\" :class=\"{ 'border-black text-black': activeTab === 'activity', 'border-transparent text-gray-500 cursor-pointer': activeTab !== 'activity' }\" @click=\"activeTab = 'activity'\" class=\"px-3 py-2 text-gray-600 border-b-2 max-lg:px-2\">Discuss <span id=\"message_cnt\" class=\"text-gray-400\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var15 string
 			templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", issue.MessagesCount))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 71, Col: 469}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 71, Col: 481}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 			if templ_7745c5c3_Err != nil {
@@ -298,7 +298,7 @@ func GetIssueHtmx(issue *warnly.IssueDetails, user *warnly.User, source string) 
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "\" :class=\"{ 'border-black text-black': activeTab === 'tags', 'border-transparent text-gray-500 cursor-pointer': activeTab !== 'tags' }\" @click=\"activeTab = 'tags'\" class=\"px-3 py-2 text-gray-600 border-b-2\">Fields</a> <a hx-swap=\"outerHTML settle:0\" hx-target=\"#issue_content\" hx-get=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 22, "\" :class=\"{ 'border-black text-black': activeTab === 'tags', 'border-transparent text-gray-500 cursor-pointer': activeTab !== 'tags' }\" @click=\"activeTab = 'tags'\" class=\"px-3 py-2 text-gray-600 border-b-2 max-lg:px-2\">Fields</a> <a hx-swap=\"outerHTML settle:0\" hx-target=\"#issue_content\" hx-get=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -311,7 +311,7 @@ func GetIssueHtmx(issue *warnly.IssueDetails, user *warnly.User, source string) 
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "\" :class=\"{ 'border-black text-black': activeTab === 'all', 'border-transparent text-gray-500 cursor-pointer': activeTab !== 'all' }\" @click=\"activeTab = 'all'\" class=\"px-3 py-2 text-gray-600 border-b-2\">All Errors</a></nav></div></header>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 23, "\" :class=\"{ 'border-black text-black': activeTab === 'all', 'border-transparent text-gray-500 cursor-pointer': activeTab !== 'all' }\" @click=\"activeTab = 'all'\" class=\"px-3 py-2 text-gray-600 border-b-2 max-lg:px-2\">All Errors</a></nav></div></header>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -372,27 +372,27 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "<div id=\"issue_content\" class=\"flex\" x-data=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 27, "<div id=\"issue_content\" class=\"flex max-lg:flex-col\" x-data=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var20 string
 		templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs("{ copyToClipboard(text) { navigator.clipboard.writeText(text); showToast('Copied to clipboard'); } }")
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 88, Col: 149}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 88, Col: 165}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "\"><main class=\"flex-1 p-6\"><div class=\"flex items-center justify-between mb-6\"><div class=\"flex items-center space-x-1\"><span class=\"font-semibold\">ID:</span> <span class=\"text-gray-600 cursor-pointer\" title=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 28, "\"><main class=\"flex-1 p-6 max-lg:p-3\"><div class=\"flex items-center justify-between mb-6 max-lg:mb-4\"><div class=\"flex items-center space-x-1\"><span class=\"font-semibold max-lg:text-xs\">ID:</span> <span class=\"text-gray-600 cursor-pointer max-lg:text-xs\" title=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var21 string
 		templ_7745c5c3_Var21, templ_7745c5c3_Err = templ.JoinStringErrs(issue.EventID())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 93, Col: 71}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 93, Col: 86}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var21))
 		if templ_7745c5c3_Err != nil {
@@ -405,7 +405,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 		var templ_7745c5c3_Var22 string
 		templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("copyToClipboard('%s')", issue.EventID()))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 93, Col: 136}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 93, Col: 151}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
 		if templ_7745c5c3_Err != nil {
@@ -418,20 +418,20 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 		var templ_7745c5c3_Var23 string
 		templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(issue.EventID()[:6])
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 93, Col: 160}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 93, Col: 175}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "</span> <svg data-testid=\"geist-icon\" height=\"16\" stroke-linejoin=\"round\" viewBox=\"0 0 24 24\" width=\"16\" style=\"color: currentcolor;\" class=\"cursor-pointer\" @click=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 31, "</span> <svg data-testid=\"geist-icon\" height=\"16\" stroke-linejoin=\"round\" viewBox=\"0 0 24 24\" width=\"16\" style=\"color: currentcolor;\" class=\"cursor-pointer max-lg:h-[14px] max-lg:w-[14px]\" @click=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var24 string
 		templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("copyToClipboard('%s')", issue.EventID()))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 94, Col: 216}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 94, Col: 248}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var24))
 		if templ_7745c5c3_Err != nil {
@@ -442,14 +442,14 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 			return templ_7745c5c3_Err
 		}
 		if issue.LastEvent.UserID != "" {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 33, "<div class=\"bg-white rounded-lg mb-6\"><h2 class=\"text-sm font-medium text-gray-700 mb-2\">User Info</h2><div class=\"flex items-center space-x-4\"><div class=\"flex flex-col\"><span class=\"text-xs text-gray-500\">Identifier</span> <span class=\"font-mono text-sm text-gray-800\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 33, "<div class=\"bg-white rounded-lg mb-6 max-lg:mb-4\"><h2 class=\"text-sm font-medium text-gray-700 mb-2 max-lg:text-xs\">User Info</h2><div class=\"flex items-center space-x-4 max-lg:flex-wrap max-lg:gap-2\"><div class=\"flex flex-col max-lg:min-w-[120px]\"><span class=\"text-xs text-gray-500\">Identifier</span> <span class=\"font-mono text-sm text-gray-800 max-lg:text-xs max-lg:truncate\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var25 string
 			templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(issue.LastEvent.UserID)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 105, Col: 77}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 105, Col: 108}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var25))
 			if templ_7745c5c3_Err != nil {
@@ -460,14 +460,14 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				return templ_7745c5c3_Err
 			}
 			if issue.LastEvent.UserName != "" {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 35, "<div class=\"flex flex-col\"><span class=\"text-xs text-gray-500\">Name</span> <span class=\"font-mono text-sm text-gray-800\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 35, "<div class=\"flex flex-col max-lg:min-w-[120px]\"><span class=\"text-xs text-gray-500\">Name</span> <span class=\"font-mono text-sm text-gray-800 max-lg:text-xs max-lg:truncate\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var26 string
 				templ_7745c5c3_Var26, templ_7745c5c3_Err = templ.JoinStringErrs(issue.LastEvent.UserName)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 110, Col: 80}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 110, Col: 111}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var26))
 				if templ_7745c5c3_Err != nil {
@@ -479,14 +479,14 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				}
 			}
 			if issue.LastEvent.UserUsername != "" {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "<div class=\"flex flex-col\"><span class=\"text-xs text-gray-500\">Username</span> <span class=\"font-mono text-sm text-gray-800\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 37, "<div class=\"flex flex-col max-lg:min-w-[120px]\"><span class=\"text-xs text-gray-500\">Username</span> <span class=\"font-mono text-sm text-gray-800 max-lg:text-xs max-lg:truncate\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var27 string
 				templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(issue.LastEvent.UserUsername)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 116, Col: 84}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 116, Col: 115}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var27))
 				if templ_7745c5c3_Err != nil {
@@ -498,14 +498,14 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				}
 			}
 			if issue.LastEvent.UserEmail != "" {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 39, "<div class=\"flex flex-col\"><span class=\"text-xs text-gray-500\">Email</span> <span class=\"font-mono text-sm text-gray-800\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 39, "<div class=\"flex flex-col max-lg:min-w-[120px]\"><span class=\"text-xs text-gray-500\">Email</span> <span class=\"font-mono text-sm text-gray-800 max-lg:text-xs max-lg:truncate\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var28 string
 				templ_7745c5c3_Var28, templ_7745c5c3_Err = templ.JoinStringErrs(issue.LastEvent.UserEmail)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 122, Col: 81}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 122, Col: 112}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var28))
 				if templ_7745c5c3_Err != nil {
@@ -521,7 +521,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 42, "<div class=\"bg-gray-50 border-l-4 border-black-500 rounded-lg p-4 mb-6\"><div class=\"flex items-center gap-2 mb-2\"><svg class=\"w-4 h-4 text-blue-500\" fill=\"currentColor\" viewBox=\"0 0 20 20\"><path fill-rule=\"evenodd\" d=\"M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z\" clip-rule=\"evenodd\"></path></svg><h2 class=\"text-sm font-semibold text-gray-900\">Log Message</h2></div><div class=\"font-mono text-sm text-gray-800\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 42, "<div class=\"bg-gray-50 border-l-4 border-black-500 rounded-lg p-4 mb-6 max-lg:p-3 max-lg:mb-4\"><div class=\"flex items-center gap-2 mb-2\"><svg class=\"w-4 h-4 text-blue-500 max-lg:w-3 max-lg:h-3\" fill=\"currentColor\" viewBox=\"0 0 20 20\"><path fill-rule=\"evenodd\" d=\"M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z\" clip-rule=\"evenodd\"></path></svg><h2 class=\"text-sm font-semibold text-gray-900 max-lg:text-xs\">Log Message</h2></div><div class=\"font-mono text-sm text-gray-800 max-lg:text-xs max-lg:break-words\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -534,7 +534,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 43, "</div></div><div class=\"space-y-2 mt-6\"><div class=\"flex items-center gap-2\"><h2 class=\"text-sm font-medium text-gray-700 mb-2\">Fields</h2></div></div><div class=\"max-w-4xl mx-auto mb-6\"><div class=\"grid grid-cols-3 gap-2\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 43, "</div></div><div class=\"space-y-2 mt-6 max-lg:mt-4\"><div class=\"flex items-center gap-2\"><h2 class=\"text-sm font-medium text-gray-700 mb-2 max-lg:text-xs\">Fields</h2></div></div><div class=\"max-w-4xl mx-auto mb-6 max-lg:mb-4\"><div class=\"grid grid-cols-3 gap-2 max-lg:grid-cols-1\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -707,19 +707,19 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				}
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 58, "</div></div><div class=\"space-y-2 mt-6\"><div class=\"flex items-center gap-2\"><h2 class=\"text-sm font-medium text-gray-700 mb-2\">Contexts</h2></div></div><div class=\"max-w-4xl mx-auto mb-6\"><div class=\"grid grid-cols-2 gap-4\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 58, "</div></div><div class=\"space-y-2 mt-6 max-lg:mt-4\"><div class=\"flex items-center gap-2\"><h2 class=\"text-sm font-medium text-gray-700 mb-2 max-lg:text-xs\">Contexts</h2></div></div><div class=\"max-w-4xl mx-auto mb-6 max-lg:mb-4\"><div class=\"grid grid-cols-2 gap-4 max-lg:grid-cols-1 max-lg:gap-3\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		for _, kv := range sortedGroupContexts(issue.Contexts()) {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 59, "<div class=\"border border-gray-200 rounded-lg p-4 bg-white\"><div class=\"flex items-center justify-between mb-3\"><h3 class=\"text-sm font-semibold text-gray-900\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 59, "<div class=\"border border-gray-200 rounded-lg p-4 bg-white max-lg:p-3\"><div class=\"flex items-center justify-between mb-3 max-lg:mb-2\"><h3 class=\"text-sm font-semibold text-gray-900 max-lg:text-xs\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var42 string
 			templ_7745c5c3_Var42, templ_7745c5c3_Err = templ.JoinStringErrs(strings.Title(kv.Prefix))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 179, Col: 82}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 179, Col: 97}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var42))
 			if templ_7745c5c3_Err != nil {
@@ -793,20 +793,20 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 			return templ_7745c5c3_Err
 		}
 		if issue.HasStackDetails() {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 70, "<div x-data=\"{ showAll: false }\" class=\"bg-white rounded-lg\"><div class=\"max-w-5xl mx-auto bg-white rounded-lg shadow-sm border border-gray-200\"><div class=\"p-1 border-b border-gray-100 flex items-center gap-4\"><div class=\"bg-black text-white rounded p-2 shrink-0\"><span class=\"font-mono\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 70, "<div x-data=\"{ showAll: false }\" class=\"bg-white rounded-lg\"><div class=\"max-w-5xl mx-auto bg-white rounded-lg shadow-sm border border-gray-200\"><div class=\"p-1 border-b border-gray-100 flex items-center gap-4 max-lg:p-2 max-lg:flex-col max-lg:gap-2\"><div class=\"bg-black text-white rounded p-2 shrink-0 max-lg:p-1.5 max-lg:self-start\"><span class=\"font-mono max-lg:text-xs\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var45 string
 			templ_7745c5c3_Var45, templ_7745c5c3_Err = templ.JoinStringErrs(issue.GetPlatform())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 216, Col: 53}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 216, Col: 68}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var45))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 71, "</span></div><div class=\"flex-1 text-gray-600\"><div class=\"text-xs\">Noticed in<span class=\"font-mono\">: ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 71, "</span></div><div class=\"flex-1 text-gray-600\"><div class=\"text-xs max-lg:break-all\">Noticed in<span class=\"font-mono\">: ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -837,7 +837,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				return templ_7745c5c3_Err
 			}
 			for _, f := range issue.StackVisible() {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 74, "<div class=\"p-4 hover:bg-gray-50 flex items-center justify-between\"><div class=\"flex-1\"><div class=\"text-xs\"><span class=\"font-mono text-gray-700\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 74, "<div class=\"p-4 hover:bg-gray-50 flex items-center justify-between max-lg:p-2 max-lg:flex-col max-lg:gap-2\"><div class=\"flex-1 max-lg:min-w-0\"><div class=\"text-xs max-lg:break-all\"><span class=\"font-mono text-gray-700\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -850,7 +850,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 75, "</span> <span class=\"text-gray-500\">in</span> <span class=\"text-gray-600\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 75, "</span> <span class=\"text-gray-500 max-lg:mx-1\">in</span> <span class=\"text-gray-600\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -863,7 +863,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 76, "</span> <span class=\"text-gray-500\">at line</span> <span class=\"text-gray-700\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 76, "</span> <span class=\"text-gray-500 max-lg:mx-1\">at line</span> <span class=\"text-gray-700\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -876,14 +876,14 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 77, "</span></div></div><span class=\"px-2 py-1 rounded text-xs bg-blue-50 text-blue-600\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 77, "</span></div></div><span class=\"px-2 py-1 rounded text-xs bg-blue-50 text-blue-600 max-lg:self-start\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var51 string
 				templ_7745c5c3_Var51, templ_7745c5c3_Err = templ.JoinStringErrs(f.InAppStr())
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 236, Col: 88}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 236, Col: 106}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var51))
 				if templ_7745c5c3_Err != nil {
@@ -899,7 +899,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				return templ_7745c5c3_Err
 			}
 			for _, f := range issue.StackHidden() {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 80, "<div class=\"p-4 hover:bg-gray-50 flex items-center justify-between\"><div class=\"flex-1\"><div class=\"text-xs\"><span class=\"font-mono text-gray-700\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 80, "<div class=\"p-4 hover:bg-gray-50 flex items-center justify-between max-lg:p-2 max-lg:flex-col max-lg:gap-2\"><div class=\"flex-1 max-lg:min-w-0\"><div class=\"text-xs max-lg:break-all\"><span class=\"font-mono text-gray-700\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -912,7 +912,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 81, "</span> <span class=\"text-gray-500\">in</span> <span class=\"text-gray-600\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 81, "</span> <span class=\"text-gray-500 max-lg:mx-1\">in</span> <span class=\"text-gray-600\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -925,7 +925,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 82, "</span> <span class=\"text-gray-500\">at line</span> <span class=\"text-gray-700\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 82, "</span> <span class=\"text-gray-500 max-lg:mx-1\">at line</span> <span class=\"text-gray-700\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -938,14 +938,14 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 83, "</span></div></div><span class=\"px-2 py-1 rounded text-xs bg-blue-50 text-blue-600\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 83, "</span></div></div><span class=\"px-2 py-1 rounded text-xs bg-blue-50 text-blue-600 max-lg:self-start\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var55 string
 				templ_7745c5c3_Var55, templ_7745c5c3_Err = templ.JoinStringErrs(f.InAppStr())
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 251, Col: 89}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 251, Col: 107}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var55))
 				if templ_7745c5c3_Err != nil {
@@ -956,12 +956,12 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 85, "</div><div class=\"p-4 text-center\"><button @click=\"showAll = !showAll\" class=\"text-sm cursor-pointer text-blue-600 hover:text-blue-700\"><span x-show=\"!showAll\">Show more</span> <span x-show=\"showAll\">Show less</span></button></div></div></div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 85, "</div><div class=\"p-4 text-center max-lg:p-3\"><button @click=\"showAll = !showAll\" class=\"text-sm cursor-pointer text-blue-600 hover:text-blue-700 max-lg:text-xs\"><span x-show=\"!showAll\">Show more</span> <span x-show=\"showAll\">Show less</span></button></div></div></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 86, "</main><aside class=\"w-80 border-l border-gray-200 p-6\"><div class=\"space-y-6\"><div><h3 class=\"text-sm font-medium text-gray-600 mb-2\">Assigned To</h3><div x-data=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 86, "</main><aside class=\"w-80 border-l border-gray-200 p-6 max-lg:w-full max-lg:border-t max-lg:border-l-0 max-lg:p-4\"><div class=\"space-y-6 max-lg:space-y-3\"><div class=\"max-lg:bg-gray-50 max-lg:p-3 max-lg:rounded-lg\"><h3 class=\"text-sm font-medium text-gray-600 mb-2 max-lg:text-xs max-lg:mb-2\">Assigned To</h3><div x-data=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -974,7 +974,7 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 87, "\"><button @click=\"open = !open\" class=\"inline-flex items-center p-2.5 mr-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 cursor-pointer\"><span x-text=\"selected\"></span> <svg class=\"ml-2 h-5 w-5 text-gray-400\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M19 9l-7 7-7-7\"></path></svg></button><div x-show=\"open\" @click.away=\"open = false\" class=\"absolute mt-2 w-48 rounded-md bg-white shadow-lg z-10\"><ul class=\"py-1 text-sm text-gray-700\"><li x-show=\"selected !== 'Unassigned'\"><a href=\"#\" @click.prevent=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 87, "\"><button @click=\"open = !open\" class=\"inline-flex items-center p-2.5 mr-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 cursor-pointer max-lg:w-full max-lg:justify-between max-lg:mr-0 max-lg:p-2 max-lg:text-xs\"><span x-text=\"selected\" class=\"max-lg:truncate max-lg:max-w-[200px]\"></span> <svg class=\"ml-2 h-5 w-5 text-gray-400 max-lg:h-4 max-lg:w-4 flex-shrink-0\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M19 9l-7 7-7-7\"></path></svg></button><div x-show=\"open\" @click.away=\"open = false\" class=\"absolute mt-2 w-48 rounded-md bg-white shadow-lg z-10 max-lg:w-full max-lg:max-w-sm\"><ul class=\"py-1 text-sm text-gray-700 max-lg:text-xs\"><li x-show=\"selected !== 'Unassigned'\"><a href=\"#\" @click.prevent=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -1056,84 +1056,84 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				}
 			}
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 95, "</ul></div></div></div><div><h3 class=\"text-sm font-medium text-gray-600 mb-2\">Last 24 Hours</h3><div class=\"text-2xl font-semibold\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 95, "</ul></div></div></div><div class=\"max-lg:grid max-lg:grid-cols-2 max-lg:gap-3\"><div class=\"max-lg:bg-gray-50 max-lg:p-3 max-lg:rounded-lg\"><h3 class=\"text-sm font-medium text-gray-600 mb-2 max-lg:text-xs max-lg:mb-1\">Last 24 Hours</h3><div class=\"text-2xl font-semibold max-lg:text-lg\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var62 string
 		templ_7745c5c3_Var62, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.NumFormatted(issue.Total24Hours))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 320, Col: 82}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 321, Col: 98}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var62))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 96, "</div></div><div><h3 class=\"text-sm font-medium text-gray-600 mb-2\">Last 30 Days</h3><div class=\"text-2xl font-semibold\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 96, "</div></div><div class=\"max-lg:bg-gray-50 max-lg:p-3 max-lg:rounded-lg max-lg:mt-0 mt-6\"><h3 class=\"text-sm font-medium text-gray-600 mb-2 max-lg:text-xs max-lg:mb-1\">Last 30 Days</h3><div class=\"text-2xl font-semibold max-lg:text-lg\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var63 string
 		templ_7745c5c3_Var63, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.NumFormatted(issue.Total30Days))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 324, Col: 81}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 325, Col: 97}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var63))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 97, "</div></div><div><h3 class=\"text-sm font-medium text-gray-600 mb-2\">Last Noticed</h3><div class=\"\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 97, "</div></div><div class=\"max-lg:bg-gray-50 max-lg:p-3 max-lg:rounded-lg max-lg:mt-0 mt-6\"><h3 class=\"text-sm font-medium text-gray-600 mb-2 max-lg:text-xs max-lg:mb-1\">Last Noticed</h3><div class=\"max-lg:text-sm\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var64 string
 		templ_7745c5c3_Var64, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.TimeAgo(time.Now, issue.LastSeen /* narrow */, false))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 328, Col: 81}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 329, Col: 96}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var64))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 98, " ago</div></div><div><h3 class=\"text-sm font-medium text-gray-600 mb-2\">First Noticed</h3><div class=\"\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 98, " ago</div></div><div class=\"max-lg:bg-gray-50 max-lg:p-3 max-lg:rounded-lg max-lg:mt-0 mt-6\"><h3 class=\"text-sm font-medium text-gray-600 mb-2 max-lg:text-xs max-lg:mb-1\">First Noticed</h3><div class=\"max-lg:text-sm\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var65 string
 		templ_7745c5c3_Var65, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.TimeAgo(time.Now, issue.FirstSeen /* narrow */, false))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 332, Col: 82}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 333, Col: 97}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var65))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 99, " ago</div></div><div class=\"\"><div class=\"flex items-center justify-between mb-6\"><div class=\"flex items-center gap-2\"><h2 class=\"text-lg font-semibold text-gray-900\">Fields</h2></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 99, " ago</div></div></div><div class=\"\"><div class=\"flex items-center justify-between mb-6 max-lg:mb-4\"><div class=\"flex items-center gap-2\"><h2 class=\"text-lg font-semibold text-gray-900 max-lg:text-base\">Fields</h2></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		for _, tc := range issue.TagCount {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 100, "<div x-data=\"{ open: false }\" class=\"mb-6\"><div class=\"flex items-center justify-between mb-2\"><h3 class=\"text-sm font-medium text-gray-700\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 100, "<div x-data=\"{ open: false }\" class=\"mb-6 max-lg:mb-4\"><div class=\"flex items-center justify-between mb-2\"><h3 class=\"text-sm font-medium text-gray-700 max-lg:text-xs\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var66 string
 			templ_7745c5c3_Var66, templ_7745c5c3_Err = templ.JoinStringErrs(tc.Tag)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 343, Col: 62}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 345, Col: 77}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var66))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 101, "</h3><div class=\"flex items-center gap-2 cursor-pointer\" @click=\"open = !open\"><span class=\"text-sm text-gray-500 truncate max-w-xs\" title=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 101, "</h3><div class=\"flex items-center gap-2 cursor-pointer max-lg:gap-1\" @click=\"open = !open\"><span class=\"text-sm text-gray-500 truncate max-w-xs max-lg:text-xs max-lg:max-w-[100px]\" title=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var67 string
 			templ_7745c5c3_Var67, templ_7745c5c3_Err = templ.JoinStringErrs(issue.Tag(tc.Tag))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 345, Col: 88}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 347, Col: 124}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var67))
 			if templ_7745c5c3_Err != nil {
@@ -1146,13 +1146,13 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 			var templ_7745c5c3_Var68 string
 			templ_7745c5c3_Var68, templ_7745c5c3_Err = templ.JoinStringErrs(warnly.Cut(issue.Tag(tc.Tag), 13))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 345, Col: 126}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 347, Col: 162}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var68))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 103, "</span> <svg :class=\"{ 'rotate-180': open }\" class=\"w-4 h-4 text-gray-400 transform transition-transform\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-width=\"2\" d=\"M19 9l-7 7-7-7\"></path></svg></div></div><div x-show=\"open\" class=\"bg-gray-100 rounded-full h-2 mb-2\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 103, "</span> <svg :class=\"{ 'rotate-180': open }\" class=\"w-4 h-4 text-gray-400 transform transition-transform max-lg:w-3 max-lg:h-3 max-lg:flex-shrink-0\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-width=\"2\" d=\"M19 9l-7 7-7-7\"></path></svg></div></div><div x-show=\"open\" class=\"bg-gray-100 rounded-full h-2 mb-2\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -1179,27 +1179,27 @@ func GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) templ.Compon
 				return templ_7745c5c3_Err
 			}
 			for _, t := range issue.ListTagValues(tc.Tag) {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 106, "<div x-show=\"open\" class=\"flex items-center gap-2 pl-1\"><span class=\"w-2 h-2 bg-blue-600 rounded-full\"></span> <span class=\"text-sm truncate text-gray-600\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 106, "<div x-show=\"open\" class=\"flex items-center gap-2 pl-1 max-lg:gap-1\"><span class=\"w-2 h-2 bg-blue-600 rounded-full max-lg:w-1.5 max-lg:h-1.5 max-lg:flex-shrink-0\"></span> <span class=\"text-sm truncate text-gray-600 max-lg:text-xs max-lg:flex-1 max-lg:min-w-0\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var71 string
 				templ_7745c5c3_Var71, templ_7745c5c3_Err = templ.JoinStringErrs(t.Value)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 357, Col: 63}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 359, Col: 107}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var71))
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 107, "</span> <span class=\"text-sm text-gray-400 ml-auto\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 107, "</span> <span class=\"text-sm text-gray-400 max-lg:text-xs\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var72 string
 				templ_7745c5c3_Var72, templ_7745c5c3_Err = templ.JoinStringErrs(t.PercentsFormatted())
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 358, Col: 76}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/get_issue.templ`, Line: 360, Col: 83}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var72))
 				if templ_7745c5c3_Err != nil {
