@@ -15,7 +15,7 @@ templ PlatformHtmx(teams []warnly.Team) {
 		@Toast()
 		<section>
 			<h2 class="text-xl font-semibold flex items-center gap-2">
-				<span class="flex items-center rounded justify-center w-6 h-6  bg-black text-white text-sm">1</span>
+				<span class="flex items-center rounded justify-center w-6 h-6 bg-black text-white text-sm">1</span>
 				Platforms
 			</h2>
 			<div class="mt-6">
@@ -23,12 +23,24 @@ templ PlatformHtmx(teams []warnly.Team) {
 					<button class="pb-2 px-1 border-b-2 border-black text-black">Supported</button>
 				</nav>
 				<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 mt-6">
-					<button :class="{ 'bg-gray-200': selectedPlatform === 'go' }" @click="selectPlatform('go')" class="flex cursor-pointer flex-col items-center p-4 rounded-lg">
-						<div class="w-12 h-12 flex items-center justify-center text-2xl bg-gray-100 rounded-lg mb-2">Go</div>
+					<button
+						:class="{ 'bg-gray-200': selectedPlatform === 'go' }"
+						@click="selectPlatform('go')"
+						class="flex cursor-pointer flex-col items-center p-4 rounded-lg"
+					>
+						<div class="w-12 h-12 flex items-center justify-center text-2xl bg-gray-100 rounded-lg mb-2">
+							Go
+						</div>
 						<span class="text-xs text-gray-600">Go</span>
 					</button>
-					<button :class="{ 'bg-gray-200': selectedPlatform === 'asp' }" @click="selectPlatform('asp')" class="flex cursor-pointer flex-col items-center p-4 rounded-lg">
-						<div class="w-12 h-12 flex items-center justify-center text-2xl bg-gray-100 rounded-lg mb-2">.NET</div>
+					<button
+						:class="{ 'bg-gray-200': selectedPlatform === 'asp' }"
+						@click="selectPlatform('asp')"
+						class="flex cursor-pointer flex-col items-center p-4 rounded-lg"
+					>
+						<div class="w-12 h-12 flex items-center justify-center text-2xl bg-gray-100 rounded-lg mb-2">
+							.NET
+						</div>
 						<span class="text-xs text-gray-600">ASP.NET CORE</span>
 					</button>
 				</div>
@@ -41,18 +53,35 @@ templ PlatformHtmx(teams []warnly.Team) {
 			</h2>
 			<div class="mt-6 space-y-6">
 				<div class="flex items-center space-x-2">
-					<input @click="alerts.highPriority = !alerts.highPriority" type="checkbox" id="high-priority" name="priority" class="text-white bg-black focus:ring-black"/>
+					<input
+						@click="alerts.highPriority = !alerts.highPriority"
+						type="checkbox"
+						id="high-priority"
+						name="priority"
+						class="text-white bg-black focus:ring-black"
+					/>
 					<label for="high-priority">Alert me on issues</label>
 				</div>
-				<div class="flex items-center gap-4">
-					<span class="text-gray-600">When there are more than</span>
-					<input x-model.number="alerts.threshold" type="number" value="10" class="w-20 p-2 bg-white border border-gray-300 rounded-md"/>
-					<select x-model.number="alerts.condition" class="w-40 p-2 border border-gray-300 rounded-md bg-white">
+				<div class="flex flex-wrap md:flex-nowrap items-center gap-4 gap-y-3">
+					<span class="text-gray-600 whitespace-nowrap shrink-0">When there are more than</span>
+					<input
+						x-model.number="alerts.threshold"
+						type="number"
+						value="10"
+						class="w-full md:w-20 p-2 bg-white border border-gray-300 rounded-md shrink-0"
+					/>
+					<select
+						x-model.number="alerts.condition"
+						class="w-full md:w-40 p-2 border border-gray-300 rounded-md bg-white shrink-0"
+					>
 						<option value="1">occurrences of</option>
 						<option value="2">users affected by</option>
 					</select>
-					<span class="text-gray-600">a unique error in</span>
-					<select x-model.number="alerts.timeframe" class="w-40 p-2 border-gray-300 border bg-white rounded-md">
+					<span class="text-gray-600 whitespace-nowrap shrink-0">a unique error in</span>
+					<select
+						x-model.number="alerts.timeframe"
+						class="w-full md:w-40 p-2 border border-gray-300 rounded-md bg-white shrink-0"
+					>
 						<option value="1">one minute</option>
 						<option value="2">5 minutes</option>
 						<option value="3">15 minutes</option>
@@ -73,19 +102,36 @@ templ PlatformHtmx(teams []warnly.Team) {
 				<div>
 					<label for="project-name" class="block text-sm font-medium text-gray-700">Project name</label>
 					<div class="flex items-center mt-1">
-						<input x-model="projectName" type="text" id="project-name" placeholder="go" class="w-full p-3 border border-gray-300 rounded-md"/>
+						<input
+							x-model="projectName"
+							type="text"
+							id="project-name"
+							placeholder="go"
+							class="w-full p-3 border border-gray-300 rounded-md"
+						/>
 					</div>
 				</div>
 				<div>
 					<label for="team" class="block text-sm font-medium text-gray-700">Team</label>
-					<select x-model.number="team" id="team" class="mt-1 w-full border border-gray-300 rounded-md bg-white p-3">
+					<select
+						x-model.number="team"
+						id="team"
+						class="mt-1 w-full border border-gray-300 rounded-md bg-white p-3"
+					>
 						for _, team := range teams {
 							<option value={ fmt.Sprintf("%d", team.ID) }>{ team.Name }</option>
 						}
 					</select>
 				</div>
 			</div>
-			<button @click={ "htmxPost()" } :class="isFormValid ? 'bg-black text-white hover:bg-gray-800' : 'bg-gray-300 text-gray-500 cursor-not-allowed'" :disabled="!isFormValid" class="px-4 py-2 mt-8 rounded text-sm transition cursor-pointer">Create Project</button>
+			<button
+				@click={ "htmxPost()" }
+				:class="isFormValid ? 'bg-black text-white hover:bg-gray-800' : 'bg-gray-300 text-gray-500 cursor-not-allowed'"
+				:disabled="!isFormValid"
+				class="px-4 py-2 mt-8 rounded text-sm transition cursor-pointer"
+			>
+				Create Project
+			</button>
 		</section>
 	</div>
 	<script>
