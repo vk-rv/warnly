@@ -35,8 +35,11 @@ templ ProjectDetailsHtmx(details *warnly.ProjectDetails, user *warnly.User, isHt
         },
         updateIssueListCount() {
             const tableBody = document.querySelector('#issuetable tbody');
+            const mobileCards = document.querySelector('#issuetable .md\\:hidden');
             if (tableBody) {
                 this.issueListCount = tableBody.rows.length;
+            } else if (mobileCards) {
+                this.issueListCount = mobileCards.children.length;
             }
         },
         paginatePrev() {
@@ -160,33 +163,33 @@ templ ProjectDetailsHtmx(details *warnly.ProjectDetails, user *warnly.User, isHt
                         },
     }"
 		x-init="updateIssueListCount()"
-		class="flex-grow bg-white p-8"
+		class="flex-grow bg-white p-4 md:p-8"
 	>
-		<header class="flex items-center justify-between mb-8">
-			<div class="flex items-center gap-2 text-gray-600">
+		<header class="flex items-center justify-between mb-4 md:mb-8">
+			<div class="flex items-center gap-2 text-xs md:text-sm text-gray-600">
 				<span class="cursor-pointer" hx-swap="outerHTML settle:0" hx-get="/projects" hx-target="#content" hx-push-url="true">Projects</span>
 				<span class="text-gray-400">/</span>
 				<span class="text-gray-900">Project Details</span>
 			</div>
 		</header>
-		<div class="flex items-center gap-3 mb-8">
-			<div class="w-10 h-10 bg-gray-100 rounded flex items-center justify-center">{ string(details.Project.Name[0]) }</div>
-			<h1 class="text-2xl font-bold">{ details.Project.Name }</h1>
+		<div class="flex items-center gap-2 md:gap-3 mb-4 md:mb-8">
+			<div class="w-8 h-8 md:w-10 md:h-10 bg-gray-100 rounded flex items-center justify-center text-sm md:text-base">{ string(details.Project.Name[0]) }</div>
+			<h1 class="text-xl md:text-2xl font-bold truncate">{ details.Project.Name }</h1>
 		</div>
 		<input type="hidden" id="project-id" value={ fmt.Sprint(details.Project.ID) }/>
 		<input type="hidden" id="project-period" value={ details.Period }/>
-		<div class="flex mb-8">
+		<div class="flex mb-4 md:mb-8">
 			<style>
                 [x-cloak] { display: none !important; }
             </style>
-			<div>
+			<div class="w-full md:w-auto">
 				<div class="flex border hover:bg-gray-50 border-gray-300 rounded-md overflow-hidden bg-white">
 					<button
 						@click="toggleDropdown()"
-						class="flex cursor-pointer items-center px-4 py-2 text-sm"
+						class="flex cursor-pointer items-center px-3 md:px-4 py-2 text-xs md:text-sm w-full md:w-auto justify-between"
 					>
-						<span x-text="displayLabel"></span>
-						<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor" :class="{'transform rotate-180': isOpen}">
+						<span x-text="displayLabel" class="truncate"></span>
+						<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor" :class="{'transform rotate-180': isOpen}">
 							<path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
 						</svg>
 					</button>
@@ -195,18 +198,18 @@ templ ProjectDetailsHtmx(details *warnly.ProjectDetails, user *warnly.User, isHt
 					x-show="isOpen"
 					x-cloak
 					@click.away="isOpen = false"
-					class="absolute mt-2 w-64 rounded-md bg-white shadow-lg z-10"
+					class="absolute mt-2 w-full md:w-64 rounded-md bg-white shadow-lg z-10 left-4 right-4 md:left-auto md:right-auto"
 				>
 					<div>
-						<div class="p-4 border-b border-gray-200">
-							<h3 class="text-sm font-medium text-gray-800">Filter Time Range</h3>
+						<div class="p-3 md:p-4 border-b border-gray-200">
+							<h3 class="text-xs md:text-sm font-medium text-gray-800">Filter Time Range</h3>
 						</div>
 						<div class="p-3">
 							<input
 								type="text"
 								x-model="customRangeInput"
 								placeholder="Custom range: 2h, 4d, 8w..."
-								class="w-full p-2 border text-sm rounded-md focus:outline-none border-gray-300"
+								class="w-full p-2 border text-xs md:text-sm rounded-md focus:outline-none border-gray-300"
 								@keydown.enter="applyCustomRange()"
 								:class="{'border-red-500': customRangeError}"
 							/>
@@ -216,13 +219,13 @@ templ ProjectDetailsHtmx(details *warnly.ProjectDetails, user *warnly.User, isHt
 							<template x-for="(preset, index) in presets" :key="index">
 								<div
 									@click="selectPreset(preset.value)"
-									class="flex text-sm items-center px-3 py-2 hover:bg-gray-50 cursor-pointer"
+									class="flex text-xs md:text-sm items-center px-3 py-2 hover:bg-gray-50 cursor-pointer"
 								>
 									<div class="w-6">
 										<svg
 											x-show="selectedPreset === preset.value"
 											xmlns="http://www.w3.org/2000/svg"
-											class="h-5 w-5 text-black-500"
+											class="h-4 md:h-5 w-4 md:w-5 text-black-500"
 											viewBox="0 0 20 20"
 											fill="currentColor"
 										>
@@ -248,44 +251,46 @@ templ ProjectDetailsHtmx(details *warnly.ProjectDetails, user *warnly.User, isHt
 templ ChartAndTable(details *warnly.ProjectDetails, isHtmx bool) {
 	<div id="chart-and-table">
 		<div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
-			<div class="border-b border-gray-300 p-4 flex justify-between items-center">
+			<div class="border-b border-gray-300 p-3 md:p-4 flex justify-between items-center">
 				<div class="flex items-center gap-3">
 					<div>
-						<h3 class="font-bold text-sm">Number of Errors</h3>
+						<h3 class="font-bold text-xs md:text-sm">Number of Errors</h3>
 					</div>
 				</div>
 			</div>
 			<div class="h-[1px] bg-gray-50"></div>
-			<div class="warnly-project h-[200px]" data-chart={ details.Project.Events.DashboardDataForPeriod(time.Now, details.Period) } data-period={ details.Period }></div>
-			<div class="border-t border-gray-300 p-4 grid grid-cols-2">
-				<div class="text-sm">
+			<div class="h-[150px] md:h-[200px] overflow-hidden">
+				<div class="warnly-project w-full h-full" data-chart={ details.Project.Events.DashboardDataForPeriod(time.Now, details.Period) } data-period={ details.Period }></div>
+			</div>
+			<div class="border-t border-gray-300 p-3 md:p-4 grid grid-cols-1 md:grid-cols-2">
+				<div class="text-xs md:text-sm">
 					<p class="text-gray-500"><span class="font-bold">Total Errors:</span> { details.Project.Events.TotalErrors() } </p>
 				</div>
 			</div>
 		</div>
-		<nav class="flex gap-6 mt-5 justify-between">
-			<div class="flex gap-6">
-				<button id="allIssuesBtn" :class="{ 'border-black text-black': activeTab === 'all', 'border-transparent text-gray-500': activeTab !== 'all' }" @click="changeActiveTab('all')" class="pb-2 text-sm px-1 border-b-2 cursor-pointer">All Issues { details.AllLength() }</button>
-				<button id="newIssuesBtn" :class="{ 'border-black text-black': activeTab === 'new', 'border-transparent text-gray-500': activeTab !== 'new' }" @click="changeActiveTab('new')" class="pb-2 text-sm px-1 border-b-2 cursor-pointer">New Issues { details.NewLength() }</button>
+		<nav class="flex flex-col md:flex-row gap-4 md:gap-6 mt-5 justify-between">
+			<div class="flex gap-4 md:gap-6 overflow-x-auto">
+				<button id="allIssuesBtn" :class="{ 'border-black text-black': activeTab === 'all', 'border-transparent text-gray-500': activeTab !== 'all' }" @click="changeActiveTab('all')" class="pb-2 text-xs md:text-sm px-1 border-b-2 cursor-pointer whitespace-nowrap">All Issues { details.AllLength() }</button>
+				<button id="newIssuesBtn" :class="{ 'border-black text-black': activeTab === 'new', 'border-transparent text-gray-500': activeTab !== 'new' }" @click="changeActiveTab('new')" class="pb-2 text-xs md:text-sm px-1 border-b-2 cursor-pointer whitespace-nowrap">New Issues { details.NewLength() }</button>
 			</div>
-			<div class="flex">
+			<div class="flex gap-2">
 				<button
 					:disabled="page == 1"
-					:class="page == 1 ? 'px-4 py-2 text-sm border rounded-lg flex items-center border-gray-200 cursor-not-allowed opacity-60 bg-gray-100 hover:bg-gray-100' : 'px-4 cursor-pointer py-2 text-sm border rounded-lg hover:bg-gray-50 flex items-center border-gray-300'"
+					:class="page == 1 ? 'px-3 md:px-4 py-2 text-xs md:text-sm border rounded-lg flex items-center justify-center border-gray-200 cursor-not-allowed opacity-60 bg-gray-100 hover:bg-gray-100' : 'px-3 md:px-4 cursor-pointer py-2 text-xs md:text-sm border rounded-lg hover:bg-gray-50 flex items-center justify-center border-gray-300'"
 					@click="paginatePrev()"
-					class="px-4 cursor-pointer py-2 text-sm border rounded-lg hover:bg-gray-50 flex items-center border-gray-300"
+					class="px-3 md:px-4 cursor-pointer py-2 text-xs md:text-sm border rounded-lg hover:bg-gray-50 flex items-center justify-center border-gray-300"
 				>
-					<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<svg class="w-4 h-4 md:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
 					</svg>
 				</button>
 				<button
 					:disabled="issueListCount < 5"
-					:class="issueListCount < 5 ? 'px-4 py-2 text-sm border rounded-lg flex items-center border-gray-200 cursor-not-allowed opacity-60 bg-gray-100 hover:bg-gray-100' : 'px-4 cursor-pointer py-2 text-sm border rounded-lg hover:bg-gray-50 flex items-center ml-2 border-gray-300'"
+					:class="issueListCount < 5 ? 'px-3 md:px-4 py-2 text-xs md:text-sm border rounded-lg flex items-center justify-center border-gray-200 cursor-not-allowed opacity-60 bg-gray-100 hover:bg-gray-100' : 'px-3 md:px-4 cursor-pointer py-2 text-xs md:text-sm border rounded-lg hover:bg-gray-50 flex items-center justify-center border-gray-300'"
 					@click="paginateNext()"
-					class="px-4 cursor-pointer py-2 text-sm border rounded-lg hover:bg-gray-50 flex items-center ml-2 border-gray-300"
+					class="px-3 md:px-4 cursor-pointer py-2 text-xs md:text-sm border rounded-lg hover:bg-gray-50 flex items-center justify-center border-gray-300"
 				>
-					<svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<svg class="w-4 h-4 md:ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
 					</svg>
 				</button>
@@ -326,109 +331,139 @@ templ ChartAndTable(details *warnly.ProjectDetails, isHtmx bool) {
 
 templ IssueListTable(details *warnly.ProjectDetails, isHtmx bool) {
 	if isHtmx {
-		<button hx-swap-oob="true" id="allIssuesBtn" :class="{ 'border-black text-black': activeTab === 'all', 'border-transparent text-gray-500': activeTab !== 'all' }" @click="changeActiveTab('all')" class="pb-2 text-sm px-1 border-b-2 cursor-pointer">All Issues { details.AllLength() }</button>
-		<button hx-swap-oob="true" id="newIssuesBtn" :class="{ 'border-black text-black': activeTab === 'new', 'border-transparent text-gray-500': activeTab !== 'new' }" @click="changeActiveTab('new')" class="pb-2 text-sm px-1 border-b-2 cursor-pointer">New Issues { details.NewLength() }</button>
+		<button hx-swap-oob="true" id="allIssuesBtn" :class="{ 'border-black text-black': activeTab === 'all', 'border-transparent text-gray-500': activeTab !== 'all' }" @click="changeActiveTab('all')" class="pb-2 text-xs md:text-sm px-1 border-b-2 cursor-pointer whitespace-nowrap">All Issues { details.AllLength() }</button>
+		<button hx-swap-oob="true" id="newIssuesBtn" :class="{ 'border-black text-black': activeTab === 'new', 'border-transparent text-gray-500': activeTab !== 'new' }" @click="changeActiveTab('new')" class="pb-2 text-xs md:text-sm px-1 border-b-2 cursor-pointer whitespace-nowrap">New Issues { details.NewLength() }</button>
 	}
-	<table id="issuetable" class="min-w-full">
-		<thead>
-			<tr>
-				<th class="py-3 text-left text-xs font-medium text-gray-500 uppercase">Issue</th>
-				<th class="py-3 text-center text-xs font-medium text-gray-500 uppercase">Errors</th>
-				<th class="py-3 text-center text-xs font-medium text-gray-500 uppercase">Users</th>
-				<th class="py-3 text-center text-xs font-medium text-gray-500 uppercase">Responsible</th>
-			</tr>
-		</thead>
-		<tbody class="bg-white divide-y divide-gray-200">
-			for _, issue := range details.Project.ResultIssueList {
-				<tr class="hover:bg-gray-50 transition duration-150 ease-in-out">
-					<td class="py-4 px-6 w-1/2">
-						<div class="flex items-start cursor-pointer" hx-get={ fmt.Sprintf("/projects/%d/issues/%d?period=14d", details.Project.ID, issue.ID) } hx-target="#main-content" hx-swap="outerHTML settle:0 show:window:top" hx-push-url="true">
-							<a>
-								<div class="flex items-center space-x-1">
-									<span class="text-vercel-blue font-semibold iss-type">{ issue.Type }</span>
-									<span class="text-gray-600 text-sm truncate max-w-xs iss-view" title={ issue.View }>{ issue.View }</span>
-								</div>
-								<div class="text-gray-600 text-sm mt-1 iss-msg">{ issue.Message } </div>
-								<div class="flex items-center space-x-2 mt-2">
-									<span class="text-gray-400 text-xs flex items-center">
-										Last Noticed: { warnly.TimeAgo(time.Now, issue.LastSeen, true) } ago | First Noticed: { warnly.TimeAgo(time.Now, issue.FirstSeen, true) } old
-										if issue.MessagesCount > 0 {
-											| <svg data-testid="geist-icon" height="12" stroke-linejoin="round" style="color: currentcolor; vertical-align: middle; margin-left: 0.15rem;" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" clip-rule="evenodd" d="M2.8914 10.4028L2.98327 10.6318C3.22909 11.2445 3.5 12.1045 3.5 13C3.5 13.3588 3.4564 13.7131 3.38773 14.0495C3.69637 13.9446 4.01409 13.8159 4.32918 13.6584C4.87888 13.3835 5.33961 13.0611 5.70994 12.7521L6.22471 12.3226L6.88809 12.4196C7.24851 12.4724 7.61994 12.5 8 12.5C11.7843 12.5 14.5 9.85569 14.5 7C14.5 4.14431 11.7843 1.5 8 1.5C4.21574 1.5 1.5 4.14431 1.5 7C1.5 8.18175 1.94229 9.29322 2.73103 10.2153L2.8914 10.4028ZM2.8135 15.7653C1.76096 16 1 16 1 16C1 16 1.43322 15.3097 1.72937 14.4367C1.88317 13.9834 2 13.4808 2 13C2 12.3826 1.80733 11.7292 1.59114 11.1903C0.591845 10.0221 0 8.57152 0 7C0 3.13401 3.58172 0 8 0C12.4183 0 16 3.13401 16 7C16 10.866 12.4183 14 8 14C7.54721 14 7.10321 13.9671 6.67094 13.9038C6.22579 14.2753 5.66881 14.6656 5 15C4.23366 15.3832 3.46733 15.6195 2.8135 15.7653Z" fill="currentColor"></path></svg>
-											{ fmt.Sprint(issue.MessagesCount) }
-										}
-									</span>
-								</div>
-							</a>
-						</div>
-					</td>
-					<td class="py-4 text-center font-semibold text-gray-700">{ warnly.NumFormatted(issue.TimesSeen) }</td>
-					<td class="py-4 text-center font-semibold text-gray-700">{ warnly.NumFormatted(issue.UserCount) }</td>
-					<td class="py-4 text-center cursor-pointer">
-						<div class="rounded-full bg-vercel-blue bg-opacity-10 flex items-center justify-center text-vercel-blue font-semibold">
-							if assigned, ok := details.Assignments.AssignedUser(issue.ID); ok {
-								<div onclick={ templ.JSFuncCall("openUserSelector", templ.JSExpression("event"), issue.ID) } class="rounded-full bg-vercel-blue bg-opacity-0 hover:bg-opacity-10 transition px-3 py-2 flex items-center justify-center text-vercel-blue font-semibold cursor-pointer">
-									{ string(assigned.Username) }
-								</div>
-							} else {
-								<button onclick={ templ.JSFuncCall("openUserSelector", templ.JSExpression("event"), issue.ID) } class="px-4  cursor-pointer py-2 text-sm border rounded-lg hover:bg-gray-50 flex items-center border-gray-300">
-									<svg data-testid="geist-icon" height="16" stroke-linejoin="round" style="color:currentColor" viewBox="0 0 16 16" width="13">
-										<path fill-rule="evenodd" clip-rule="evenodd" d="M5.75 0C3.95507 0 2.5 1.45507 2.5 3.25V3.75C2.5 5.54493 3.95507 7 5.75 7H6.25C8.04493 7 9.5 5.54493 9.5 3.75V3.25C9.5 1.45507 8.04493 0 6.25 0H5.75ZM4 3.25C4 2.2835 4.7835 1.5 5.75 1.5H6.25C7.2165 1.5 8 2.2835 8 3.25V3.75C8 4.7165 7.2165 5.5 6.25 5.5H5.75C4.7835 5.5 4 4.7165 4 3.75V3.25ZM12.25 7.25V9H13.75V7.25H15.5V5.75H13.75V4H12.25V5.75H10.5V7.25H12.25ZM1.5 13.1709V14.5H10.5V13.1709C9.68042 11.5377 8.00692 10.5 6.17055 10.5H5.82945C3.99308 10.5 2.31958 11.5377 1.5 13.1709ZM0.0690305 12.6857C1.10604 10.4388 3.35483 9 5.82945 9H6.17055C8.64517 9 10.894 10.4388 11.931 12.6857L12 12.8353V13V15.25V16H11.25H0.75H0V15.25V13V12.8353L0.0690305 12.6857Z" fill="currentColor"></path>
-									</svg>
-								</button>
-							}
-						</div>
-					</td>
-					<div id={ fmt.Sprintf("user-selector-%d", issue.ID) } class="hidden absolute bg-white shadow-lg rounded-lg p-4 z-50 w-48 max-h-64 overflow-y-auto">
-						<h3 class="text-sm font-medium mb-2">Assign User</h3>
-						<ul class="space-y-2">
-							for i := range details.Teammates {
-								if a, ok := details.Assignments.AssignedUser(issue.ID); ok && details.Teammates[i].Name == a.Name {
-									<li
-										class="bg-gray-100 cursor-pointer"
-										hx-post={ fmt.Sprintf("/projects/%d/issues/%d/assignments?issues=all&period=14d", details.Project.ID, issue.ID) }
-										hx-target="#content"
-										hx-swap="outerHTML settle:0"
-										hx-vals={ fmt.Sprintf(`{"user_id":"%d"}`, details.Teammates[i].ID) }
-									>
-										<button class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer">
-											<span class="cursor-pointer">{ details.Teammates[i].FullName() }</span>
-											<svg class="w-4 h-4 text-green-500 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-											</svg>
-										</button>
-									</li>
+	<div id="issuetable" class="w-full">
+		<!-- Desktop Table -->
+		<table class="min-w-full hidden md:table">
+			<thead>
+				<tr>
+					<th class="py-3 text-left text-xs font-medium text-gray-500 uppercase">Issue</th>
+					<th class="py-3 text-center text-xs font-medium text-gray-500 uppercase">Errors</th>
+					<th class="py-3 text-center text-xs font-medium text-gray-500 uppercase">Users</th>
+					<th class="py-3 text-center text-xs font-medium text-gray-500 uppercase">Responsible</th>
+				</tr>
+			</thead>
+			<tbody class="bg-white divide-y divide-gray-200">
+				for _, issue := range details.Project.ResultIssueList {
+					<tr class="hover:bg-gray-50 transition duration-150 ease-in-out">
+						<td class="py-4 px-6 w-1/2">
+							<div class="flex items-start cursor-pointer" hx-get={ fmt.Sprintf("/projects/%d/issues/%d?period=14d", details.Project.ID, issue.ID) } hx-target="#main-content" hx-swap="outerHTML settle:0 show:window:top" hx-push-url="true">
+								<a>
+									<div class="flex items-center space-x-1">
+										<span class="text-vercel-blue font-semibold iss-type">{ issue.Type }</span>
+										<span class="text-gray-600 text-sm truncate max-w-xs iss-view" title={ issue.View }>{ issue.View }</span>
+									</div>
+									<div class="text-gray-600 text-sm mt-1 iss-msg">{ issue.Message } </div>
+									<div class="flex items-center space-x-2 mt-2">
+										<span class="text-gray-400 text-xs flex items-center">
+											Last Noticed: { warnly.TimeAgo(time.Now, issue.LastSeen, true) } ago | First Noticed: { warnly.TimeAgo(time.Now, issue.FirstSeen, true) } old
+											if issue.MessagesCount > 0 {
+												| <svg data-testid="geist-icon" height="12" stroke-linejoin="round" style="color: currentcolor; vertical-align: middle; margin-left: 0.15rem;" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" clip-rule="evenodd" d="M2.8914 10.4028L2.98327 10.6318C3.22909 11.2445 3.5 12.1045 3.5 13C3.5 13.3588 3.4564 13.7131 3.38773 14.0495C3.69637 13.9446 4.01409 13.8159 4.32918 13.6584C4.87888 13.3835 5.33961 13.0611 5.70994 12.7521L6.22471 12.3226L6.88809 12.4196C7.24851 12.4724 7.61994 12.5 8 12.5C11.7843 12.5 14.5 9.85569 14.5 7C14.5 4.14431 11.7843 1.5 8 1.5C4.21574 1.5 1.5 4.14431 1.5 7C1.5 8.18175 1.94229 9.29322 2.73103 10.2153L2.8914 10.4028ZM2.8135 15.7653C1.76096 16 1 16 1 16C1 16 1.43322 15.3097 1.72937 14.4367C1.88317 13.9834 2 13.4808 2 13C2 12.3826 1.80733 11.7292 1.59114 11.1903C0.591845 10.0221 0 8.57152 0 7C0 3.13401 3.58172 0 8 0C12.4183 0 16 3.13401 16 7C16 10.866 12.4183 14 8 14C7.54721 14 7.10321 13.9671 6.67094 13.9038C6.22579 14.2753 5.66881 14.6656 5 15C4.23366 15.3832 3.46733 15.6195 2.8135 15.7653Z" fill="currentColor"></path></svg>
+												{ fmt.Sprint(issue.MessagesCount) }
+											}
+										</span>
+									</div>
+								</a>
+							</div>
+						</td>
+						<td class="py-4 text-center font-semibold text-gray-700">{ warnly.NumFormatted(issue.TimesSeen) }</td>
+						<td class="py-4 text-center font-semibold text-gray-700">{ warnly.NumFormatted(issue.UserCount) }</td>
+						<td class="py-4 text-center cursor-pointer">
+							<div class="rounded-full bg-vercel-blue bg-opacity-10 flex items-center justify-center text-vercel-blue font-semibold">
+								if assigned, ok := details.Assignments.AssignedUser(issue.ID); ok {
+									<div onclick={ templ.JSFuncCall("openUserSelector", templ.JSExpression("event"), issue.ID) } class="rounded-full bg-vercel-blue bg-opacity-0 hover:bg-opacity-10 transition px-3 py-2 flex items-center justify-center text-vercel-blue font-semibold cursor-pointer">
+										{ string(assigned.Username) }
+									</div>
 								} else {
+									<button onclick={ templ.JSFuncCall("openUserSelector", templ.JSExpression("event"), issue.ID) } class="px-4  cursor-pointer py-2 text-sm border rounded-lg hover:bg-gray-50 flex items-center border-gray-300">
+										<svg data-testid="geist-icon" height="16" stroke-linejoin="round" style="color:currentColor" viewBox="0 0 16 16" width="13">
+											<path fill-rule="evenodd" clip-rule="evenodd" d="M5.75 0C3.95507 0 2.5 1.45507 2.5 3.25V3.75C2.5 5.54493 3.95507 7 5.75 7H6.25C8.04493 7 9.5 5.54493 9.5 3.75V3.25C9.5 1.45507 8.04493 0 6.25 0H5.75ZM4 3.25C4 2.2835 4.7835 1.5 5.75 1.5H6.25C7.2165 1.5 8 2.2835 8 3.25V3.75C8 4.7165 7.2165 5.5 6.25 5.5H5.75C4.7835 5.5 4 4.7165 4 3.75V3.25ZM12.25 7.25V9H13.75V7.25H15.5V5.75H13.75V4H12.25V5.75H10.5V7.25H12.25ZM1.5 13.1709V14.5H10.5V13.1709C9.68042 11.5377 8.00692 10.5 6.17055 10.5H5.82945C3.99308 10.5 2.31958 11.5377 1.5 13.1709ZM0.0690305 12.6857C1.10604 10.4388 3.35483 9 5.82945 9H6.17055C8.64517 9 10.894 10.4388 11.931 12.6857L12 12.8353V13V15.25V16H11.25H0.75H0V15.25V13V12.8353L0.0690305 12.6857Z" fill="currentColor"></path>
+										</svg>
+									</button>
+								}
+							</div>
+						</td>
+						<div id={ fmt.Sprintf("user-selector-%d", issue.ID) } class="hidden absolute bg-white shadow-lg rounded-lg p-4 z-50 w-48 max-h-64 overflow-y-auto">
+							<h3 class="text-sm font-medium mb-2">Assign User</h3>
+							<ul class="space-y-2">
+								for i := range details.Teammates {
+									if a, ok := details.Assignments.AssignedUser(issue.ID); ok && details.Teammates[i].Name == a.Name {
+										<li
+											class="bg-gray-100 cursor-pointer"
+											hx-post={ fmt.Sprintf("/projects/%d/issues/%d/assignments?issues=all&period=14d", details.Project.ID, issue.ID) }
+											hx-target="#content"
+											hx-swap="outerHTML settle:0"
+											hx-vals={ fmt.Sprintf(`{"user_id":"%d"}`, details.Teammates[i].ID) }
+										>
+											<button class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer">
+												<span class="cursor-pointer">{ details.Teammates[i].FullName() }</span>
+												<svg class="w-4 h-4 text-green-500 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+												</svg>
+											</button>
+										</li>
+									} else {
+										<li
+											hx-post={ fmt.Sprintf("/projects/%d/issues/%d/assignments?issues=all&period=14d", details.Project.ID, issue.ID) }
+											hx-target="#content"
+											hx-swap="outerHTML settle:0"
+											hx-vals={ fmt.Sprintf(`{"user_id":"%d"}`, details.Teammates[i].ID) }
+											class="hover:bg-gray-100 cursor-pointer"
+										>
+											<button
+												class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer"
+											>
+												<span class="cursor-pointer">{ details.Teammates[i].FullName() }</span>
+											</button>
+										</li>
+									}
+								}
+								if _, ok := details.Assignments.AssignedUser(issue.ID); ok {
 									<li
-										hx-post={ fmt.Sprintf("/projects/%d/issues/%d/assignments?issues=all&period=14d", details.Project.ID, issue.ID) }
+										hx-delete={ fmt.Sprintf("/projects/%d/issues/%d/assignments?issues=all&period=14d", details.Project.ID, issue.ID) }
 										hx-target="#content"
 										hx-swap="outerHTML settle:0"
-										hx-vals={ fmt.Sprintf(`{"user_id":"%d"}`, details.Teammates[i].ID) }
 										class="hover:bg-gray-100 cursor-pointer"
 									>
-										<button
-											class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer"
-										>
-											<span class="cursor-pointer">{ details.Teammates[i].FullName() }</span>
+										<button class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer w-full text-left text-red-500">
+											Unassign
 										</button>
 									</li>
 								}
-							}
-							if _, ok := details.Assignments.AssignedUser(issue.ID); ok {
-								<li
-									hx-delete={ fmt.Sprintf("/projects/%d/issues/%d/assignments?issues=all&period=14d", details.Project.ID, issue.ID) }
-									hx-target="#content"
-									hx-swap="outerHTML settle:0"
-									class="hover:bg-gray-100 cursor-pointer"
-								>
-									<button class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer w-full text-left text-red-500">
-										Unassign
-									</button>
-								</li>
-							}
-						</ul>
+							</ul>
+						</div>
+					</tr>
+				}
+			</tbody>
+		</table>
+		<!-- Mobile Cards -->
+		<div class="md:hidden space-y-3">
+			for _, issue := range details.Project.ResultIssueList {
+				<div class="bg-white border border-gray-200 rounded-lg p-4 cursor-pointer hover:bg-gray-50 transition min-h-[140px] flex flex-col" hx-get={ fmt.Sprintf("/projects/%d/issues/%d?period=14d", details.Project.ID, issue.ID) } hx-target="#main-content" hx-swap="outerHTML settle:0 show:window:top" hx-push-url="true">
+					<div class="flex items-start justify-between gap-2 mb-2">
+						<div class="flex-1 min-w-0">
+							<span class="text-vercel-blue font-semibold text-sm block mb-1">{ issue.Type }</span>
+							<span class="text-gray-600 text-xs truncate block" title={ issue.View }>{ issue.View }</span>
+						</div>
+						<div class="flex flex-col items-end gap-1 flex-shrink-0">
+							<span class="text-xs text-gray-500 whitespace-nowrap">{ warnly.NumFormatted(issue.TimesSeen) } errors</span>
+							<span class="text-xs text-gray-500 whitespace-nowrap">{ warnly.NumFormatted(issue.UserCount) } users</span>
+						</div>
 					</div>
-				</tr>
+					<p class="text-gray-700 text-sm mb-2 overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">{ issue.Message }</p>
+					<div class="flex flex-wrap items-center justify-between gap-2 text-xs text-gray-400 mt-auto">
+						<div class="flex flex-col gap-1">
+							<span class="whitespace-nowrap">Last: { warnly.TimeAgo(time.Now, issue.LastSeen, true) } ago</span>
+							<span class="whitespace-nowrap">First: { warnly.TimeAgo(time.Now, issue.FirstSeen, true) } old</span>
+						</div>
+						if assigned, ok := details.Assignments.AssignedUser(issue.ID); ok {
+							<span class="bg-vercel-blue bg-opacity-10 text-vercel-blue px-2 py-1 rounded text-xs font-medium whitespace-nowrap">{ string(assigned.Username) }</span>
+						}
+					</div>
+				</div>
 			}
-		</tbody>
-	</table>
+		</div>
+	</div>
 }
