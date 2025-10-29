@@ -79,7 +79,7 @@ services:
       context: .
       dockerfile: Dockerfile.air
     environment:
-      - DB_DSN=${DB_DSN}
+      - MYSQL_DSN=${MYSQL_DSN}
       - CLICKHOUSE_DSN=${CLICKHOUSE_DSN}
       - SCHEME=${SCHEME}
       - CERT_FILE=${CERT_FILE}

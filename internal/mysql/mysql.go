@@ -29,7 +29,7 @@ func (l *SQLogger) Print(v ...any) {
 
 // DBConfig contains information sufficient for database connection.
 type DBConfig struct {
-	DSN        string        `env:"DB_DSN"      env-default:"username:password@protocol(address)/dbname?param=value" yaml:"dsn"`
+	DSN        string        `env:"MYSQL_DSN"      env-default:"username:password@protocol(address)/dbname?param=value" yaml:"dsn"`
 	PoolConfig PoolConfig    `yaml:"poolConfig"`
 	Timeout    time.Duration `yaml:"timeout"` // timeout for trying to connect to the database
 }
