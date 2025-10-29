@@ -275,7 +275,7 @@ func run(cfg *config, logger *slog.Logger) error {
 
 	handler = otelhttp.NewHandler(handler, "/", otelhttp.WithTracerProvider(tracingProvider))
 
-	err = sessionService.CreateUserIfNotExists(termCtx, cfg.User.Email, cfg.User.Password)
+	err = sessionService.CreateUserIfNotExists(termCtx, cfg.Admin.Email, cfg.Admin.Password)
 	if err != nil {
 		return err
 	}
@@ -444,9 +444,9 @@ type config struct {
 		EmailMatches    []string `env:"OIDC_EMAIL_MATCHES"`
 		UsePKCE         bool     `env:"OIDC_USE_PKCE" env-default:"true"`
 	}
-	User struct {
-		Email    string `env:"USER_EMAIL"    env-required:"true"`
-		Password string `env:"USER_PASSWORD" env-required:"true"`
+	Admin struct {
+		Email    string `env:"ADMIN_EMAIL"    env-required:"true"`
+		Password string `env:"ADMIN_PASSWORD" env-required:"true"`
 	}
 	ClickHouse struct {
 		DSN string `env:"CLICKHOUSE_DSN" env-required:"true"`
