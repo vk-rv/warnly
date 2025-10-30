@@ -171,6 +171,7 @@ type EventClickhouse struct {
 	Deleted                 uint8     `ch:"deleted"`
 }
 
+// GetExceptionStackTypes returns a list of exception stack types.
 func GetExceptionStackTypes(exceptions []Exception) []string {
 	if len(exceptions) == 0 {
 		return []string{}
@@ -184,6 +185,7 @@ func GetExceptionStackTypes(exceptions []Exception) []string {
 	return types
 }
 
+// GetExceptionStackValues returns a list of exception stack values.
 func GetExceptionStackValues(exceptions []Exception) []string {
 	if len(exceptions) == 0 {
 		return []string{}

@@ -25,6 +25,7 @@ type Assignments struct {
 	IssueToAssigned map[int64]*Teammate
 }
 
+// AssignedUser returns the assigned user for the given issue.
 func (a *Assignments) AssignedUser(issueID int64) (*Teammate, bool) {
 	if a.IssueToAssigned == nil {
 		return nil, false
@@ -33,6 +34,7 @@ func (a *Assignments) AssignedUser(issueID int64) (*Teammate, bool) {
 	return assigned, ok
 }
 
+// AssingmentStore is the interface for the assignment storage.
 type AssingmentStore interface {
 	// CreateAssingment creates a new issue assignment in the database.
 	CreateAssingment(ctx context.Context, assignment *Assignment) error

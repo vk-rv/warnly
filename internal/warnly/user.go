@@ -121,5 +121,8 @@ func UsernameFromEmail(email string) (string, error) {
 		return "", fmt.Errorf("invalid email format: %s", email)
 	}
 	username := email[:atIndex]
+	if username == "" {
+		return "", fmt.Errorf("invalid email format: %s", email)
+	}
 	return username, nil
 }
