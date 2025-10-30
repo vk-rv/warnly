@@ -3,6 +3,7 @@
 package stdlog
 
 import (
+	"fmt"
 	"log/slog"
 	"os"
 )
@@ -51,10 +52,10 @@ func NewSlogLogger(output LogOutput, isText bool) *slog.Logger {
 
 // Logf logs informational messages using slog's Info level.
 func (l *SlogLogger) Logf(format string, args ...any) {
-	l.logger.Info(format, args...)
+	l.logger.Info(fmt.Sprintf(format, args...))
 }
 
 // Errorf logs error messages using slog's Error level.
 func (l *SlogLogger) Errorf(format string, args ...any) {
-	l.logger.Error(format, args...)
+	l.logger.Error(fmt.Sprintf(format, args...))
 }
