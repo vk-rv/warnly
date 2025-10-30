@@ -30,6 +30,7 @@ import (
 	"github.com/vk-rv/warnly/internal/server"
 	sessionstore "github.com/vk-rv/warnly/internal/session"
 	"github.com/vk-rv/warnly/internal/stdlog"
+	"github.com/vk-rv/warnly/internal/svc/alert"
 	"github.com/vk-rv/warnly/internal/svc/event"
 	"github.com/vk-rv/warnly/internal/svc/project"
 	"github.com/vk-rv/warnly/internal/svc/session"
@@ -149,6 +150,7 @@ func run(cfg *config, logger *slog.Logger) error {
 	messageStore := mysql.NewMessageStore(db)
 	mentionStore := mysql.NewMentionStore(db)
 	assingmentStore := mysql.NewAssingmentStore(db)
+	alertStore := mysql.NewAlertStore(db)
 
 	olap := ch.NewClickhouseStore(clickConn, tracingProvider)
 
@@ -206,6 +208,8 @@ func run(cfg *config, logger *slog.Logger) error {
 
 	eventService := event.NewEventService(projectStore, issueStore, memoryCache, olap, now)
 
+	alertService := alert.NewAlertService(alertStore, logger.With(slog.String("service", "alert")))
+
 	isHTTPS := cfg.Server.Scheme == "https"
 
 	cookieStore := sessionstore.NewCookieStore(now, cfg.SessionKey)
@@ -253,6 +257,7 @@ func run(cfg *config, logger *slog.Logger) error {
 		EventService:        eventService,
 		ProjectService:      projectService,
 		SystemService:       systemService,
+		AlertService:        alertService,
 		IsHTTPS:             isHTTPS,
 		RememberSessionDays: cfg.RemeberSessionDays,
 		CookieStore:         cookieStore,

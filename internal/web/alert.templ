@@ -1,0 +1,271 @@
+package web
+
+import (
+	"fmt"
+	"github.com/vk-rv/warnly/internal/warnly"
+)
+
+// Alerts is the main template that includes filters header and alert list body
+templ Alerts(res *warnly.ListAlertsResult) {
+	<div class="max-w-7xl bg-white mx-auto p-6">
+		@alertsHeader()
+		@AlertsFiltersAndBody(res)
+	</div>
+}
+
+// AlertsFiltersAndBody contains the filters and the body - used for HTMX updates
+templ AlertsFiltersAndBody(res *warnly.ListAlertsResult) {
+	<div
+		id="alerts-container"
+		x-data={ getAlertsAlpineData(res) }
+	>
+		@alertsFiltersBar(res)
+		@AlertsBody(res)
+	</div>
+}
+
+// AlertsBody - the alerts list and pagination that gets updated via HTMX
+templ AlertsBody(res *warnly.ListAlertsResult) {
+	<div id="alerts-body" data-total={ fmt.Sprintf("%d", res.TotalAlerts) }>
+		@alertsTable(res)
+		@alertsPagination(res)
+	</div>
+}
+
+templ alertsHeader() {
+	<header class="mb-6">
+		<div class="flex items-center gap-2 mb-4">
+			<h1 class="text-xl font-semibold">Alerts</h1>
+		</div>
+		<nav class="border-b border-gray-300 border-[hsl(var(--border))]">
+			<ul class="flex gap-6">
+				<li class="border-b-2 border-black pb-2">
+					<a href="#" class="text-sm font-medium">All Alerts</a>
+				</li>
+			</ul>
+		</nav>
+	</header>
+}
+
+templ alertsFiltersBar(res *warnly.ListAlertsResult) {
+	<div class="mb-6">
+		<div class="flex gap-2 mb-3">
+			<div class="flex gap-2">
+				@teamSelector(res.Teams, res.RequestedTeam)
+				@projectSelector(res.Projects, res.RequestedProject)
+			</div>
+			<div class="ml-auto">
+				<button class="inline-flex cursor-pointer items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+					<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+					</svg>
+					Create Alert
+				</button>
+			</div>
+		</div>
+	</div>
+}
+
+templ teamSelector(teams []warnly.Team, requestedTeam string) {
+	<div x-data={ fmt.Sprintf("{ open: false, selected: '%s' }", getSelectedTeamName(requestedTeam)) }>
+		<button
+			@click="open = !open"
+			class="inline-flex cursor-pointer items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+		>
+			<span x-text="selected"></span>
+			<svg class="ml-2 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+			</svg>
+		</button>
+		<div
+			x-show="open"
+			@click.away="open = false"
+			x-cloak
+			class="absolute mt-2 w-48 rounded-md bg-white shadow-lg z-10"
+		>
+			<ul class="py-1 text-sm text-gray-700">
+				<li>
+					<a
+						href="#"
+						@click.prevent="selected = 'My Teams'; $dispatch('team-changed', { team: '' }); open = false"
+						class="block px-4 py-2 hover:bg-gray-100"
+					>
+						My Teams
+					</a>
+				</li>
+				for _, team := range teams {
+					<li>
+						<a
+							href="#"
+							@click.prevent={ fmt.Sprintf("selected = '%s'; $dispatch('team-changed', { team: '%s' }); open = false", team.Name, team.Name) }
+							class="block px-4 py-2 hover:bg-gray-100"
+						>
+							{ team.Name }
+						</a>
+					</li>
+				}
+			</ul>
+		</div>
+	</div>
+}
+
+templ alertsPagination(_ *warnly.ListAlertsResult) {
+	<div class="p-4 border-t border-border flex items-center justify-center md:justify-between text-sm text-gray-600">
+		<span x-text="getPaginationSummary()" class="font-medium hidden md:block"></span>
+		<div class="flex gap-3">
+			<button
+				@click="paginatePrev()"
+				:disabled="!canGoPrev()"
+				class="px-4 py-2 cursor-pointer rounded-md border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white transition-colors flex items-center gap-2"
+			>
+				<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+				</svg>
+				<span class="font-medium">Previous</span>
+			</button>
+			<button
+				@click="paginateNext()"
+				:disabled="!canGoNext()"
+				class="px-4 py-2 cursor-pointer rounded-md border border-gray-300 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white transition-colors flex items-center gap-2"
+			>
+				<span class="font-medium">Next</span>
+				<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+				</svg>
+			</button>
+		</div>
+	</div>
+}
+
+templ alertsTable(res *warnly.ListAlertsResult) {
+	<div class="hidden md:block overflow-x-auto border border-border rounded-lg">
+		<table class="w-full">
+			<thead>
+				<tr class="border-b border-border bg-gray-50">
+					<th class="px-4 py-2 text-left text-sm font-medium text-gray-500">ALERT RULE</th>
+					<th class="px-4 py-2 text-center text-sm font-medium text-gray-500">STATUS</th>
+					<th class="px-4 py-2 text-center text-sm font-medium text-gray-500">PROJECT</th>
+					<th class="px-4 py-2 text-center text-sm font-medium text-gray-500">TEAM</th>
+					<th class="px-4 py-2 text-center text-sm font-medium text-gray-500">ACTIONS</th>
+				</tr>
+			</thead>
+			<tbody>
+				for _, alert := range res.Alerts {
+					<tr class="border-b border-border hover:bg-gray-50">
+						<td class="px-4 py-3">
+							<div class="text-sm font-medium text-gray-900">{ alert.RuleName }</div>
+							<div class="text-xs text-gray-500 mt-1">{ alert.Description }</div>
+						</td>
+						<td class="px-4 py-3 text-sm text-center">
+							<span class={ fmt.Sprintf("inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium %s", getStatusClass(alert.Status)) }>
+								{ alert.Status }
+							</span>
+						</td>
+						<td class="px-4 py-3 text-sm text-gray-700 text-center">
+							{ getProjectName(res.Projects, alert.ProjectID) }
+						</td>
+						<td class="px-4 py-3 text-sm text-gray-700 text-center">
+							{ getTeamName(res.Teams, alert.TeamID) }
+						</td>
+						<td class="px-4 py-3 text-sm text-center">
+							<div class="flex gap-2 justify-center">
+								<button class="px-3 py-1 text-sm cursor-pointer rounded border border-gray-300 bg-white hover:bg-gray-50 transition-colors">Edit</button>
+								<button class="px-3 py-1 text-sm cursor-pointer rounded border border-gray-300 bg-white hover:bg-gray-50 transition-colors text-red-600">Delete</button>
+							</div>
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+	<div class="md:hidden space-y-3">
+		for _, alert := range res.Alerts {
+			<div class="block bg-white border border-gray-200 rounded-lg p-4">
+				<div class="flex items-start justify-between gap-3 mb-3">
+					<div class="flex-1 min-w-0">
+						<div class="font-semibold text-base text-gray-900">{ alert.RuleName }</div>
+						<div class="text-sm text-gray-600 mt-1">{ alert.Description }</div>
+					</div>
+				</div>
+				<div class="flex items-center gap-2 mb-3 pb-3 border-b border-gray-100">
+					<span class={ fmt.Sprintf("inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium %s", getStatusClass(alert.Status)) }>
+						{ alert.Status }
+					</span>
+				</div>
+				<div class="grid grid-cols-2 gap-3">
+					<div class="flex flex-col">
+						<span class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Project</span>
+						<span class="text-sm font-semibold text-gray-900">{ getProjectName(res.Projects, alert.ProjectID) }</span>
+					</div>
+					<div class="flex flex-col">
+						<span class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Team</span>
+						<span class="text-sm font-semibold text-gray-900">{ getTeamName(res.Teams, alert.TeamID) }</span>
+					</div>
+					<div class="flex flex-col">
+						<span class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Actions</span>
+						<div class="flex gap-2 mt-1">
+							<button class="px-2 py-1 text-xs cursor-pointer rounded border border-gray-300 bg-white hover:bg-gray-50 transition-colors">Edit</button>
+							<button class="px-2 py-1 text-xs cursor-pointer rounded border border-gray-300 bg-white hover:bg-gray-50 transition-colors text-red-600">Delete</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		}
+	</div>
+}
+
+// Helper functions
+func getAlertsAlpineData(res *warnly.ListAlertsResult) string {
+	team := ""
+	if res.RequestedTeam != "" {
+		team = res.RequestedTeam
+	}
+
+	project := ""
+	if res.RequestedProject != "" {
+		project = res.RequestedProject
+	}
+
+	return fmt.Sprintf(`alertFilters({
+		team: '%s',
+		project: '%s',
+		offset: %d,
+		totalAlerts: %d
+	})`, team, project, res.Request.Offset, res.TotalAlerts)
+}
+
+func getSelectedTeamName(requestedTeam string) string {
+	if requestedTeam == "" {
+		return "My Teams"
+	}
+	return requestedTeam
+}
+
+func getTeamName(teams []warnly.Team, teamID int) string {
+	for _, t := range teams {
+		if t.ID == teamID {
+			return t.Name
+		}
+	}
+	return "Unknown"
+}
+
+func getStatusClass(status string) string {
+	switch status {
+	case "Active":
+		return "bg-green-100 text-green-800"
+	case "Inactive":
+		return "bg-gray-100 text-gray-800"
+	case "Triggered":
+		return "bg-red-100 text-red-800"
+	default:
+		return "bg-gray-100 text-gray-800"
+	}
+}
+
+templ AlertsHtmx(res *warnly.ListAlertsResult) {
+	<title>{ AlertsTitle } - { AppName } </title>
+	<div id="content" class="flex-grow overflow-y-auto h-screen">
+		@Alerts(res)
+	</div>
+}

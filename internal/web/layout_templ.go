@@ -14,7 +14,7 @@ import "github.com/vk-rv/warnly/internal/warnly"
 const (
 	sidebarDashboard = "/"
 	sidebarProjects  = "/projects"
-	sidebarOnCall    = "/oncall"
+	sidebarAlerts    = "/alerts"
 	sidebarAnalytics = "/analytics"
 	sidebarSystem    = "/system"
 	sidebarSettings  = "/settings"
@@ -22,6 +22,7 @@ const (
 )
 
 const (
+	AlertsTitle          = "Alerts"
 	AnalyticsTitle       = "Analytics"
 	IssueDetailsTitle    = "Issue Details"
 	IssuesTitle          = "Issues"
@@ -76,7 +77,7 @@ func Layout(title string, content templ.Component, activePage string, user *warn
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(AppName)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/layout.templ`, Line: 57, Col: 46}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/layout.templ`, Line: 58, Col: 46}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
@@ -89,7 +90,7 @@ func Layout(title string, content templ.Component, activePage string, user *warn
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(user.AvatarInitials())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/layout.templ`, Line: 60, Col: 62}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/layout.templ`, Line: 61, Col: 62}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -147,7 +148,7 @@ func htmlHeader(title string) templ.Component {
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/layout.templ`, Line: 76, Col: 16}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/layout.templ`, Line: 77, Col: 16}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
@@ -160,13 +161,13 @@ func htmlHeader(title string) templ.Component {
 		var templ_7745c5c3_Var6 string
 		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(AppName)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/layout.templ`, Line: 76, Col: 30}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/layout.templ`, Line: 77, Col: 30}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</title><link rel=\"icon\" href=\"/static/favicon.svg\" type=\"image/svg+xml\"><link href=\"/static/tailwind.css\" rel=\"stylesheet\"><link href=\"/static/issues.css\" rel=\"stylesheet\"><script src=\"/static/htmx@2.0.4.min.js\"></script><script src=\"/static/uPlot.iife.min.js\"></script><link href=\"/static/uPlot.min.css\" rel=\"stylesheet\"><script src=\"/static/issueFilters.js\"></script><script src=\"/static/timePeriodSelector.js\"></script><script src=\"/static/searchInput.js\"></script><script src=\"/static/discussions.js\"></script><script src=\"/static/system.js\"></script><script src=\"/static/alpinejs@3.12.3.min.js\" defer></script><style>\n\t\t.warnly-preview .u-legend {\n\t\t\tfont-size: 13px;\n\t\t}\n\n\t\t/* Mobile Styles */\n\t\t.mobile-body {\n\t\t\tmargin: 0;\n\t\t\tpadding: 0;\n\t\t}\n\n\t\t.mobile-header {\n\t\t\tdisplay: none;\n\t\t\tposition: fixed;\n\t\t\ttop: 0;\n\t\t\tleft: 0;\n\t\t\tright: 0;\n\t\t\theight: 56px;\n\t\t\tbackground: white;\n\t\t\tborder-bottom: 1px solid #e5e7eb;\n\t\t\talign-items: center;\n\t\t\tpadding: 0 16px;\n\t\t\tz-index: 1000;\n\t\t\tgap: 12px;\n\t\t}\n\n\t\t.mobile-menu-btn {\n\t\t\tbackground: none;\n\t\t\tborder: none;\n\t\t\tpadding: 8px;\n\t\t\tcursor: pointer;\n\t\t\tcolor: #374151;\n\t\t\tdisplay: flex;\n\t\t\talign-items: center;\n\t\t\tjustify-content: center;\n\t\t}\n\n\t\t.mobile-logo {\n\t\t\tdisplay: flex;\n\t\t\talign-items: center;\n\t\t\tgap: 8px;\n\t\t\tflex: 1;\n\t\t}\n\n\t\t.mobile-user-avatar {\n\t\t\twidth: 32px;\n\t\t\theight: 32px;\n\t\t\tborder-radius: 50%;\n\t\t\tbackground: #e5e7eb;\n\t\t\tdisplay: flex;\n\t\t\talign-items: center;\n\t\t\tjustify-content: center;\n\t\t}\n\n\t\t.mobile-overlay {\n\t\t\tdisplay: none;\n\t\t\tposition: fixed;\n\t\t\ttop: 0;\n\t\t\tleft: 0;\n\t\t\tright: 0;\n\t\t\tbottom: 0;\n\t\t\tbackground: rgba(0, 0, 0, 0.5);\n\t\t\tz-index: 998;\n\t\t\topacity: 0;\n\t\t\ttransition: opacity 0.3s ease;\n\t\t}\n\n\t\t.mobile-overlay.active {\n\t\t\topacity: 1;\n\t\t}\n\n\t\t.sidebar {\n\t\t\tposition: fixed;\n\t\t\tleft: 0;\n\t\t\ttop: 0;\n\t\t\tbottom: 0;\n\t\t\twidth: 260px;\n\t\t\tbackground: white;\n\t\t\tborder-right: 1px solid #e5e7eb;\n\t\t\toverflow-y: auto;\n\t\t\tz-index: 100;\n\t\t\ttransition: transform 0.3s ease;\n\t\t}\n\n\t\t.main-content {\n\t\t\tmargin-left: 260px;\n\t\t\tmin-height: 100vh;\n\t\t\ttransition: margin 0.3s ease;\n\t\t}\n\n\t\t@media (max-width: 768px) {\n\t\t\t.mobile-header {\n\t\t\t\tdisplay: flex;\n\t\t\t}\n\n\t\t\t.sidebar {\n\t\t\t\ttransform: translateX(-100%);\n\t\t\t\tz-index: 999;\n\t\t\t\tbox-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);\n\t\t\t}\n\n\t\t\t.sidebar.mobile-open {\n\t\t\t\ttransform: translateX(0);\n\t\t\t}\n\n\t\t\t.main-content {\n\t\t\t\tmargin-left: 0;\n\t\t\t\tpadding-top: 56px;\n\t\t\t}\n\n\t\t\t.mobile-overlay.active {\n\t\t\t\tdisplay: block;\n\t\t\t}\n\n\t\t\t/* Hide desktop-only text on small screens */\n\t\t\t.sidebar-text {\n\t\t\t\tdisplay: inline;\n\t\t\t}\n\t\t}\n\n\t\t/* Tablet */\n\t\t@media (max-width: 1024px) and (min-width: 769px) {\n\t\t\t.sidebar {\n\t\t\t\twidth: 220px;\n\t\t\t}\n\n\t\t\t.main-content {\n\t\t\t\tmargin-left: 220px;\n\t\t\t}\n\t\t}\n\n\t\t/* Toast Styles */\n\t\t.toast-container {\n\t\t\tposition: fixed;\n\t\t\tbottom: 20px;\n\t\t\tleft: 50%;\n\t\t\ttransform: translateX(-50%);\n\t\t\tz-index: 1000;\n\t\t\tdisplay: flex;\n\t\t\tflex-direction: column;\n\t\t\tgap: 8px;\n\t\t\tpointer-events: none;\n\t\t}\n\n\t\t.toast-message {\n\t\t\tbackground: rgba(35, 39, 47, 0.92);\n\t\t\tcolor: #fff;\n\t\t\tpadding: 8px 16px;\n\t\t\tborder-radius: 8px;\n\t\t\tbox-shadow: 0 4px 16px rgba(16,24,40,0.12), 0 1px 2px rgba(0,0,0,0.08);\n\t\t\topacity: 0;\n\t\t\ttransition: opacity 0.25s cubic-bezier(.4,0,.2,1), transform 0.25s cubic-bezier(.4,0,.2,1);\n\t\t\ttransform: translateY(12px) scale(0.97);\n\t\t\tmin-width: 160px;\n\t\t\tmax-width: 90vw;\n\t\t\ttext-align: center;\n\t\t\tfont-size: 0.75rem;\n\t\t\tfont-weight: 500;\n\t\t\tletter-spacing: 0.01em;\n\t\t\tborder: 1px solid #23272f;\n\t\t\tpointer-events: auto;\n\t\t\tbackdrop-filter: blur(3px);\n\t\t}\n\n\t\t.toast-message.show {\n\t\t\topacity: 1;\n\t\t\ttransform: translateY(0) scale(1);\n\t\t}\n\n\t\t.toast-message.hide {\n\t\t\topacity: 0;\n\t\t\ttransform: translateY(12px) scale(0.97);\n\t\t}\n\n\t\t@media (max-width: 768px) {\n\t\t\t.toast-container {\n\t\t\t\tbottom: 76px; /* Above mobile navigation if present */\n\t\t\t}\n\t\t}\n\t\t</style><script>\n\t\tfunction toggleMobileMenu() {\n\t\t\tconst sidebar = document.getElementById('sidebar');\n\t\t\tconst overlay = document.getElementById('mobile-overlay');\n\t\t\t\n\t\t\tsidebar.classList.toggle('mobile-open');\n\t\t\toverlay.classList.toggle('active');\n\t\t}\n\n\t\tdocument.addEventListener('DOMContentLoaded', function() {\n\t\t\tconst sidebar = document.getElementById('sidebar');\n\t\t\tconst overlay = document.getElementById('mobile-overlay');\n\t\t\t\n\t\t\tsidebar.addEventListener('click', function(e) {\n\t\t\t\tif (e.target.tagName === 'A' || e.target.closest('a')) {\n\t\t\t\t\tif (window.innerWidth <= 768) {\n\t\t\t\t\t\tsidebar.classList.remove('mobile-open');\n\t\t\t\t\t\toverlay.classList.remove('active');\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t});\n\t\t});\n\t\t</script></head>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</title><link rel=\"icon\" href=\"/static/favicon.svg\" type=\"image/svg+xml\"><link href=\"/static/tailwind.css\" rel=\"stylesheet\"><link href=\"/static/issues.css\" rel=\"stylesheet\"><script src=\"/static/htmx@2.0.4.min.js\"></script><script src=\"/static/uPlot.iife.min.js\"></script><link href=\"/static/uPlot.min.css\" rel=\"stylesheet\"><script src=\"/static/issueFilters.js\"></script><script src=\"/static/alertFilters.js\"></script><script src=\"/static/timePeriodSelector.js\"></script><script src=\"/static/searchInput.js\"></script><script src=\"/static/discussions.js\"></script><script src=\"/static/system.js\"></script><script src=\"/static/alpinejs@3.12.3.min.js\" defer></script><style>\n\t\t.warnly-preview .u-legend {\n\t\t\tfont-size: 13px;\n\t\t}\n\n\t\t/* Mobile Styles */\n\t\t.mobile-body {\n\t\t\tmargin: 0;\n\t\t\tpadding: 0;\n\t\t}\n\n\t\t.mobile-header {\n\t\t\tdisplay: none;\n\t\t\tposition: fixed;\n\t\t\ttop: 0;\n\t\t\tleft: 0;\n\t\t\tright: 0;\n\t\t\theight: 56px;\n\t\t\tbackground: white;\n\t\t\tborder-bottom: 1px solid #e5e7eb;\n\t\t\talign-items: center;\n\t\t\tpadding: 0 16px;\n\t\t\tz-index: 1000;\n\t\t\tgap: 12px;\n\t\t}\n\n\t\t.mobile-menu-btn {\n\t\t\tbackground: none;\n\t\t\tborder: none;\n\t\t\tpadding: 8px;\n\t\t\tcursor: pointer;\n\t\t\tcolor: #374151;\n\t\t\tdisplay: flex;\n\t\t\talign-items: center;\n\t\t\tjustify-content: center;\n\t\t}\n\n\t\t.mobile-logo {\n\t\t\tdisplay: flex;\n\t\t\talign-items: center;\n\t\t\tgap: 8px;\n\t\t\tflex: 1;\n\t\t}\n\n\t\t.mobile-user-avatar {\n\t\t\twidth: 32px;\n\t\t\theight: 32px;\n\t\t\tborder-radius: 50%;\n\t\t\tbackground: #e5e7eb;\n\t\t\tdisplay: flex;\n\t\t\talign-items: center;\n\t\t\tjustify-content: center;\n\t\t}\n\n\t\t.mobile-overlay {\n\t\t\tdisplay: none;\n\t\t\tposition: fixed;\n\t\t\ttop: 0;\n\t\t\tleft: 0;\n\t\t\tright: 0;\n\t\t\tbottom: 0;\n\t\t\tbackground: rgba(0, 0, 0, 0.5);\n\t\t\tz-index: 998;\n\t\t\topacity: 0;\n\t\t\ttransition: opacity 0.3s ease;\n\t\t}\n\n\t\t.mobile-overlay.active {\n\t\t\topacity: 1;\n\t\t}\n\n\t\t.sidebar {\n\t\t\tposition: fixed;\n\t\t\tleft: 0;\n\t\t\ttop: 0;\n\t\t\tbottom: 0;\n\t\t\twidth: 260px;\n\t\t\tbackground: white;\n\t\t\tborder-right: 1px solid #e5e7eb;\n\t\t\toverflow-y: auto;\n\t\t\tz-index: 100;\n\t\t\ttransition: transform 0.3s ease;\n\t\t}\n\n\t\t.main-content {\n\t\t\tmargin-left: 260px;\n\t\t\tmin-height: 100vh;\n\t\t\ttransition: margin 0.3s ease;\n\t\t}\n\n\t\t@media (max-width: 768px) {\n\t\t\t.mobile-header {\n\t\t\t\tdisplay: flex;\n\t\t\t}\n\n\t\t\t.sidebar {\n\t\t\t\ttransform: translateX(-100%);\n\t\t\t\tz-index: 999;\n\t\t\t\tbox-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);\n\t\t\t}\n\n\t\t\t.sidebar.mobile-open {\n\t\t\t\ttransform: translateX(0);\n\t\t\t}\n\n\t\t\t.main-content {\n\t\t\t\tmargin-left: 0;\n\t\t\t\tpadding-top: 56px;\n\t\t\t}\n\n\t\t\t.mobile-overlay.active {\n\t\t\t\tdisplay: block;\n\t\t\t}\n\n\t\t\t/* Hide desktop-only text on small screens */\n\t\t\t.sidebar-text {\n\t\t\t\tdisplay: inline;\n\t\t\t}\n\t\t}\n\n\t\t/* Tablet */\n\t\t@media (max-width: 1024px) and (min-width: 769px) {\n\t\t\t.sidebar {\n\t\t\t\twidth: 220px;\n\t\t\t}\n\n\t\t\t.main-content {\n\t\t\t\tmargin-left: 220px;\n\t\t\t}\n\t\t}\n\n\t\t/* Toast Styles */\n\t\t.toast-container {\n\t\t\tposition: fixed;\n\t\t\tbottom: 20px;\n\t\t\tleft: 50%;\n\t\t\ttransform: translateX(-50%);\n\t\t\tz-index: 1000;\n\t\t\tdisplay: flex;\n\t\t\tflex-direction: column;\n\t\t\tgap: 8px;\n\t\t\tpointer-events: none;\n\t\t}\n\n\t\t.toast-message {\n\t\t\tbackground: rgba(35, 39, 47, 0.92);\n\t\t\tcolor: #fff;\n\t\t\tpadding: 8px 16px;\n\t\t\tborder-radius: 8px;\n\t\t\tbox-shadow: 0 4px 16px rgba(16,24,40,0.12), 0 1px 2px rgba(0,0,0,0.08);\n\t\t\topacity: 0;\n\t\t\ttransition: opacity 0.25s cubic-bezier(.4,0,.2,1), transform 0.25s cubic-bezier(.4,0,.2,1);\n\t\t\ttransform: translateY(12px) scale(0.97);\n\t\t\tmin-width: 160px;\n\t\t\tmax-width: 90vw;\n\t\t\ttext-align: center;\n\t\t\tfont-size: 0.75rem;\n\t\t\tfont-weight: 500;\n\t\t\tletter-spacing: 0.01em;\n\t\t\tborder: 1px solid #23272f;\n\t\t\tpointer-events: auto;\n\t\t\tbackdrop-filter: blur(3px);\n\t\t}\n\n\t\t.toast-message.show {\n\t\t\topacity: 1;\n\t\t\ttransform: translateY(0) scale(1);\n\t\t}\n\n\t\t.toast-message.hide {\n\t\t\topacity: 0;\n\t\t\ttransform: translateY(12px) scale(0.97);\n\t\t}\n\n\t\t@media (max-width: 768px) {\n\t\t\t.toast-container {\n\t\t\t\tbottom: 76px; /* Above mobile navigation if present */\n\t\t\t}\n\t\t}\n\t\t</style><script>\n\t\tfunction toggleMobileMenu() {\n\t\t\tconst sidebar = document.getElementById('sidebar');\n\t\t\tconst overlay = document.getElementById('mobile-overlay');\n\t\t\t\n\t\t\tsidebar.classList.toggle('mobile-open');\n\t\t\toverlay.classList.toggle('active');\n\t\t}\n\n\t\tdocument.addEventListener('DOMContentLoaded', function() {\n\t\t\tconst sidebar = document.getElementById('sidebar');\n\t\t\tconst overlay = document.getElementById('mobile-overlay');\n\t\t\t\n\t\t\tsidebar.addEventListener('click', function(e) {\n\t\t\t\tif (e.target.tagName === 'A' || e.target.closest('a')) {\n\t\t\t\t\tif (window.innerWidth <= 768) {\n\t\t\t\t\t\tsidebar.classList.remove('mobile-open');\n\t\t\t\t\t\toverlay.classList.remove('active');\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t});\n\t\t});\n\t\t</script></head>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -202,7 +203,7 @@ func sidebar(currentPage string, user *warnly.User) templ.Component {
 		var templ_7745c5c3_Var8 string
 		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("{ activePage: '%s' }", currentPage))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/layout.templ`, Line: 296, Col: 94}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/layout.templ`, Line: 298, Col: 94}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 		if templ_7745c5c3_Err != nil {
@@ -256,12 +257,12 @@ func sidebar(currentPage string, user *warnly.User) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var13 = []any{getURLClass(currentPage, sidebarOnCall)}
+		var templ_7745c5c3_Var13 = []any{getURLClass(currentPage, sidebarAlerts)}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var13...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "<a href=\"\" @click=\"activePage = '/oncall'\" hx-get=\"/oncall\" hx-target=\"#content\" hx-swap=\"outerHTML settle:0\" hx-push-url=\"true\" class=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "<a href=\"\" @click=\"activePage = '/alerts'\" hx-get=\"/alerts\" hx-target=\"#content\" hx-swap=\"outerHTML settle:0\" hx-push-url=\"true\" class=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -274,7 +275,7 @@ func sidebar(currentPage string, user *warnly.User) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "\" :class=\"{'flex items-center gap-2 p-2 rounded-md text-blue-600 bg-blue-50 font-medium text-sm': activePage === '/oncall', 'flex items-center gap-2 p-2 rounded-md text-gray-700 hover:bg-gray-100 font-medium text-sm': activePage !== '/oncall'}\"><svg data-testid=\"geist-icon\" class=\"h-4 w-4\" stroke-linejoin=\"round\" viewBox=\"0 0 16 16\"><path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M7.9925 0C4.95079 0 2.485 2.46579 2.485 5.5075V8.22669C2.485 8.77318 2.21321 9.28388 1.75992 9.58912L1.33108 9.8779L1 10.1009V10.5V11.25V12H1.75H14.25H15V11.25V10.5V10.0986L14.666 9.87596L14.2306 9.58565C13.7741 9.28137 13.5 8.76913 13.5 8.22059V5.5075C13.5 2.46579 11.0342 0 7.9925 0ZM3.985 5.5075C3.985 3.29422 5.77922 1.5 7.9925 1.5C10.2058 1.5 12 3.29422 12 5.5075V8.22059C12 9.09029 12.36 9.91233 12.9801 10.5H3.01224C3.62799 9.91235 3.985 9.09303 3.985 8.22669V5.5075ZM10.7486 13.5H9.16778L9.16337 13.5133C9.09591 13.716 8.94546 13.9098 8.72067 14.0501C8.52343 14.1732 8.27577 14.25 8.00002 14.25C7.72426 14.25 7.47661 14.1732 7.27936 14.0501C7.05458 13.9098 6.90412 13.716 6.83666 13.5133L6.83225 13.5H5.25143L5.41335 13.9867C5.60126 14.5516 5.99263 15.0152 6.48523 15.3226C6.92164 15.5949 7.44461 15.75 8.00002 15.75C8.55542 15.75 9.07839 15.5949 9.5148 15.3226C10.0074 15.0152 10.3988 14.5516 10.5867 13.9867L10.7486 13.5Z\" fill=\"currentColor\"></path></svg> <span class=\"sidebar-text\">OnCall</span></a></li><li>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 17, "\" :class=\"{'flex items-center gap-2 p-2 rounded-md text-blue-600 bg-blue-50 font-medium text-sm': activePage === '/alerts', 'flex items-center gap-2 p-2 rounded-md text-gray-700 hover:bg-gray-100 font-medium text-sm': activePage !== '/alerts'}\"><svg data-testid=\"geist-icon\" class=\"h-4 w-4\" stroke-linejoin=\"round\" viewBox=\"0 0 16 16\"><path fill-rule=\"evenodd\" clip-rule=\"evenodd\" d=\"M7.9925 0C4.95079 0 2.485 2.46579 2.485 5.5075V8.22669C2.485 8.77318 2.21321 9.28388 1.75992 9.58912L1.33108 9.8779L1 10.1009V10.5V11.25V12H1.75H14.25H15V11.25V10.5V10.0986L14.666 9.87596L14.2306 9.58565C13.7741 9.28137 13.5 8.76913 13.5 8.22059V5.5075C13.5 2.46579 11.0342 0 7.9925 0ZM3.985 5.5075C3.985 3.29422 5.77922 1.5 7.9925 1.5C10.2058 1.5 12 3.29422 12 5.5075V8.22059C12 9.09029 12.36 9.91233 12.9801 10.5H3.01224C3.62799 9.91235 3.985 9.09303 3.985 8.22669V5.5075ZM10.7486 13.5H9.16778L9.16337 13.5133C9.09591 13.716 8.94546 13.9098 8.72067 14.0501C8.52343 14.1732 8.27577 14.25 8.00002 14.25C7.72426 14.25 7.47661 14.1732 7.27936 14.0501C7.05458 13.9098 6.90412 13.716 6.83666 13.5133L6.83225 13.5H5.25143L5.41335 13.9867C5.60126 14.5516 5.99263 15.0152 6.48523 15.3226C6.92164 15.5949 7.44461 15.75 8.00002 15.75C8.55542 15.75 9.07839 15.5949 9.5148 15.3226C10.0074 15.0152 10.3988 14.5516 10.5867 13.9867L10.7486 13.5Z\" fill=\"currentColor\"></path></svg> <span class=\"sidebar-text\">Alerts</span></a></li><li>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -369,7 +370,7 @@ func sidebar(currentPage string, user *warnly.User) templ.Component {
 		var templ_7745c5c3_Var23 string
 		templ_7745c5c3_Var23, templ_7745c5c3_Err = templ.JoinStringErrs(user.AvatarInitials())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/layout.templ`, Line: 388, Col: 63}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/layout.templ`, Line: 390, Col: 63}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var23))
 		if templ_7745c5c3_Err != nil {
@@ -382,7 +383,7 @@ func sidebar(currentPage string, user *warnly.User) templ.Component {
 		var templ_7745c5c3_Var24 string
 		templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinStringErrs(user.FullName())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/layout.templ`, Line: 391, Col: 54}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/layout.templ`, Line: 393, Col: 54}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var24))
 		if templ_7745c5c3_Err != nil {
@@ -395,7 +396,7 @@ func sidebar(currentPage string, user *warnly.User) templ.Component {
 		var templ_7745c5c3_Var25 string
 		templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(user.Username)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/layout.templ`, Line: 392, Col: 54}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/layout.templ`, Line: 394, Col: 54}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var25))
 		if templ_7745c5c3_Err != nil {

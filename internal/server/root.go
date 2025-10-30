@@ -16,6 +16,8 @@ import (
 	"github.com/vk-rv/warnly/internal/web"
 )
 
+const body = "body"
+
 const (
 	oidcStateTimeout = 2 * time.Minute
 	openid           = "openid"
@@ -329,14 +331,14 @@ func (h *rootHandler) writeIndex(w http.ResponseWriter, r *http.Request, res *wa
 	target := r.Header.Get("Hx-Target")
 	partial := r.URL.Query().Get("partial")
 
-	if partial == "body" {
+	if partial == body {
 		query := r.URL.Query()
 		query.Del("partial")
 		w.Header().Set("Hx-Push-Url", "/?"+query.Encode())
 	}
 
 	switch {
-	case partial == "body":
+	case partial == body:
 		if err := web.IssuesBody(res).Render(ctx, w); err != nil {
 			h.logger.Error("print index body web render", slog.Any("error", err))
 		}

@@ -29,6 +29,7 @@ type Backend struct {
 	EventService        warnly.EventService
 	ProjectService      warnly.ProjectService
 	SystemService       warnly.SystemService
+	AlertService        warnly.AlertService
 	OIDC                *OIDC
 	Reg                 *prometheus.Registry
 	Logger              *slog.Logger
@@ -115,6 +116,10 @@ func NewHandler(b *Backend) (*Handler, error) {
 		slog.String("handler", "project"),
 	))
 
+	alertsHandler := NewAlertsHandler(b.AlertService, b.Logger.With(
+		slog.String("handler", "alerts"),
+	))
+
 	mux.HandleFunc("GET /notready", chain(func(w http.ResponseWriter, r *http.Request) {
 		if err := web.InDevelopment().Render(r.Context(), w); err != nil {
 			b.Logger.Error("not ready web render", slog.Any("error", err))
@@ -164,6 +169,8 @@ func NewHandler(b *Backend) (*Handler, error) {
 	mux.HandleFunc("GET /projects/{project_id}/issues/{issue_id}/events", chain(projectHandler.ListEvents))
 	mux.HandleFunc("POST /projects/{project_id}/issues/{issue_id}/assignments", chain(projectHandler.AssignIssue))
 	mux.HandleFunc("DELETE /projects/{project_id}/issues/{issue_id}/assignments", chain(projectHandler.DeleteAssignment))
+
+	mux.HandleFunc("GET /alerts", chain(alertsHandler.ListAlerts))
 
 	mux.HandleFunc("GET /error", chain(func(w http.ResponseWriter, r *http.Request) {
 		if err := web.ServerError(
