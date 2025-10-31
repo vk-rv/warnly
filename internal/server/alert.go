@@ -62,6 +62,23 @@ func (h *AlertsHandler) ListAlerts(w http.ResponseWriter, r *http.Request) {
 	h.writeAlerts(ctx, w, r, res, &user, partial)
 }
 
+// CreateAlert is a handler for GET /alerts/new.
+func (h *AlertsHandler) CreateAlert(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	user := getUser(ctx)
+
+	if r.Header.Get(htmxHeader) == "true" {
+		if err := web.AddNewAlertHtmx(&user).Render(ctx, w); err != nil {
+			h.logger.Error("add new alert htmx web render", slog.Any("error", err))
+		}
+	} else {
+		if err := web.AddNewAlert(&user).Render(ctx, w); err != nil {
+			h.logger.Error("add new alert web render", slog.Any("error", err))
+		}
+	}
+}
+
 func (h *AlertsHandler) writeAlerts(
 	ctx context.Context,
 	w http.ResponseWriter,
