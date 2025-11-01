@@ -171,7 +171,11 @@ func NewHandler(b *Backend) (*Handler, error) {
 	mux.HandleFunc("DELETE /projects/{project_id}/issues/{issue_id}/assignments", chain(projectHandler.DeleteAssignment))
 
 	mux.HandleFunc("GET /alerts", chain(alertsHandler.ListAlerts))
-	mux.HandleFunc("GET /alerts/new", chain(alertsHandler.CreateAlert))
+	mux.HandleFunc("GET /alerts/new", chain(alertsHandler.CreateAlertGet))
+	mux.HandleFunc("POST /alerts", chain(alertsHandler.CreateAlert))
+	mux.HandleFunc("GET /alerts/{id}/edit", chain(alertsHandler.EditAlertGet))
+	mux.HandleFunc("PUT /alerts/{id}", chain(alertsHandler.UpdateAlert))
+	mux.HandleFunc("DELETE /alerts/{id}", chain(alertsHandler.DeleteAlert))
 
 	mux.HandleFunc("GET /error", chain(func(w http.ResponseWriter, r *http.Request) {
 		if err := web.ServerError(

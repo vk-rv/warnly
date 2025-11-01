@@ -5,31 +5,31 @@ import (
 	"github.com/vk-rv/warnly/internal/warnly"
 )
 
-templ AddNewAlert(user *warnly.User, projects []warnly.Project) {
-	@Layout("New Alert", AddNewAlertHtmx(user, projects), sidebarAlerts, user)
+templ EditAlert(user *warnly.User, projects []warnly.Project, alert *warnly.Alert) {
+	@Layout("Edit Alert", EditAlertHtmx(user, projects, alert), sidebarAlerts, user)
 }
 
-templ AddNewAlertHtmx(user *warnly.User, projects []warnly.Project) {
-	<title>New Alert - { AppName }</title>
+templ EditAlertHtmx(user *warnly.User, projects []warnly.Project, alert *warnly.Alert) {
+	<title>Edit Alert - { AppName }</title>
 	<div id="content" class="flex-grow overflow-y-auto h-screen">
-		@AddNewAlertContent(user, projects)
+		@EditAlertContent(user, projects, alert)
 	</div>
 }
 
-templ AddNewAlertContent(user *warnly.User, projects []warnly.Project) {
-	<div class="max-w-7xl mx-auto p-6" x-data="alertForm(0, 10, 1, 4, false, '')">
+templ EditAlertContent(user *warnly.User, projects []warnly.Project, alert *warnly.Alert) {
+	<div class="max-w-7xl mx-auto p-6" x-data={ fmt.Sprintf("alertForm(%d, %d, %d, %d, %t, '%s')", alert.ProjectID, alert.Threshold, alert.Condition, alert.Timeframe, alert.HighPriority, alert.RuleName) }>
 		@Toast()
 		<!-- Breadcrumbs -->
 		<nav class="mb-6 border-b border-gray-200">
 			<div class="flex items-center gap-2 text-sm text-gray-600">
 				<a href="/alerts" hx-get="/alerts" hx-target="#content" hx-swap="outerHTML settle:0" hx-push-url="true" class="hover:text-gray-900">Alerts</a>
 				<span>›</span>
-				<span class="text-gray-900">New Alert</span>
+				<span class="text-gray-900">Edit Alert</span>
 			</div>
 		</nav>
 		<!-- Main Content -->
 		<main class="max-w-4xl">
-			<h1 class="text-2xl font-bold mb-8">New Alert</h1>
+			<h1 class="text-2xl font-bold mb-8">Edit Alert</h1>
 			<!-- Step 1: Select Project -->
 			<section class="mb-8">
 				<h2 class="text-lg font-semibold flex items-center gap-2 mb-4">
@@ -65,7 +65,6 @@ templ AddNewAlertContent(user *warnly.User, projects []warnly.Project) {
 						<input
 							x-model.number="threshold"
 							type="number"
-							value="10"
 							min="1"
 							class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
 							placeholder="10"
@@ -133,12 +132,12 @@ templ AddNewAlertContent(user *warnly.User, projects []warnly.Project) {
 					Cancel
 				</button>
 				<button
-					@click="saveAlert()"
+					@click={ fmt.Sprintf("updateAlert(%d)", alert.ID) }
 					:disabled="!isFormValid"
 					:class="isFormValid ? 'bg-black text-white hover:bg-gray-800' : 'bg-gray-300 text-gray-500 cursor-not-allowed'"
 					class="px-4 py-2 rounded text-sm font-medium transition cursor-pointer"
 				>
-					Save Alert
+					Update Alert
 				</button>
 			</div>
 		</main>
@@ -157,14 +156,13 @@ templ AddNewAlertContent(user *warnly.User, projects []warnly.Project) {
 					return this.projectId > 0 && this.ruleName.trim() !== '' && this.threshold > 0;
 				},
 
-				saveAlert() {
+				updateAlert(alertId) {
 					if (!this.isFormValid) return;
 
-					htmx.ajax('POST', '/alerts', {
+					htmx.ajax('PUT', `/alerts/${alertId}`, {
 						target: '#content',
 						swap: 'outerHTML',
 						values: {
-							project_id: this.projectId,
 							rule_name: this.ruleName,
 							threshold: this.threshold,
 							condition: this.condition,

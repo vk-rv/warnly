@@ -116,3 +116,23 @@ CREATE TABLE IF NOT EXISTS `issue_assignment_history` (
   KEY `idx_iah_issue_id` (`issue_id`),
   KEY `idx_iah_assigned_at` (`assigned_at`)
 );
+
+CREATE TABLE IF NOT EXISTS `alert` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  `last_triggered_at` datetime DEFAULT NULL,
+  `rule_name` varchar(255) NOT NULL,
+  `description` TEXT,
+  `status` ENUM('Active', 'Inactive', 'Triggered') NOT NULL DEFAULT 'Active',
+  `project_id` int NOT NULL,
+  `team_id` int NOT NULL,
+  `threshold` int NOT NULL,
+  `cond` tinyint NOT NULL COMMENT '1=occurrences, 2=users affected',
+  `timeframe` tinyint NOT NULL COMMENT '1=1min, 2=5min, 3=15min, 4=1h, 5=1d, 6=1w, 7=30d',
+  `is_high_priority` boolean NOT NULL DEFAULT false,
+  PRIMARY KEY (`id`),
+  KEY `idx_project_id` (`project_id`),
+  KEY `idx_team_id` (`team_id`),
+  KEY `idx_status` (`status`)
+);

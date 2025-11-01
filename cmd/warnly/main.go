@@ -208,7 +208,7 @@ func run(cfg *config, logger *slog.Logger) error {
 
 	eventService := event.NewEventService(projectStore, issueStore, memoryCache, olap, now)
 
-	alertService := alert.NewAlertService(alertStore, logger.With(slog.String("service", "alert")))
+	alertService := alert.NewAlertService(alertStore, projectStore, teamStore, now, logger.With(slog.String("service", "alert")))
 
 	isHTTPS := cfg.Server.Scheme == "https"
 

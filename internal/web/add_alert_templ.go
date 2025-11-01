@@ -8,9 +8,12 @@ package web
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import "github.com/vk-rv/warnly/internal/warnly"
+import (
+	"fmt"
+	"github.com/vk-rv/warnly/internal/warnly"
+)
 
-func AddNewAlert(user *warnly.User) templ.Component {
+func AddNewAlert(user *warnly.User, projects []warnly.Project) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -31,7 +34,7 @@ func AddNewAlert(user *warnly.User) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = Layout("New Alert", AddNewAlertHtmx(user), sidebarAlerts, user).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = Layout("New Alert", AddNewAlertHtmx(user, projects), sidebarAlerts, user).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -39,7 +42,7 @@ func AddNewAlert(user *warnly.User) templ.Component {
 	})
 }
 
-func AddNewAlertHtmx(user *warnly.User) templ.Component {
+func AddNewAlertHtmx(user *warnly.User, projects []warnly.Project) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -67,7 +70,7 @@ func AddNewAlertHtmx(user *warnly.User) templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(AppName)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/add_alert.templ`, Line: 10, Col: 29}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/add_alert.templ`, Line: 13, Col: 29}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -77,7 +80,7 @@ func AddNewAlertHtmx(user *warnly.User) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = AddNewAlertContent(user).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = AddNewAlertContent(user, projects).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -89,7 +92,7 @@ func AddNewAlertHtmx(user *warnly.User) templ.Component {
 	})
 }
 
-func AddNewAlertContent(user *warnly.User) templ.Component {
+func AddNewAlertContent(user *warnly.User, projects []warnly.Project) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -110,20 +113,51 @@ func AddNewAlertContent(user *warnly.User) templ.Component {
 			templ_7745c5c3_Var4 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<div class=\"max-w-7xl mx-auto p-6\"><!-- Breadcrumbs --><nav class=\"mb-6 border-b border-gray-200\"><div class=\"flex items-center gap-2 text-sm text-gray-600\"><a href=\"/alerts\" hx-get=\"/alerts\" hx-target=\"#content\" hx-swap=\"outerHTML settle:0\" hx-push-url=\"true\" class=\"hover:text-gray-900\">Alerts</a> <span>›</span> <span class=\"text-gray-900\">New Alert</span></div></nav><!-- Main Content --><main class=\"max-w-4xl\"><h1 class=\"text-2xl font-bold mb-8\">New Alert</h1><!-- Step 1: Select Environment and Project --><section class=\"mb-12\"><h2 class=\"text-lg font-semibold flex items-center gap-2 mb-6\"><span class=\"flex items-center justify-center w-6 h-6 bg-black text-white text-sm rounded\">1</span> Select service</h2><div class=\"\"><div class=\"relative\"><select class=\"w-full px-4 py-3 border border-gray-300 rounded-lg appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent\"><option>Select Service</option> <option>Web Service</option> <option>API Service</option> <option>Background Jobs</option></select><div class=\"absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none\"><svg class=\"w-5 h-5 text-gray-400\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M19 9l-7 7-7-7\"></path></svg></div></div></div></section><!-- Step 2: Set Alerts --><section class=\"mb-12\"><div class=\"flex justify-between items-center mb-6\"><h2 class=\"text-lg font-semibold flex items-center gap-2\"><span class=\"flex items-center justify-center w-6 h-6 bg-black text-white text-sm rounded\">2</span> Set alerts</h2></div><div class=\"border border-gray-200 rounded-lg p-6 bg-gray-50\"><!-- WHEN Section --><div class=\"flex items-start gap-4 mb-6\"><div class=\"flex-1\"><div class=\"flex items-center gap-2 flex-wrap\"><span class=\"px-3 py-1 bg-black text-white text-sm font-semibold rounded\">WHEN</span> <span class=\"text-gray-700 text-sm\">an event is appeared and</span> <select class=\"px-3 py-1 border border-gray-300 rounded bg-white text-sm\"><option>any</option> <option>all</option></select> <span class=\"text-gray-700 text-sm\">of the following happens</span></div><div class=\"mt-4 flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg\"><span class=\"text-gray-700\">A new issue is created</span> <button class=\"text-gray-400 hover:text-gray-600\"><svg class=\"w-5 h-5\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16\"></path></svg></button></div><div class=\"mt-3 relative\"><button onclick=\"toggleDropdown('trigger-dropdown')\" class=\"w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-left text-gray-500 hover:bg-gray-50 flex items-center justify-between\"><span>Add trigger</span> <svg class=\"w-5 h-5 text-gray-400\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M19 9l-7 7-7-7\"></path></svg></button><div id=\"trigger-dropdown\" class=\"dropdown-content absolute z-10 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-96 overflow-y-auto\"><div class=\"p-2\"><div class=\"px-3 py-2 text-xs font-semibold text-gray-500 uppercase\">Triggers</div><button class=\"w-full px-3 py-2 text-left text-gray-700 hover:bg-gray-100 rounded\">A new issue is created</button> <button class=\"w-full px-3 py-2 text-left text-gray-700 hover:bg-gray-100 rounded\">The issue is seen more than \"value\" times in \"interval\"</button> <button class=\"w-full px-3 py-2 text-left text-gray-700 hover:bg-gray-100 rounded\">The issue is seen by more than \"value\" users in \"interval\"</button></div></div></div></div></div><!-- IF Section --><div class=\"flex items-start gap-4 mb-6\"><div class=\"flex-1\"><div class=\"flex items-center gap-2 flex-wrap\"><span class=\"px-3 py-1 bg-black text-white text-sm font-semibold rounded\">IF</span> <select class=\"px-3 py-1 border border-gray-300 rounded bg-white text-sm\"><option>all</option> <option>any</option></select> <span class=\"text-gray-700 text-sm\">of these filters match</span></div><div class=\"mt-3 relative\"><button onclick=\"toggleDropdown('filter-dropdown')\" class=\"w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-left text-gray-500 hover:bg-gray-50 flex items-center justify-between\"><span>Add filter</span> <svg class=\"w-5 h-5 text-gray-400\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M19 9l-7 7-7-7\"></path></svg></button><div id=\"filter-dropdown\" class=\"dropdown-content absolute z-10 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-96 overflow-y-auto\"><div class=\"p-2\"><button class=\"w-full px-3 py-2 text-left text-gray-700 hover:bg-gray-100 rounded\">The issue is older or newer than...</button> <button class=\"w-full px-3 py-2 text-left text-gray-700 hover:bg-gray-100 rounded\">The issue has happened at least 'x' times</button> <button class=\"w-full px-3 py-2 text-left text-gray-700 hover:bg-gray-100 rounded\">The issue is assigned to 'no one/team/member'</button> <button class=\"w-full px-3 py-2 text-left text-gray-700 hover:bg-gray-100 rounded\">The event's tags match 'key' 'match' 'value'</button></div></div></div></div></div><!-- THEN Section --><div class=\"flex items-start gap-4\"><div class=\"flex-1\"><div class=\"flex items-center gap-2 flex-wrap mb-3\"><span class=\"px-3 py-1 bg-black text-white text-sm font-semibold rounded\">THEN</span> <span class=\"text-gray-700 text-sm\">perform these actions</span></div><div class=\"relative\"><button onclick=\"toggleDropdown('action-dropdown')\" class=\"w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-left text-gray-500 hover:bg-gray-50 flex items-center justify-between\"><span>Add action</span> <svg class=\"w-5 h-5 text-gray-400\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M19 9l-7 7-7-7\"></path></svg></button><div id=\"action-dropdown\" class=\"dropdown-content absolute z-10 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg\"><div class=\"p-2\"><div class=\"px-3 py-2 text-xs font-semibold text-gray-500 uppercase mt-2\">Notify Integration</div><button class=\"w-full px-3 py-2 text-left text-gray-700 hover:bg-gray-100 rounded\">Send a notification to all integrations</button></div></div></div><button class=\"mt-4 px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-lg hover:bg-white\">Test Notification</button></div></div></div></section><!-- Step 3: Set Action Interval --><section class=\"mb-12\"><h2 class=\"text-lg font-semibold flex items-center gap-2 mb-2\"><span class=\"flex items-center justify-center w-6 h-6 bg-black text-white text-sm rounded\">3</span> Set action interval</h2><p class=\"text-sm text-gray-600 mb-6\">Perform the actions above once this often for an issue</p><div class=\"\"><div class=\"relative\"><select class=\"w-full px-4 py-3 border border-gray-300 rounded-lg appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent\"><option>24 hours</option> <option>1 hour</option> <option>30 minutes</option> <option>5 minutes</option></select><div class=\"absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none\"><svg class=\"w-5 h-5 text-gray-400\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M19 9l-7 7-7-7\"></path></svg></div></div></div></section><!-- Step 4: Add Alert Name and Owner --><section class=\"mb-12\"><h2 class=\"text-lg font-semibold flex items-center gap-2 mb-2\"><span class=\"flex items-center justify-center w-6 h-6 bg-black text-white text-sm rounded\">4</span> Add alert name and owner</h2><p class=\"text-sm text-gray-600 mb-6\">Alert name will show up in notifications and the owner has full control over this alert.</p><div class=\"flex gap-4\"><input type=\"text\" class=\"flex-1 px-4 py-3 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent\" placeholder=\"Enter alert name\"><div class=\"relative flex-1\"><select class=\"w-full px-4 py-3 border border-gray-300 rounded-lg appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent\"><option>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<div class=\"max-w-7xl mx-auto p-6\" x-data=\"alertForm(0, 10, 1, 4, false, '')\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var5 string
-		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(user.FullName())
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/add_alert.templ`, Line: 193, Col: 32}
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
+		templ_7745c5c3_Err = Toast().Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</option> <option>Team Alpha</option> <option>Team Beta</option></select><div class=\"absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none\"><svg class=\"w-5 h-5 text-gray-400\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M19 9l-7 7-7-7\"></path></svg></div></div></div></section><!-- Action Buttons --><div class=\"flex justify-end gap-3 pt-8 pb-8\"><button class=\"px-4 py-2 border border-gray-300 rounded text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer\">Cancel</button> <button class=\"px-4 py-2 bg-black text-white rounded text-sm font-medium hover:bg-gray-800 transition cursor-pointer\">Save Alert</button></div></main></div><style>\n        .dropdown-content {\n            display: none;\n        }\n\n        .dropdown-content.active {\n            display: block;\n        }\n    </style><script>\n        function toggleDropdown(id) {\n            const dropdown = document.getElementById(id);\n            const allDropdowns = document.querySelectorAll('.dropdown-content');\n\n            allDropdowns.forEach(d => {\n                if (d.id !== id) {\n                    d.classList.remove('active');\n                }\n            });\n\n            dropdown.classList.toggle('active');\n        }\n\t\t\n        document.addEventListener('click', function(event) {\n            if (!event.target.closest('button')) {\n                document.querySelectorAll('.dropdown-content').forEach(d => {\n                    d.classList.remove('active');\n                });\n            }\n        });\n    </script>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<!-- Breadcrumbs --><nav class=\"mb-6 border-b border-gray-200\"><div class=\"flex items-center gap-2 text-sm text-gray-600\"><a href=\"/alerts\" hx-get=\"/alerts\" hx-target=\"#content\" hx-swap=\"outerHTML settle:0\" hx-push-url=\"true\" class=\"hover:text-gray-900\">Alerts</a> <span>›</span> <span class=\"text-gray-900\">New Alert</span></div></nav><!-- Main Content --><main class=\"max-w-4xl\"><h1 class=\"text-2xl font-bold mb-8\">New Alert</h1><!-- Step 1: Select Project --><section class=\"mb-8\"><h2 class=\"text-lg font-semibold flex items-center gap-2 mb-4\"><span class=\"flex items-center justify-center w-6 h-6 bg-black text-white text-sm rounded\">1</span> Select Project</h2><div class=\"relative\"><select x-model.number=\"projectId\" class=\"w-full px-4 py-3 border border-gray-300 rounded-lg appearance-none bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent\"><option value=\"0\">Select Project</option> ")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		for _, project := range projects {
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<option value=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var5 string
+			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", project.ID))
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/add_alert.templ`, Line: 46, Col: 52}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var6 string
+			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(project.Name)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/add_alert.templ`, Line: 46, Col: 69}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</option>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "</select><div class=\"absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none\"><svg class=\"w-5 h-5 text-gray-400\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M19 9l-7 7-7-7\"></path></svg></div></div></section><!-- Step 2: Configure Alert Conditions --><section class=\"mb-8\"><h2 class=\"text-lg font-semibold flex items-center gap-2 mb-6\"><span class=\"flex items-center justify-center w-6 h-6 bg-black text-white text-sm rounded\">2</span> Configure Alert Conditions</h2><div class=\"grid grid-cols-1 md:grid-cols-2 gap-6\"><div><label class=\"block text-sm font-medium text-gray-700 mb-2\">Threshold</label> <input x-model.number=\"threshold\" type=\"number\" value=\"10\" min=\"1\" class=\"w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent\" placeholder=\"10\"><p class=\"mt-1 text-xs text-gray-500\">Number of occurrences or users</p></div><div><label class=\"block text-sm font-medium text-gray-700 mb-2\">Condition</label> <select x-model.number=\"condition\" class=\"w-full px-3 py-2.5 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent\"><option value=\"1\">Occurrences of a unique error</option> <option value=\"2\">Users affected by a unique error</option></select></div><div><label class=\"block text-sm font-medium text-gray-700 mb-2\">Time Window</label> <select x-model.number=\"timeframe\" class=\"w-full px-3 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent\"><option value=\"1\">1 minute</option> <option value=\"2\">5 minutes</option> <option value=\"3\">15 minutes</option> <option value=\"4\">1 hour</option> <option value=\"5\">1 day</option> <option value=\"6\">1 week</option> <option value=\"7\">30 days</option></select></div></div></section><!-- Step 3: Name the Alert --><section class=\"mb-8\"><h2 class=\"text-lg font-semibold flex items-center gap-2 mb-4\"><span class=\"flex items-center justify-center w-6 h-6 bg-black text-white text-sm rounded\">3</span> Name the Alert</h2><input x-model=\"ruleName\" type=\"text\" class=\"w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent\" placeholder=\"e.g., High Error Rate Alert\"></section><div class=\"flex items-center pt-7\"><input x-model=\"highPriority\" type=\"checkbox\" id=\"high-priority\" class=\"h-4 w-4 text-black border-gray-300 rounded focus:ring-black\"> <label for=\"high-priority\" class=\"ml-2 text-sm text-gray-700\">Mark as high priority</label></div><!-- Action Buttons --><div class=\"flex justify-end gap-3 pt-8 pb-8\"><button hx-get=\"/alerts\" hx-target=\"#content\" hx-swap=\"outerHTML settle:0\" hx-push-url=\"true\" class=\"px-4 py-2 border border-gray-300 rounded text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer\">Cancel</button> <button @click=\"saveAlert()\" :disabled=\"!isFormValid\" :class=\"isFormValid ? 'bg-black text-white hover:bg-gray-800' : 'bg-gray-300 text-gray-500 cursor-not-allowed'\" class=\"px-4 py-2 rounded text-sm font-medium transition cursor-pointer\">Save Alert</button></div></main></div><script>\n\t\tfunction alertForm(projectId, threshold, condition, timeframe, highPriority, ruleName) {\n\t\t\treturn {\n\t\t\t\tprojectId: projectId || 0,\n\t\t\t\tthreshold: threshold || 10,\n\t\t\t\tcondition: condition || 1,\n\t\t\t\ttimeframe: timeframe || 4,\n\t\t\t\thighPriority: highPriority || false,\n\t\t\t\truleName: ruleName || '',\n\n\t\t\t\tget isFormValid() {\n\t\t\t\t\treturn this.projectId > 0 && this.ruleName.trim() !== '' && this.threshold > 0;\n\t\t\t\t},\n\n\t\t\t\tsaveAlert() {\n\t\t\t\t\tif (!this.isFormValid) return;\n\n\t\t\t\t\thtmx.ajax('POST', '/alerts', {\n\t\t\t\t\t\ttarget: '#content',\n\t\t\t\t\t\tswap: 'outerHTML',\n\t\t\t\t\t\tvalues: {\n\t\t\t\t\t\t\tproject_id: this.projectId,\n\t\t\t\t\t\t\trule_name: this.ruleName,\n\t\t\t\t\t\t\tthreshold: this.threshold,\n\t\t\t\t\t\t\tcondition: this.condition,\n\t\t\t\t\t\t\ttimeframe: this.timeframe,\n\t\t\t\t\t\t\thigh_priority: this.highPriority\n\t\t\t\t\t\t}\n\t\t\t\t\t});\n\t\t\t\t}\n\t\t\t};\n\t\t}\n\t</script>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
