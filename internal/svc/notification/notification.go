@@ -1,0 +1,189 @@
+// Package notification provides the implementation of the warnly.NotificationService interface.
+package notification
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"log/slog"
+	"time"
+
+	"github.com/vk-rv/warnly/internal/notifier"
+	"github.com/vk-rv/warnly/internal/warnly"
+)
+
+// NotificationService implements notification management logic.
+type NotificationService struct {
+	notificationStore warnly.NotificationStore
+	teamStore         warnly.TeamStore
+	webhookNotifier   *notifier.WebhookNotifier
+	now               func() time.Time
+	logger            *slog.Logger
+}
+
+// NewNotificationService creates a new NotificationService.
+func NewNotificationService(
+	notificationStore warnly.NotificationStore,
+	teamStore warnly.TeamStore,
+	webhookNotifier *notifier.WebhookNotifier,
+	now func() time.Time,
+	logger *slog.Logger,
+) *NotificationService {
+	return &NotificationService{
+		notificationStore: notificationStore,
+		teamStore:         teamStore,
+		webhookNotifier:   webhookNotifier,
+		now:               now,
+		logger:            logger,
+	}
+}
+
+// SaveWebhookConfig saves or updates webhook configuration for a team.
+func (s *NotificationService) SaveWebhookConfig(
+	ctx context.Context,
+	req *warnly.SaveWebhookConfigRequest,
+) error {
+	teams, err := s.teamStore.ListTeams(ctx, int(req.User.ID))
+	if err != nil {
+		return fmt.Errorf("list teams: %w", err)
+	}
+
+	hasAccess := false
+	for i := range teams {
+		if teams[i].ID == req.TeamID {
+			hasAccess = true
+			break
+		}
+	}
+	if !hasAccess {
+		return warnly.ErrNotFound
+	}
+
+	now := s.now().UTC()
+
+	channels, err := s.notificationStore.ListNotificationChannels(ctx, req.TeamID)
+	if err != nil {
+		return err
+	}
+
+	var channel *warnly.NotificationChannel
+	for i := range channels {
+		if channels[i].ChannelType == warnly.NotificationChannelWebhook {
+			channel = &channels[i]
+			break
+		}
+	}
+
+	if channel == nil {
+		channel = &warnly.NotificationChannel{
+			CreatedAt:   now,
+			UpdatedAt:   now,
+			TeamID:      req.TeamID,
+			Name:        "Default Webhook",
+			ChannelType: warnly.NotificationChannelWebhook,
+			Enabled:     true,
+		}
+		if err := s.notificationStore.CreateNotificationChannel(ctx, channel); err != nil {
+			return err
+		}
+	}
+
+	var encryptedSecret string
+	if req.Secret != "" {
+		encryptedSecret, err = s.webhookNotifier.EncryptSecret(req.Secret)
+		if err != nil {
+			return err
+		}
+	}
+
+	webhookConfig, err := s.notificationStore.GetWebhookConfig(ctx, channel.ID)
+	if err != nil {
+		if !errors.Is(err, warnly.ErrNotFound) {
+			return err
+		}
+		webhookConfig = &warnly.WebhookConfig{
+			CreatedAt:       now,
+			UpdatedAt:       now,
+			ChannelID:       channel.ID,
+			URL:             req.URL,
+			SecretEncrypted: encryptedSecret,
+		}
+		if err := s.notificationStore.CreateWebhookConfig(ctx, webhookConfig); err != nil {
+			return err
+		}
+	} else {
+		webhookConfig.UpdatedAt = now
+		webhookConfig.URL = req.URL
+		webhookConfig.SecretEncrypted = encryptedSecret
+		webhookConfig.VerifiedAt = &now
+
+		if err := s.notificationStore.UpdateWebhookConfig(ctx, webhookConfig); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// TestWebhook sends a test notification to the configured webhook.
+func (s *NotificationService) TestWebhook(
+	ctx context.Context,
+	req *warnly.TestWebhookRequest,
+) error {
+	teams, err := s.teamStore.ListTeams(ctx, int(req.User.ID))
+	if err != nil {
+		return fmt.Errorf("list teams: %w", err)
+	}
+
+	hasAccess := false
+	for i := range teams {
+		if teams[i].ID == req.TeamID {
+			hasAccess = true
+			break
+		}
+	}
+	if !hasAccess {
+		return warnly.ErrNotFound
+	}
+
+	channels, err := s.notificationStore.ListNotificationChannels(ctx, req.TeamID)
+	if err != nil {
+		return err
+	}
+
+	var channel *warnly.NotificationChannel
+	for i := range channels {
+		if channels[i].ChannelType == warnly.NotificationChannelWebhook {
+			channel = &channels[i]
+			break
+		}
+	}
+
+	if channel == nil {
+		return errors.New("webhook not configured")
+	}
+
+	webhookConfig, err := s.notificationStore.GetWebhookConfig(ctx, channel.ID)
+	if err != nil {
+		return fmt.Errorf("get webhook config: %w", err)
+	}
+
+	testPayload := &notifier.AlertPayload{
+		AlertID:      0,
+		AlertName:    "Test Alert",
+		ProjectID:    0,
+		TeamID:       req.TeamID,
+		Status:       "test",
+		Threshold:    100,
+		Condition:    "occurrences",
+		Timeframe:    "1h",
+		HighPriority: false,
+		Timestamp:    s.now().UTC(),
+	}
+
+	if err := s.webhookNotifier.SendWebhook(ctx, webhookConfig, testPayload); err != nil {
+		return fmt.Errorf("send test webhook: %w", err)
+	}
+
+	return nil
+}

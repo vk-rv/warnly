@@ -122,6 +122,8 @@ CREATE TABLE IF NOT EXISTS `alert` (
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
   `last_triggered_at` datetime DEFAULT NULL,
+  `resolved_at` datetime DEFAULT NULL,
+  `notification_sent_at` datetime DEFAULT NULL,
   `rule_name` varchar(255) NOT NULL,
   `description` TEXT,
   `status` ENUM('Active', 'Inactive', 'Triggered') NOT NULL DEFAULT 'Active',
@@ -134,5 +136,58 @@ CREATE TABLE IF NOT EXISTS `alert` (
   PRIMARY KEY (`id`),
   KEY `idx_project_id` (`project_id`),
   KEY `idx_team_id` (`team_id`),
+  KEY `idx_status` (`status`)
+);
+
+-- Table for storing notification channel configurations
+CREATE TABLE IF NOT EXISTS `notification_channel` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  `team_id` int NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `channel_type` ENUM('webhook') NOT NULL DEFAULT 'webhook',
+  `enabled` boolean NOT NULL DEFAULT true,
+  PRIMARY KEY (`id`),
+  KEY `idx_team_id` (`team_id`),
+  FOREIGN KEY (`team_id`) REFERENCES `team`(`id`) ON DELETE CASCADE
+);
+
+-- Table for storing webhook configurations per channel
+CREATE TABLE IF NOT EXISTS `webhook_config` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  `channel_id` int NOT NULL,
+  `url` varchar(512) NOT NULL COMMENT 'Webhook URL',
+  `secret_encrypted` varchar(512) DEFAULT NULL COMMENT 'Optional webhook secret (encrypted)',
+  `verified_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_channel_id` (`channel_id`)
+);
+
+-- Table for distributed locking of alert processing
+CREATE TABLE IF NOT EXISTS `alert_lock` (
+  `alert_id` int NOT NULL,
+  `instance_id` varchar(100) NOT NULL,
+  `locked_at` datetime NOT NULL,
+  `expires_at` datetime NOT NULL,
+  PRIMARY KEY (`alert_id`),
+  KEY `idx_expires_at` (`expires_at`)
+);
+
+-- Table for alert notification history
+CREATE TABLE IF NOT EXISTS `alert_notification` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `created_at` datetime NOT NULL,
+  `alert_id` int NOT NULL,
+  `channel_id` int NOT NULL,
+  `notification_type` ENUM('triggered', 'resolved') NOT NULL,
+  `status` ENUM('pending', 'sent', 'failed') NOT NULL DEFAULT 'pending',
+  `error_message` TEXT DEFAULT NULL,
+  `sent_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_alert_id` (`alert_id`),
+  KEY `idx_channel_id` (`channel_id`),
   KEY `idx_status` (`status`)
 );

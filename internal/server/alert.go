@@ -132,7 +132,7 @@ func (h *AlertsHandler) EditAlertGet(w http.ResponseWriter, r *http.Request) {
 		h.writeError(ctx, w, http.StatusInternalServerError, "edit alert get: can't get alert", err)
 		return
 	}
-	
+
 	res, err := h.alertService.ListAlerts(ctx, &warnly.ListAlertsRequest{
 		User:   &user,
 		Limit:  1000,

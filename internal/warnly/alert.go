@@ -76,19 +76,21 @@ const (
 
 // Alert represents an alert rule.
 type Alert struct {
-	CreatedAt       time.Time
-	UpdatedAt       time.Time
-	LastTriggeredAt *time.Time
-	RuleName        string
-	Description     string
-	Status          AlertStatus
-	ID              int
-	ProjectID       int
-	TeamID          int
-	Threshold       int
-	Condition       AlertCondition // 1 = occurrences, 2 = users affected
-	Timeframe       AlertTimeframe // 1=1min, 2=5min, 3=15min, 4=1h, 5=1d, 6=1w, 7=30d
-	HighPriority    bool
+	CreatedAt          time.Time
+	UpdatedAt          time.Time
+	LastTriggeredAt    *time.Time
+	ResolvedAt         *time.Time
+	NotificationSentAt *time.Time
+	RuleName           string
+	Description        string
+	Status             AlertStatus
+	ID                 int
+	ProjectID          int
+	TeamID             int
+	Threshold          int
+	Condition          AlertCondition // 1 = occurrences, 2 = users affected
+	Timeframe          AlertTimeframe // 1=1min, 2=5min, 3=15min, 4=1h, 5=1d, 6=1w, 7=30d
+	HighPriority       bool
 }
 
 // GetTimeframeDuration returns the duration for the timeframe.

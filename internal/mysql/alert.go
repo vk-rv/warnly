@@ -74,7 +74,7 @@ func (s *AlertStore) ListAlerts(
 
 	query := fmt.Sprintf(`
 		SELECT 
-			a.id, a.created_at, a.updated_at, a.last_triggered_at,
+			a.id, a.created_at, a.updated_at, a.last_triggered_at, a.resolved_at, a.notification_sent_at,
 			a.rule_name, a.description, a.status,
 			a.project_id, a.team_id, a.threshold, a.cond, a.timeframe, a.is_high_priority
 		FROM alert a
@@ -96,15 +96,19 @@ func (s *AlertStore) ListAlerts(
 
 	for rows.Next() {
 		var (
-			alert           warnly.Alert
-			lastTriggeredAt sql.NullTime
-			description     sql.NullString
+			alert              warnly.Alert
+			lastTriggeredAt    sql.NullTime
+			resolvedAt         sql.NullTime
+			notificationSentAt sql.NullTime
+			description        sql.NullString
 		)
 		err := rows.Scan(
 			&alert.ID,
 			&alert.CreatedAt,
 			&alert.UpdatedAt,
 			&lastTriggeredAt,
+			&resolvedAt,
+			&notificationSentAt,
 			&alert.RuleName,
 			&description,
 			&alert.Status,
@@ -121,6 +125,12 @@ func (s *AlertStore) ListAlerts(
 
 		if lastTriggeredAt.Valid {
 			alert.LastTriggeredAt = &lastTriggeredAt.Time
+		}
+		if resolvedAt.Valid {
+			alert.ResolvedAt = &resolvedAt.Time
+		}
+		if notificationSentAt.Valid {
+			alert.NotificationSentAt = &notificationSentAt.Time
 		}
 		if description.Valid {
 			alert.Description = description.String
@@ -180,7 +190,7 @@ func (s *AlertStore) UpdateAlert(ctx context.Context, alert *warnly.Alert) error
 		UPDATE alert
 		SET updated_at = ?, rule_name = ?, description = ?, status = ?,
 			threshold = ?, cond = ?, timeframe = ?, is_high_priority = ?,
-			last_triggered_at = ?
+			last_triggered_at = ?, resolved_at = ?, notification_sent_at = ?
 		WHERE id = ?
 	`
 
@@ -196,6 +206,8 @@ func (s *AlertStore) UpdateAlert(ctx context.Context, alert *warnly.Alert) error
 		alert.Timeframe,
 		alert.HighPriority,
 		alert.LastTriggeredAt,
+		alert.ResolvedAt,
+		alert.NotificationSentAt,
 		alert.ID,
 	)
 	if err != nil {
@@ -237,7 +249,7 @@ func (s *AlertStore) DeleteAlert(ctx context.Context, alertID int) error {
 func (s *AlertStore) GetAlert(ctx context.Context, alertID int) (*warnly.Alert, error) {
 	const query = `
 		SELECT 
-			id, created_at, updated_at, last_triggered_at,
+			id, created_at, updated_at, last_triggered_at, resolved_at, notification_sent_at,
 			rule_name, description, status,
 			project_id, team_id, threshold, cond, timeframe, is_high_priority
 		FROM alert
@@ -245,9 +257,11 @@ func (s *AlertStore) GetAlert(ctx context.Context, alertID int) (*warnly.Alert, 
 	`
 
 	var (
-		alert           warnly.Alert
-		lastTriggeredAt sql.NullTime
-		description     sql.NullString
+		alert              warnly.Alert
+		lastTriggeredAt    sql.NullTime
+		resolvedAt         sql.NullTime
+		notificationSentAt sql.NullTime
+		description        sql.NullString
 	)
 
 	err := s.db.QueryRowContext(ctx, query, alertID).Scan(
@@ -255,6 +269,8 @@ func (s *AlertStore) GetAlert(ctx context.Context, alertID int) (*warnly.Alert, 
 		&alert.CreatedAt,
 		&alert.UpdatedAt,
 		&lastTriggeredAt,
+		&resolvedAt,
+		&notificationSentAt,
 		&alert.RuleName,
 		&description,
 		&alert.Status,
@@ -275,6 +291,12 @@ func (s *AlertStore) GetAlert(ctx context.Context, alertID int) (*warnly.Alert, 
 	if lastTriggeredAt.Valid {
 		alert.LastTriggeredAt = &lastTriggeredAt.Time
 	}
+	if resolvedAt.Valid {
+		alert.ResolvedAt = &resolvedAt.Time
+	}
+	if notificationSentAt.Valid {
+		alert.NotificationSentAt = &notificationSentAt.Time
+	}
 	if description.Valid {
 		alert.Description = description.String
 	}
@@ -286,7 +308,7 @@ func (s *AlertStore) GetAlert(ctx context.Context, alertID int) (*warnly.Alert, 
 func (s *AlertStore) ListAlertsByProject(ctx context.Context, projectID int) ([]warnly.Alert, error) {
 	const query = `
 		SELECT 
-			id, created_at, updated_at, last_triggered_at,
+			id, created_at, updated_at, last_triggered_at, resolved_at, notification_sent_at,
 			rule_name, description, status,
 			project_id, team_id, threshold, cond, timeframe, is_high_priority
 		FROM alert
@@ -307,15 +329,19 @@ func (s *AlertStore) ListAlertsByProject(ctx context.Context, projectID int) ([]
 	var alerts []warnly.Alert
 	for rows.Next() {
 		var (
-			alert           warnly.Alert
-			lastTriggeredAt sql.NullTime
-			description     sql.NullString
+			alert              warnly.Alert
+			lastTriggeredAt    sql.NullTime
+			resolvedAt         sql.NullTime
+			notificationSentAt sql.NullTime
+			description        sql.NullString
 		)
 		err := rows.Scan(
 			&alert.ID,
 			&alert.CreatedAt,
 			&alert.UpdatedAt,
 			&lastTriggeredAt,
+			&resolvedAt,
+			&notificationSentAt,
 			&alert.RuleName,
 			&description,
 			&alert.Status,
@@ -332,6 +358,12 @@ func (s *AlertStore) ListAlertsByProject(ctx context.Context, projectID int) ([]
 
 		if lastTriggeredAt.Valid {
 			alert.LastTriggeredAt = &lastTriggeredAt.Time
+		}
+		if resolvedAt.Valid {
+			alert.ResolvedAt = &resolvedAt.Time
+		}
+		if notificationSentAt.Valid {
+			alert.NotificationSentAt = &notificationSentAt.Time
 		}
 		if description.Valid {
 			alert.Description = description.String
