@@ -46,8 +46,7 @@ func (h *notificationHandler) SaveWebhook(w http.ResponseWriter, r *http.Request
 		h.writeError(ctx, w, http.StatusInternalServerError, "save webhook config", err)
 		return
 	}
-
-	w.Header().Set("Hx-Trigger", `{"showToast": {"message": "Webhook configuration saved successfully"}}`)
+	
 	w.WriteHeader(http.StatusOK)
 }
 

@@ -13,7 +13,20 @@ templ Settings(data *SettingsData) {
 }
 
 templ SettingsHtmx(data *SettingsData) {
+	@Toast()
 	<title>{ SettingsTitle } - { AppName }</title>
+	<style>
+		.toast-message.success {
+			background: rgba(16, 185, 129, 0.92); /* green */
+			color: #fff;
+			border: 1px solid #10b981;
+		}
+		.toast-message.error {
+			background: rgba(239, 68, 68, 0.92); /* red */
+			color: #fff;
+			border: 1px solid #ef4444;
+		}
+	</style>
 	<div id="content" class="flex min-h-screen text-sm" x-data={ fmt.Sprintf("webhookForm({url: '%s', secret: '%s'})", data.Webhook.URL, data.Webhook.Secret) }>
 		<div class="w-64 text-sm bg-white border-r border-gray-200 p-6">
 			<nav class="space-y-3">
@@ -102,6 +115,28 @@ templ SettingsHtmx(data *SettingsData) {
 		</div>
 	</div>
 	<script>
+		function showSuccessToast(message) {
+			window.showToast(message);
+			setTimeout(() => {
+				const toasts = document.querySelectorAll('.toast-message');
+				const lastToast = toasts[toasts.length - 1];
+				if (lastToast) {
+					lastToast.classList.add('success');
+				}
+			}, 0);
+		}
+
+		function showErrorToast(message) {
+			window.showToast(message);
+			setTimeout(() => {
+				const toasts = document.querySelectorAll('.toast-message');
+				const lastToast = toasts[toasts.length - 1];
+				if (lastToast) {
+					lastToast.classList.add('error');
+				}
+			}, 0);
+		}
+
 		function webhookForm(initial = {}) {
 			return {
 				url: initial.url || '',
@@ -115,12 +150,31 @@ templ SettingsHtmx(data *SettingsData) {
 				saveWebhook() {
 					if (!this.isFormValid) return;
 
-					htmx.ajax('POST', '/settings/webhook', {
-						values: {
+					fetch('/settings/webhook', {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/x-www-form-urlencoded',
+							'HX-Request': 'true'
+						},
+						body: new URLSearchParams({
 							team_id: this.teamId,
 							url: this.url,
 							secret: this.secret
+						})
+					})
+					.then(response => {
+						if (response.status === 200) {
+							if (this.url.trim() === '') {
+								showSuccessToast('Webhook successfully reset');
+							} else {
+								showSuccessToast('Webhook saved and verified');
+							}
+						} else if (response.status === 500) {
+							showErrorToast('Failed to verify webhook');
 						}
+					})
+					.catch(error => {
+						showErrorToast('Failed to verify webhook');
 					});
 				},
 			};
