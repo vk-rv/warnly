@@ -149,8 +149,7 @@ CREATE TABLE IF NOT EXISTS `notification_channel` (
   `channel_type` ENUM('webhook') NOT NULL DEFAULT 'webhook',
   `enabled` boolean NOT NULL DEFAULT true,
   PRIMARY KEY (`id`),
-  KEY `idx_team_id` (`team_id`),
-  FOREIGN KEY (`team_id`) REFERENCES `team`(`id`) ON DELETE CASCADE
+  KEY `idx_team_id` (`team_id`)
 );
 
 -- Table for storing webhook configurations per channel
