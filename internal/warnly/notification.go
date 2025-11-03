@@ -120,6 +120,14 @@ type NotificationService interface {
 	SaveWebhookConfig(ctx context.Context, req *SaveWebhookConfigRequest) error
 	// TestWebhook sends a test notification to the configured webhook.
 	TestWebhook(ctx context.Context, req *TestWebhookRequest) error
+	// GetWebhookConfigWithSecretByTeamID returns the webhook configuration with decrypted secret for a team.
+	GetWebhookConfigWithSecretByTeamID(ctx context.Context, teamID int) (*WebhookConfigWithSecret, error)
+}
+
+// WebhookConfigWithSecret holds webhook config with decrypted secret.
+type WebhookConfigWithSecret struct {
+	URL    string
+	Secret string
 }
 
 // SaveWebhookConfigRequest is a request to save or update webhook configuration.

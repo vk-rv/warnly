@@ -39,6 +39,8 @@ func NewNotificationService(
 }
 
 // SaveWebhookConfig saves or updates webhook configuration for a team.
+//
+//nolint:gocyclo,cyclop // later
 func (s *NotificationService) SaveWebhookConfig(
 	ctx context.Context,
 	req *warnly.SaveWebhookConfigRequest,
@@ -60,6 +62,33 @@ func (s *NotificationService) SaveWebhookConfig(
 	}
 
 	now := s.now().UTC()
+
+	if req.URL == "" {
+		channels, err := s.notificationStore.ListNotificationChannels(ctx, req.TeamID)
+		if err != nil {
+			return err
+		}
+		for i := range channels {
+			if channels[i].ChannelType != warnly.NotificationChannelWebhook {
+				continue
+			}
+			webhookConfig, err := s.notificationStore.GetWebhookConfig(ctx, channels[i].ID)
+			if err != nil {
+				if errors.Is(err, warnly.ErrNotFound) {
+					return nil
+				}
+				return err
+			}
+			webhookConfig.UpdatedAt = now
+			webhookConfig.URL = ""
+			webhookConfig.SecretEncrypted = ""
+			if err := s.notificationStore.UpdateWebhookConfig(ctx, webhookConfig); err != nil {
+				return err
+			}
+			break
+		}
+		return nil
+	}
 
 	channels, err := s.notificationStore.ListNotificationChannels(ctx, req.TeamID)
 	if err != nil {
@@ -186,4 +215,58 @@ func (s *NotificationService) TestWebhook(
 	}
 
 	return nil
+}
+
+// GetWebhookConfigByTeamID returns the webhook configuration for a team.
+func (s *NotificationService) GetWebhookConfigByTeamID(ctx context.Context, teamID int) (*warnly.WebhookConfig, error) {
+	channels, err := s.notificationStore.ListNotificationChannels(ctx, teamID)
+	if err != nil {
+		return nil, fmt.Errorf("list notification channels: %w", err)
+	}
+
+	var channel *warnly.NotificationChannel
+	for i := range channels {
+		if channels[i].ChannelType == warnly.NotificationChannelWebhook {
+			channel = &channels[i]
+			break
+		}
+	}
+
+	if channel == nil {
+		return nil, warnly.ErrNotFound
+	}
+
+	webhookConfig, err := s.notificationStore.GetWebhookConfig(ctx, channel.ID)
+	if err != nil {
+		return nil, fmt.Errorf("get webhook config: %w", err)
+	}
+
+	return webhookConfig, nil
+}
+
+// GetWebhookConfigWithSecretByTeamID returns the webhook configuration with decrypted secret for a team.
+func (s *NotificationService) GetWebhookConfigWithSecretByTeamID(
+	ctx context.Context,
+	teamID int,
+) (*warnly.WebhookConfigWithSecret, error) {
+	config, err := s.GetWebhookConfigByTeamID(ctx, teamID)
+	if err != nil {
+		if errors.Is(err, warnly.ErrNotFound) {
+			return &warnly.WebhookConfigWithSecret{}, nil
+		}
+		return nil, err
+	}
+
+	var secret string
+	if config.SecretEncrypted != "" {
+		secret, err = s.webhookNotifier.DecryptSecret(config.SecretEncrypted)
+		if err != nil {
+			return nil, fmt.Errorf("decrypt secret: %w", err)
+		}
+	}
+
+	return &warnly.WebhookConfigWithSecret{
+		URL:    config.URL,
+		Secret: secret,
+	}, nil
 }

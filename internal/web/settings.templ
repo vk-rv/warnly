@@ -1,15 +1,20 @@
 package web
 
 import "github.com/vk-rv/warnly/internal/warnly"
+import "fmt"
 
-templ Settings(user *warnly.User) {
-	@Layout(SettingsTitle, SettingsHtmx(), sidebarSettings, user)
+type SettingsData struct {
+	User    *warnly.User
+	Webhook *warnly.WebhookConfigWithSecret
 }
 
-templ SettingsHtmx() {
+templ Settings(data *SettingsData) {
+	@Layout(SettingsTitle, SettingsHtmx(data), sidebarSettings, data.User)
+}
+
+templ SettingsHtmx(data *SettingsData) {
 	<title>{ SettingsTitle } - { AppName }</title>
-	@Toast()
-	<div id="content" class="flex min-h-screen text-sm" x-data="webhookForm()">
+	<div id="content" class="flex min-h-screen text-sm" x-data={ fmt.Sprintf("webhookForm({url: '%s', secret: '%s'})", data.Webhook.URL, data.Webhook.Secret) }>
 		<div class="w-64 text-sm bg-white border-r border-gray-200 p-6">
 			<nav class="space-y-3">
 				<div class="space-y-2">
@@ -105,14 +110,14 @@ templ SettingsHtmx() {
 		</div>
 	</div>
 	<script>
-		function webhookForm() {
+		function webhookForm(initial = {}) {
 			return {
-				url: '',
-				secret: '',
+				url: initial.url || '',
+				secret: initial.secret || '',
 				teamId: 1,
 
 				get isFormValid() {
-					return this.url.trim() !== '' && this.url.startsWith('http');
+					return this.url.trim() === '' || this.url.startsWith('http');
 				},
 
 				saveWebhook() {

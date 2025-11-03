@@ -9,8 +9,14 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import "github.com/vk-rv/warnly/internal/warnly"
+import "fmt"
 
-func Settings(user *warnly.User) templ.Component {
+type SettingsData struct {
+	User    *warnly.User
+	Webhook *warnly.WebhookConfigWithSecret
+}
+
+func Settings(data *SettingsData) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -31,7 +37,7 @@ func Settings(user *warnly.User) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = Layout(SettingsTitle, SettingsHtmx(), sidebarSettings, user).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = Layout(SettingsTitle, SettingsHtmx(data), sidebarSettings, data.User).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -39,7 +45,7 @@ func Settings(user *warnly.User) templ.Component {
 	})
 }
 
-func SettingsHtmx() templ.Component {
+func SettingsHtmx(data *SettingsData) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -67,7 +73,7 @@ func SettingsHtmx() templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(SettingsTitle)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/settings.templ`, Line: 10, Col: 23}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/settings.templ`, Line: 16, Col: 23}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -80,21 +86,26 @@ func SettingsHtmx() templ.Component {
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(AppName)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/settings.templ`, Line: 10, Col: 37}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/settings.templ`, Line: 16, Col: 37}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</title>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</title><div id=\"content\" class=\"flex min-h-screen text-sm\" x-data=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = Toast().Render(ctx, templ_7745c5c3_Buffer)
+		var templ_7745c5c3_Var5 string
+		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("webhookForm({url: '%s', secret: '%s'})", data.Webhook.URL, data.Webhook.Secret))
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/settings.templ`, Line: 17, Col: 154}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<div id=\"content\" class=\"flex min-h-screen text-sm\" x-data=\"webhookForm()\"><div class=\"w-64 text-sm bg-white border-r border-gray-200 p-6\"><nav class=\"space-y-3\"><div class=\"space-y-2\"><h2 class=\"text-xs font-semibold text-gray-500 uppercase\">USER SETTINGS</h2><div class=\"space-y-1\"><button class=\"w-full text-left px-2 py-1 rounded-md hover:bg-gray-100\">General Settings</button></div></div><div class=\"space-y-2\"><h2 class=\"text-xs font-semibold text-gray-500 uppercase\">ORGANIZATION</h2><div class=\"space-y-1\"><button class=\"w-full text-left px-2 py-1 rounded-md hover:bg-gray-100\">General Settings</button> <button class=\"w-full text-left px-2 py-1 rounded-md bg-black text-white font-semibold\">Alerts</button></div></div></nav></div><div class=\"flex-1 max-w-5xl ml-6 mr-6\"><div class=\"mt-6 bg-white shadow\"><div class=\"px-6 py-4 border-b border-gray-200\"><h2 class=\"text-lg font-semibold\">WEBHOOK CONFIGURATION</h2></div><div class=\"p-6\"><div class=\"space-y-4\"><div class=\"space-y-2\"><label class=\"block font-medium\">Webhook URL <span class=\"text-red-500\">*</span></label> <input x-model=\"url\" type=\"url\" placeholder=\"https://your-domain.com/webhook/alerts\" class=\"w-full px-3 py-2 border border-gray-300 rounded-md font-mono text-sm\"><p class=\"text-sm text-gray-500\">The endpoint that will receive POST requests with alert notifications</p></div><div class=\"space-y-2\"><label class=\"block font-medium\">Secret (Optional)</label> <input x-model=\"secret\" type=\"password\" placeholder=\"Enter a secret for HMAC signature verification\" class=\"w-full px-3 py-2 border border-gray-300 rounded-md font-mono text-sm\"><p class=\"text-sm text-gray-500\">If provided, requests will include X-Webhook-Signature header with HMAC-SHA256 signature</p></div><div class=\"border-t pt-4 mt-4\"><h3 class=\"text-sm font-semibold mb-2\">Payload Format:</h3><div class=\"bg-gray-100 p-3 rounded-md text-xs overflow-x-auto break-all\"><pre class=\"whitespace-pre font-mono\">&#123; \"alert_id\": 42, \"alert_name\": \"High Error Rate\", \"project_id\": 1, \"team_id\": 1, \"status\": \"triggered\", \"threshold\": 100, \"condition\": \"occurrences\", \"timeframe\": \"1h\", \"high_priority\": true, \"timestamp\": \"2025-11-02T10:00:00Z\" &#125;</pre></div></div><div class=\"flex gap-3 pt-4\"><button @click=\"saveWebhook()\" :disabled=\"!isFormValid\" :class=\"isFormValid ? 'bg-black text-white hover:bg-gray-800' : 'bg-gray-300 text-gray-500 cursor-not-allowed'\" class=\"px-4 py-2 rounded text-sm font-medium cursor-pointer\">Save & Verify</button> <button @click=\"testWebhook()\" :disabled=\"!isFormValid\" :class=\"isFormValid ? 'border border-gray-300 text-gray-700 hover:bg-gray-50' : 'border border-gray-200 text-gray-400 cursor-not-allowed'\" class=\"px-4 py-2 rounded text-sm font-medium cursor-pointer\">Test Webhook</button></div></div></div></div></div></div><script>\n\t\tfunction webhookForm() {\n\t\t\treturn {\n\t\t\t\turl: '',\n\t\t\t\tsecret: '',\n\t\t\t\tteamId: 1,\n\n\t\t\t\tget isFormValid() {\n\t\t\t\t\treturn this.url.trim() !== '' && this.url.startsWith('http');\n\t\t\t\t},\n\n\t\t\t\tsaveWebhook() {\n\t\t\t\t\tif (!this.isFormValid) return;\n\n\t\t\t\t\thtmx.ajax('POST', '/settings/webhook', {\n\t\t\t\t\t\tvalues: {\n\t\t\t\t\t\t\tteam_id: this.teamId,\n\t\t\t\t\t\t\turl: this.url,\n\t\t\t\t\t\t\tsecret: this.secret\n\t\t\t\t\t\t}\n\t\t\t\t\t});\n\t\t\t\t},\n\n\t\t\t\ttestWebhook() {\n\t\t\t\t\tif (!this.isFormValid) return;\n\n\t\t\t\t\thtmx.ajax('POST', '/settings/webhook/test', {\n\t\t\t\t\t\tvalues: {\n\t\t\t\t\t\t\tteam_id: this.teamId\n\t\t\t\t\t\t}\n\t\t\t\t\t});\n\t\t\t\t}\n\t\t\t};\n\t\t}\n\t</script>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "\"><div class=\"w-64 text-sm bg-white border-r border-gray-200 p-6\"><nav class=\"space-y-3\"><div class=\"space-y-2\"><h2 class=\"text-xs font-semibold text-gray-500 uppercase\">USER SETTINGS</h2><div class=\"space-y-1\"><button class=\"w-full text-left px-2 py-1 rounded-md hover:bg-gray-100\">General Settings</button></div></div><div class=\"space-y-2\"><h2 class=\"text-xs font-semibold text-gray-500 uppercase\">ORGANIZATION</h2><div class=\"space-y-1\"><button class=\"w-full text-left px-2 py-1 rounded-md hover:bg-gray-100\">General Settings</button> <button class=\"w-full text-left px-2 py-1 rounded-md bg-black text-white font-semibold\">Alerts</button></div></div></nav></div><div class=\"flex-1 max-w-5xl ml-6 mr-6\"><div class=\"mt-6 bg-white shadow\"><div class=\"px-6 py-4 border-b border-gray-200\"><h2 class=\"text-lg font-semibold\">WEBHOOK CONFIGURATION</h2></div><div class=\"p-6\"><div class=\"space-y-4\"><div class=\"space-y-2\"><label class=\"block font-medium\">Webhook URL <span class=\"text-red-500\">*</span></label> <input x-model=\"url\" type=\"url\" placeholder=\"https://your-domain.com/webhook/alerts\" class=\"w-full px-3 py-2 border border-gray-300 rounded-md font-mono text-sm\"><p class=\"text-sm text-gray-500\">The endpoint that will receive POST requests with alert notifications</p></div><div class=\"space-y-2\"><label class=\"block font-medium\">Secret (Optional)</label> <input x-model=\"secret\" type=\"password\" placeholder=\"Enter a secret for HMAC signature verification\" class=\"w-full px-3 py-2 border border-gray-300 rounded-md font-mono text-sm\"><p class=\"text-sm text-gray-500\">If provided, requests will include X-Webhook-Signature header with HMAC-SHA256 signature</p></div><div class=\"border-t pt-4 mt-4\"><h3 class=\"text-sm font-semibold mb-2\">Payload Format:</h3><div class=\"bg-gray-100 p-3 rounded-md text-xs overflow-x-auto break-all\"><pre class=\"whitespace-pre font-mono\">&#123; \"alert_id\": 42, \"alert_name\": \"High Error Rate\", \"project_id\": 1, \"team_id\": 1, \"status\": \"triggered\", \"threshold\": 100, \"condition\": \"occurrences\", \"timeframe\": \"1h\", \"high_priority\": true, \"timestamp\": \"2025-11-02T10:00:00Z\" &#125;</pre></div></div><div class=\"flex gap-3 pt-4\"><button @click=\"saveWebhook()\" :disabled=\"!isFormValid\" :class=\"isFormValid ? 'bg-black text-white hover:bg-gray-800' : 'bg-gray-300 text-gray-500 cursor-not-allowed'\" class=\"px-4 py-2 rounded text-sm font-medium cursor-pointer\">Save & Verify</button> <button @click=\"testWebhook()\" :disabled=\"!isFormValid\" :class=\"isFormValid ? 'border border-gray-300 text-gray-700 hover:bg-gray-50' : 'border border-gray-200 text-gray-400 cursor-not-allowed'\" class=\"px-4 py-2 rounded text-sm font-medium cursor-pointer\">Test Webhook</button></div></div></div></div></div></div><script>\n\t\tfunction webhookForm(initial = {}) {\n\t\t\treturn {\n\t\t\t\turl: initial.url || '',\n\t\t\t\tsecret: initial.secret || '',\n\t\t\t\tteamId: 1,\n\n\t\t\t\tget isFormValid() {\n\t\t\t\t\treturn this.url.trim() === '' || this.url.startsWith('http');\n\t\t\t\t},\n\n\t\t\t\tsaveWebhook() {\n\t\t\t\t\tif (!this.isFormValid) return;\n\n\t\t\t\t\thtmx.ajax('POST', '/settings/webhook', {\n\t\t\t\t\t\tvalues: {\n\t\t\t\t\t\t\tteam_id: this.teamId,\n\t\t\t\t\t\t\turl: this.url,\n\t\t\t\t\t\t\tsecret: this.secret\n\t\t\t\t\t\t}\n\t\t\t\t\t});\n\t\t\t\t},\n\n\t\t\t\ttestWebhook() {\n\t\t\t\t\tif (!this.isFormValid) return;\n\n\t\t\t\t\thtmx.ajax('POST', '/settings/webhook/test', {\n\t\t\t\t\t\tvalues: {\n\t\t\t\t\t\t\tteam_id: this.teamId\n\t\t\t\t\t\t}\n\t\t\t\t\t});\n\t\t\t\t}\n\t\t\t};\n\t\t}\n\t</script>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

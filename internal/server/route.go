@@ -93,7 +93,7 @@ func NewHandler(b *Backend) (*Handler, error) {
 	mux.HandleFunc("GET /system/schema", chain(systemHandler.listSchemas))
 	mux.HandleFunc("GET /system/errors", chain(systemHandler.listErrors))
 
-	settingsHandler := newSettingsHandler(b.Logger.With(
+	settingsHandler := newSettingsHandler(b.NotificationService, b.Logger.With(
 		slog.String("handler", "settings"),
 	))
 	mux.HandleFunc("GET /settings", chain(settingsHandler.listSettings))

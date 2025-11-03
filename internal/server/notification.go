@@ -84,9 +84,6 @@ func newSaveWebhookConfigRequest(r *http.Request, user *warnly.User) (*warnly.Sa
 		return nil, errors.New("team_id is 0")
 	}
 	url := r.FormValue("url")
-	if url == "" {
-		return nil, errors.New("url is empty")
-	}
 	secret := r.FormValue("secret")
 
 	return &warnly.SaveWebhookConfigRequest{
