@@ -122,14 +122,14 @@ func ProjectContentHtmx(user *warnly.User, res *warnly.ListProjectsResult) templ
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</title><div id=\"content\" class=\" flex-grow p-4 sm:p-8 overflow-y-auto h-screen\"><header class=\"flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4\"><h1 class=\"text-xl sm:text-2xl font-semibold\">Projects</h1><div class=\"flex gap-2 w-full sm:w-auto\"><button hx-target=\"#content\" hx-get=\"/projects/1/getting-started\" class=\"px-3 md:px-4 cursor-pointer py-2 border border-black rounded text-xs md:text-sm transition hover:bg-black hover:text-white flex items-center flex-1 md:flex-none justify-center\">Join a team</button> <a href=\"\" hx-target=\"#content\" hx-swap=\"outerHTML settle:0\" hx-get=\"/projects/new\" hx-push-url=\"true\" class=\"flex-1 md:flex-none\"><button class=\"px-4 cursor-pointer py-2 bg-black text-white rounded text-xs md:text-sm transition hover:bg-gray-800 cursor-pointer w-full\">Create Project</button></a></div></header><div class=\"flex flex-col md:flex-row mb-6 md:mb-8 gap-2\"><div class=\"flex w-full md:w-auto\"><div x-data=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "</title><div id=\"content\" class=\" flex-grow p-4 sm:p-8 overflow-y-auto h-screen\"><header class=\"flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4\"><h1 class=\"text-xl sm:text-2xl font-semibold\">Projects</h1><div class=\"flex gap-2 w-full sm:w-auto\"><a href=\"\" hx-target=\"#content\" hx-swap=\"outerHTML settle:0\" hx-get=\"/projects/new\" hx-push-url=\"true\" class=\"flex-1 md:flex-none\"><button class=\"px-4 cursor-pointer py-2 bg-black text-white rounded text-xs md:text-sm transition hover:bg-gray-800 cursor-pointer w-full\">Create Project</button></a></div></header><div class=\"flex flex-col md:flex-row mb-6 md:mb-8 gap-2\"><div class=\"flex w-full md:w-auto\"><div x-data=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var7 string
 			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(teamSelect(res))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project.templ`, Line: 41, Col: 34}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project.templ`, Line: 38, Col: 34}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
@@ -142,7 +142,7 @@ func ProjectContentHtmx(user *warnly.User, res *warnly.ListProjectsResult) templ
 			var templ_7745c5c3_Var8 string
 			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(clickPrevent("All Teams", 0))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project.templ`, Line: 56, Col: 55}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project.templ`, Line: 53, Col: 55}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
@@ -160,7 +160,7 @@ func ProjectContentHtmx(user *warnly.User, res *warnly.ListProjectsResult) templ
 				var templ_7745c5c3_Var9 string
 				templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(clickPrevent(team.Name, team.ID))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project.templ`, Line: 66, Col: 60}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project.templ`, Line: 63, Col: 60}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 				if templ_7745c5c3_Err != nil {
@@ -173,7 +173,7 @@ func ProjectContentHtmx(user *warnly.User, res *warnly.ListProjectsResult) templ
 				var templ_7745c5c3_Var10 string
 				templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(team.Name)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project.templ`, Line: 69, Col: 22}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project.templ`, Line: 66, Col: 22}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 				if templ_7745c5c3_Err != nil {
@@ -196,7 +196,7 @@ func ProjectContentHtmx(user *warnly.User, res *warnly.ListProjectsResult) templ
 				var templ_7745c5c3_Var11 string
 				templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(res.Criteria.Name)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project.templ`, Line: 78, Col: 160}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project.templ`, Line: 75, Col: 160}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 				if templ_7745c5c3_Err != nil {
@@ -214,7 +214,7 @@ func ProjectContentHtmx(user *warnly.User, res *warnly.ListProjectsResult) templ
 				var templ_7745c5c3_Var12 string
 				templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(res.Criteria.Name)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project.templ`, Line: 80, Col: 160}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project.templ`, Line: 77, Col: 160}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 				if templ_7745c5c3_Err != nil {
@@ -293,7 +293,7 @@ func ProjectGrid(res *warnly.ListProjectsResult) templ.Component {
 			var templ_7745c5c3_Var14 string
 			templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(project.Events.DashboardData(time.Now))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project.templ`, Line: 109, Col: 59}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project.templ`, Line: 106, Col: 59}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 			if templ_7745c5c3_Err != nil {
@@ -306,7 +306,7 @@ func ProjectGrid(res *warnly.ListProjectsResult) templ.Component {
 			var templ_7745c5c3_Var15 string
 			templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(string(project.Name[0]))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project.templ`, Line: 112, Col: 119}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project.templ`, Line: 109, Col: 119}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 			if templ_7745c5c3_Err != nil {
@@ -319,7 +319,7 @@ func ProjectGrid(res *warnly.ListProjectsResult) templ.Component {
 			var templ_7745c5c3_Var16 string
 			templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/projects/%d?issues=all&period=24h", project.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project.templ`, Line: 113, Col: 79}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project.templ`, Line: 110, Col: 79}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 			if templ_7745c5c3_Err != nil {
@@ -332,7 +332,7 @@ func ProjectGrid(res *warnly.ListProjectsResult) templ.Component {
 			var templ_7745c5c3_Var17 string
 			templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(project.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project.templ`, Line: 114, Col: 75}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project.templ`, Line: 111, Col: 75}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 			if templ_7745c5c3_Err != nil {
@@ -345,7 +345,7 @@ func ProjectGrid(res *warnly.ListProjectsResult) templ.Component {
 			var templ_7745c5c3_Var18 string
 			templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(project.Events.TotalErrors())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project.templ`, Line: 115, Col: 78}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project.templ`, Line: 112, Col: 78}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 			if templ_7745c5c3_Err != nil {
@@ -358,7 +358,7 @@ func ProjectGrid(res *warnly.ListProjectsResult) templ.Component {
 			var templ_7745c5c3_Var19 string
 			templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/settings/projects/%d", project.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project.templ`, Line: 119, Col: 66}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project.templ`, Line: 116, Col: 66}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
 			if templ_7745c5c3_Err != nil {
@@ -371,7 +371,7 @@ func ProjectGrid(res *warnly.ListProjectsResult) templ.Component {
 			var templ_7745c5c3_Var20 string
 			templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(project.Events.DashboardData(time.Now))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project.templ`, Line: 128, Col: 108}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project.templ`, Line: 125, Col: 108}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 			if templ_7745c5c3_Err != nil {

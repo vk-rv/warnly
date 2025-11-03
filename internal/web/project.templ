@@ -28,9 +28,6 @@ templ ProjectContentHtmx(user *warnly.User, res *warnly.ListProjectsResult) {
 			<header class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4">
 				<h1 class="text-xl sm:text-2xl font-semibold">Projects</h1>
 				<div class="flex gap-2 w-full sm:w-auto">
-					<button hx-target="#content" hx-get="/projects/1/getting-started" class="px-3 md:px-4 cursor-pointer py-2 border border-black rounded text-xs md:text-sm transition hover:bg-black hover:text-white flex items-center flex-1 md:flex-none justify-center">
-						Join a team
-					</button>
 					<a href="" hx-target="#content" hx-swap="outerHTML settle:0" hx-get="/projects/new" hx-push-url="true" class="flex-1 md:flex-none">
 						<button class="px-4 cursor-pointer py-2 bg-black text-white rounded text-xs md:text-sm transition hover:bg-gray-800 cursor-pointer w-full">Create Project</button>
 					</a>
