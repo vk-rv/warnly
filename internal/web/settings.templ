@@ -67,7 +67,7 @@ templ SettingsHtmx(data *SettingsData) {
 								If provided, requests will include X-Webhook-Signature header with HMAC-SHA256 signature
 							</p>
 						</div>
-						<div class="border-t pt-4 mt-4">
+						<div class="pt-4 mt-4">
 							<h3 class="text-sm font-semibold mb-2">Payload Format:</h3>
 							<div class="bg-gray-100 p-3 rounded-md text-xs overflow-x-auto break-all">
 								<pre class="whitespace-pre font-mono">
@@ -94,14 +94,6 @@ templ SettingsHtmx(data *SettingsData) {
 								class="px-4 py-2 rounded text-sm font-medium cursor-pointer"
 							>
 								Save & Verify
-							</button>
-							<button
-								@click="testWebhook()"
-								:disabled="!isFormValid"
-								:class="isFormValid ? 'border border-gray-300 text-gray-700 hover:bg-gray-50' : 'border border-gray-200 text-gray-400 cursor-not-allowed'"
-								class="px-4 py-2 rounded text-sm font-medium cursor-pointer"
-							>
-								Test Webhook
 							</button>
 						</div>
 					</div>
@@ -131,16 +123,6 @@ templ SettingsHtmx(data *SettingsData) {
 						}
 					});
 				},
-
-				testWebhook() {
-					if (!this.isFormValid) return;
-
-					htmx.ajax('POST', '/settings/webhook/test', {
-						values: {
-							team_id: this.teamId
-						}
-					});
-				}
 			};
 		}
 	</script>

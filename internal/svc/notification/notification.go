@@ -151,53 +151,7 @@ func (s *NotificationService) SaveWebhookConfig(
 		}
 	}
 
-	return nil
-}
-
-// TestWebhook sends a test notification to the configured webhook.
-func (s *NotificationService) TestWebhook(
-	ctx context.Context,
-	req *warnly.TestWebhookRequest,
-) error {
-	teams, err := s.teamStore.ListTeams(ctx, int(req.User.ID))
-	if err != nil {
-		return fmt.Errorf("list teams: %w", err)
-	}
-
-	hasAccess := false
-	for i := range teams {
-		if teams[i].ID == req.TeamID {
-			hasAccess = true
-			break
-		}
-	}
-	if !hasAccess {
-		return warnly.ErrNotFound
-	}
-
-	channels, err := s.notificationStore.ListNotificationChannels(ctx, req.TeamID)
-	if err != nil {
-		return err
-	}
-
-	var channel *warnly.NotificationChannel
-	for i := range channels {
-		if channels[i].ChannelType == warnly.NotificationChannelWebhook {
-			channel = &channels[i]
-			break
-		}
-	}
-
-	if channel == nil {
-		return errors.New("webhook not configured")
-	}
-
-	webhookConfig, err := s.notificationStore.GetWebhookConfig(ctx, channel.ID)
-	if err != nil {
-		return fmt.Errorf("get webhook config: %w", err)
-	}
-
-	testPayload := &notifier.AlertPayload{
+	if err := s.webhookNotifier.SendWebhook(ctx, webhookConfig, &notifier.AlertPayload{
 		AlertID:      0,
 		AlertName:    "Test Alert",
 		ProjectID:    0,
@@ -208,9 +162,7 @@ func (s *NotificationService) TestWebhook(
 		Timeframe:    "1h",
 		HighPriority: false,
 		Timestamp:    s.now().UTC(),
-	}
-
-	if err := s.webhookNotifier.SendWebhook(ctx, webhookConfig, testPayload); err != nil {
+	}); err != nil {
 		return fmt.Errorf("send test webhook: %w", err)
 	}
 

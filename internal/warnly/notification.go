@@ -118,8 +118,6 @@ type NotificationStore interface {
 type NotificationService interface {
 	// SaveWebhookConfig saves or updates webhook configuration for a team.
 	SaveWebhookConfig(ctx context.Context, req *SaveWebhookConfigRequest) error
-	// TestWebhook sends a test notification to the configured webhook.
-	TestWebhook(ctx context.Context, req *TestWebhookRequest) error
 	// GetWebhookConfigWithSecretByTeamID returns the webhook configuration with decrypted secret for a team.
 	GetWebhookConfigWithSecretByTeamID(ctx context.Context, teamID int) (*WebhookConfigWithSecret, error)
 }

@@ -183,7 +183,6 @@ func NewHandler(b *Backend) (*Handler, error) {
 	mux.HandleFunc("DELETE /alerts/{id}", chain(alertsHandler.DeleteAlert))
 
 	mux.HandleFunc("POST /settings/webhook", chain(notificationHandler.SaveWebhook))
-	mux.HandleFunc("POST /settings/webhook/test", chain(notificationHandler.TestWebhook))
 
 	mux.HandleFunc("GET /error", chain(func(w http.ResponseWriter, r *http.Request) {
 		if err := web.ServerError(

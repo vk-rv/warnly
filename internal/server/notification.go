@@ -51,27 +51,6 @@ func (h *notificationHandler) SaveWebhook(w http.ResponseWriter, r *http.Request
 	w.WriteHeader(http.StatusOK)
 }
 
-// TestWebhook handles POST /settings/webhook/test.
-func (h *notificationHandler) TestWebhook(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	user := getUser(ctx)
-
-	req, err := newTestWebhookRequest(r, &user)
-	if err != nil {
-		h.writeError(ctx, w, http.StatusBadRequest, "test webhook", err)
-		return
-	}
-
-	if err := h.notificationService.TestWebhook(ctx, req); err != nil {
-		h.writeError(ctx, w, http.StatusInternalServerError, "test webhook", err)
-		return
-	}
-
-	w.Header().Set("Hx-Trigger", `{"showToast": {"message": "Test notification sent successfully"}}`)
-	w.WriteHeader(http.StatusOK)
-}
-
 func newSaveWebhookConfigRequest(r *http.Request, user *warnly.User) (*warnly.SaveWebhookConfigRequest, error) {
 	if err := r.ParseForm(); err != nil {
 		return nil, fmt.Errorf("parse form: %w", err)
@@ -91,22 +70,5 @@ func newSaveWebhookConfigRequest(r *http.Request, user *warnly.User) (*warnly.Sa
 		TeamID: teamID,
 		URL:    url,
 		Secret: secret,
-	}, nil
-}
-
-func newTestWebhookRequest(r *http.Request, user *warnly.User) (*warnly.TestWebhookRequest, error) {
-	if err := r.ParseForm(); err != nil {
-		return nil, fmt.Errorf("parse form: %w", err)
-	}
-	teamID, err := strconv.Atoi(r.FormValue("team_id"))
-	if err != nil {
-		return nil, fmt.Errorf("parse team ID: %w", err)
-	}
-	if teamID == 0 {
-		return nil, errors.New("team_id is 0")
-	}
-	return &warnly.TestWebhookRequest{
-		User:   user,
-		TeamID: teamID,
 	}, nil
 }
