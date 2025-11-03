@@ -3,7 +3,7 @@ package web
 import "github.com/vk-rv/warnly/internal/warnly"
 
 templ OnCall(user *warnly.User) {
-	@Layout(OnCallTitle, OnCallHtmx(), sidebarOnCall, user)
+	@Layout(OnCallTitle, OnCallHtmx(), sidebarAlerts, user)
 }
 
 templ OnCallHtmx() {

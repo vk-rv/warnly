@@ -100,6 +100,7 @@ services:
       - OIDC_CLIENT_SECRET=${OIDC_CLIENT_SECRET}
       - OIDC_REDIRECT_ADDRESS=${OIDC_REDIRECT_ADDRESS}
       - OIDC_SCOPES=${OIDC_SCOPES}
+      - NOTIFICATION_ENCRYPTION_KEY=${NOTIFICATION_ENCRYPTION_KEY}
     depends_on:
       mysql:
         condition: service_healthy

@@ -49,53 +49,6 @@ templ PlatformHtmx(teams []warnly.Team) {
 		<section>
 			<h2 class="text-xl font-semibold flex items-center gap-2">
 				<span class="flex rounded items-center justify-center w-6 h-6 bg-black text-white text-sm">2</span>
-				Alerts
-			</h2>
-			<div class="mt-6 space-y-6">
-				<div class="flex items-center space-x-2">
-					<input
-						@click="alerts.highPriority = !alerts.highPriority"
-						type="checkbox"
-						id="high-priority"
-						name="priority"
-						class="text-white bg-black focus:ring-black"
-					/>
-					<label for="high-priority">Alert me on issues</label>
-				</div>
-				<div class="flex flex-wrap md:flex-nowrap items-center gap-4 gap-y-3">
-					<span class="text-gray-600 whitespace-nowrap shrink-0">When there are more than</span>
-					<input
-						x-model.number="alerts.threshold"
-						type="number"
-						value="10"
-						class="w-full md:w-20 p-2 bg-white border border-gray-300 rounded-md shrink-0"
-					/>
-					<select
-						x-model.number="alerts.condition"
-						class="w-full md:w-40 p-2 border border-gray-300 rounded-md bg-white shrink-0"
-					>
-						<option value="1">occurrences of</option>
-						<option value="2">users affected by</option>
-					</select>
-					<span class="text-gray-600 whitespace-nowrap shrink-0">a unique error in</span>
-					<select
-						x-model.number="alerts.timeframe"
-						class="w-full md:w-40 p-2 border border-gray-300 rounded-md bg-white shrink-0"
-					>
-						<option value="1">one minute</option>
-						<option value="2">5 minutes</option>
-						<option value="3">15 minutes</option>
-						<option value="4">one hour</option>
-						<option value="5">one day</option>
-						<option value="6">one week</option>
-						<option value="7">30 days</option>
-					</select>
-				</div>
-			</div>
-		</section>
-		<section>
-			<h2 class="text-xl font-semibold flex items-center gap-2">
-				<span class="flex rounded items-center justify-center w-6 h-6 bg-black text-white text-sm">3</span>
 				Name your project and assign it a team
 			</h2>
 			<div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">

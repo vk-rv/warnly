@@ -27,14 +27,19 @@ import (
 	"github.com/vk-rv/warnly/internal/chprometheus"
 	"github.com/vk-rv/warnly/internal/migrator"
 	"github.com/vk-rv/warnly/internal/mysql"
+	"github.com/vk-rv/warnly/internal/notifier"
 	"github.com/vk-rv/warnly/internal/server"
 	sessionstore "github.com/vk-rv/warnly/internal/session"
 	"github.com/vk-rv/warnly/internal/stdlog"
+	"github.com/vk-rv/warnly/internal/svc/alert"
 	"github.com/vk-rv/warnly/internal/svc/event"
+	"github.com/vk-rv/warnly/internal/svc/notification"
 	"github.com/vk-rv/warnly/internal/svc/project"
 	"github.com/vk-rv/warnly/internal/svc/session"
 	"github.com/vk-rv/warnly/internal/svc/system"
 	"github.com/vk-rv/warnly/internal/svcotel"
+	"github.com/vk-rv/warnly/internal/warnly"
+	"github.com/vk-rv/warnly/internal/worker"
 	"go.uber.org/automaxprocs/maxprocs"
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
@@ -149,6 +154,8 @@ func run(cfg *config, logger *slog.Logger) error {
 	messageStore := mysql.NewMessageStore(db)
 	mentionStore := mysql.NewMentionStore(db)
 	assingmentStore := mysql.NewAssingmentStore(db)
+	alertStore := mysql.NewAlertStore(db)
+	notificationStore := mysql.NewNotificationStore(db)
 
 	olap := ch.NewClickhouseStore(clickConn, tracingProvider)
 
@@ -206,6 +213,41 @@ func run(cfg *config, logger *slog.Logger) error {
 
 	eventService := event.NewEventService(projectStore, issueStore, memoryCache, olap, now)
 
+	alertService := alert.NewAlertService(alertStore, projectStore, teamStore, now, logger.With(slog.String("service", "alert")))
+
+	webhookNotifier := notifier.NewWebhookNotifier(
+		notificationStore,
+		cfg.NotificationEncryptionKey,
+		&http.Client{
+			Timeout: 10 * time.Second,
+		},
+		now,
+		logger.With(slog.String("service", "webhook_notifier")),
+	)
+
+	notificationService := notification.NewNotificationService(
+		notificationStore,
+		teamStore,
+		webhookNotifier,
+		now,
+		logger.With(slog.String("service", "notification")),
+	)
+
+	alertWorker := worker.NewAlertWorker(
+		alertStore,
+		olap,
+		issueStore,
+		notificationStore,
+		webhookNotifier,
+		now,
+		cfg.AlertWorkerInterval,
+		warnly.NewUUID().String(),
+		logger.With(slog.String("service", "alert_worker")),
+	)
+	defer alertWorker.Stop()
+
+	go alertWorker.Start(termCtx)
+
 	isHTTPS := cfg.Server.Scheme == "https"
 
 	cookieStore := sessionstore.NewCookieStore(now, cfg.SessionKey)
@@ -253,6 +295,8 @@ func run(cfg *config, logger *slog.Logger) error {
 		EventService:        eventService,
 		ProjectService:      projectService,
 		SystemService:       systemService,
+		AlertService:        alertService,
+		NotificationService: notificationService,
 		IsHTTPS:             isHTTPS,
 		RememberSessionDays: cfg.RemeberSessionDays,
 		CookieStore:         cookieStore,
@@ -473,10 +517,12 @@ type config struct {
 		ServiceName string  `env:"TRACING_SERVICE_NAME" env-default:"warnly"`
 		Probability float64 `env:"TRACING_PROBABILITY"  env-default:"1.0"`
 	}
-	PublicIngestURL    string `env:"PUBLIC_INGEST_URL"`
-	SessionKey         []byte `env:"SESSION_KEY" env-required:"true"`
-	Database           mysql.DBConfig
-	RemeberSessionDays int  `env:"REMEMBER_SESSION_DAYS" env-default:"30"`
-	ForceMigrate       bool `env:"FORCE_MIGRATE"         env-default:"false"`
-	IsDemo             bool `env:"IS_DEMO"               env-default:"false"`
+	PublicIngestURL           string `env:"PUBLIC_INGEST_URL"`
+	SessionKey                []byte `env:"SESSION_KEY" env-required:"true"`
+	NotificationEncryptionKey []byte `env:"NOTIFICATION_ENCRYPTION_KEY" env-required:"true"`
+	Database                  mysql.DBConfig
+	AlertWorkerInterval       time.Duration `env:"ALERT_WORKER_INTERVAL" env-default:"1m"`
+	RemeberSessionDays        int           `env:"REMEMBER_SESSION_DAYS" env-default:"30"`
+	ForceMigrate              bool          `env:"FORCE_MIGRATE"         env-default:"false"`
+	IsDemo                    bool          `env:"IS_DEMO"               env-default:"false"`
 }

@@ -1,14 +1,33 @@
 package web
 
 import "github.com/vk-rv/warnly/internal/warnly"
+import "fmt"
 
-templ Settings(user *warnly.User) {
-	@Layout(SettingsTitle, SettingsHtmx(), sidebarSettings, user)
+type SettingsData struct {
+	User    *warnly.User
+	Webhook *warnly.WebhookConfigWithSecret
 }
 
-templ SettingsHtmx() {
+templ Settings(data *SettingsData) {
+	@Layout(SettingsTitle, SettingsHtmx(data), sidebarSettings, data.User)
+}
+
+templ SettingsHtmx(data *SettingsData) {
+	@Toast()
 	<title>{ SettingsTitle } - { AppName }</title>
-	<div id="content" class="flex min-h-screen text-sm">
+	<style>
+		.toast-message.success {
+			background: rgba(16, 185, 129, 0.92); /* green */
+			color: #fff;
+			border: 1px solid #10b981;
+		}
+		.toast-message.error {
+			background: rgba(239, 68, 68, 0.92); /* red */
+			color: #fff;
+			border: 1px solid #ef4444;
+		}
+	</style>
+	<div id="content" class="flex min-h-screen text-sm" x-data={ fmt.Sprintf("webhookForm({url: '%s', secret: '%s'})", data.Webhook.URL, data.Webhook.Secret) }>
 		<div class="w-64 text-sm bg-white border-r border-gray-200 p-6">
 			<nav class="space-y-3">
 				<div class="space-y-2">
@@ -20,55 +39,145 @@ templ SettingsHtmx() {
 				<div class="space-y-2">
 					<h2 class="text-xs font-semibold text-gray-500 uppercase">ORGANIZATION</h2>
 					<div class="space-y-1">
-						<button class="w-full text-left px-2 py-1 rounded-md bg-black text-white font-semibold">General Settings</button>
-						<button class="w-full text-left px-2 py-1 rounded-md hover:bg-gray-100">Teams</button>
-						<button class="w-full text-left px-2 py-1 rounded-md hover:bg-gray-100">Members</button>
+						<button class="w-full text-left px-2 py-1 rounded-md hover:bg-gray-100">General Settings</button>
+						<button class="w-full text-left px-2 py-1 rounded-md bg-black text-white font-semibold">Alerts</button>
 					</div>
 				</div>
 			</nav>
 		</div>
-		<div class="flex-1">
-			<div class="bg-white shadow">
+		<div class="flex-1 max-w-5xl ml-6 mr-6">
+			<div class="mt-6 bg-white shadow">
 				<div class="px-6 py-4 border-b border-gray-200">
-					<h2 class="text-lg font-semibold">GENERAL</h2>
+					<h2 class="text-lg font-semibold">WEBHOOK CONFIGURATION</h2>
 				</div>
-				<div class="p-6 space-y-6">
+				<div class="p-6">
 					<div class="space-y-4">
 						<div class="space-y-2">
 							<label class="block font-medium">
-								Organization Slug <span class="text-red-500">*</span>
+								Webhook URL <span class="text-red-500">*</span>
 							</label>
-							<input type="text" value="myorg" class="w-full px-3 py-2 border border-gray-300 rounded-md"/>
+							<input
+								x-model="url"
+								type="url"
+								placeholder="https://your-domain.com/webhook/alerts"
+								class="w-full px-3 py-2 border border-gray-300 rounded-md font-mono text-sm"
+							/>
 							<p class="text-sm text-gray-500">
-								A unique ID used to identify this organization
+								The endpoint that will receive POST requests with alert notifications
 							</p>
 						</div>
 						<div class="space-y-2">
 							<label class="block font-medium">
-								Display Name <span class="text-red-500">*</span>
+								Secret (Optional)
 							</label>
-							<input type="text" value="MyOrg" class="w-full px-3 py-2 border border-gray-300 rounded-md"/>
+							<input
+								x-model="secret"
+								type="password"
+								placeholder="Enter a secret for HMAC signature verification"
+								class="w-full px-3 py-2 border border-gray-300 rounded-md font-mono text-sm"
+							/>
 							<p class="text-sm text-gray-500">
-								A human-friendly name for the organization
+								If provided, requests will include X-Webhook-Signature header with HMAC-SHA256 signature
 							</p>
 						</div>
-					</div>
-				</div>
-			</div>
-			<div class="mt-6 bg-white shadow">
-				<div class="px-6 py-4 border-b border-gray-200">
-					<h2 class="text-lg font-semibold">MEMBERSHIP</h2>
-				</div>
-				<div class="p-6">
-					<div class="space-y-2">
-						<label class="block font-medium">Default Role</label>
-						<select class="w-full px-3 py-2 border border-gray-300 rounded-md bg-white">
-							<option>Admin</option>
-							<option>Member</option>
-						</select>
+						<div class="pt-4 mt-4">
+							<h3 class="text-sm font-semibold mb-2">Payload Format:</h3>
+							<div class="bg-gray-100 p-3 rounded-md text-xs overflow-x-auto break-all">
+								<pre class="whitespace-pre font-mono">
+									&#123;
+									"alert_id": 42,
+									"alert_name": "High Error Rate",
+									"project_id": 1,
+									"team_id": 1,
+									"status": "triggered",
+									"threshold": 100,
+									"condition": "occurrences",
+									"timeframe": "1h",
+									"high_priority": true,
+									"timestamp": "2025-11-02T10:00:00Z"
+									&#125;
+								</pre>
+							</div>
+						</div>
+						<div class="flex gap-3 pt-4">
+							<button
+								@click="saveWebhook()"
+								:disabled="!isFormValid"
+								:class="isFormValid ? 'bg-black text-white hover:bg-gray-800' : 'bg-gray-300 text-gray-500 cursor-not-allowed'"
+								class="px-4 py-2 rounded text-sm font-medium cursor-pointer"
+							>
+								Save & Verify
+							</button>
+						</div>
 					</div>
 				</div>
 			</div>
 		</div>
 	</div>
+	<script>
+		function showSuccessToast(message) {
+			window.showToast(message);
+			setTimeout(() => {
+				const toasts = document.querySelectorAll('.toast-message');
+				const lastToast = toasts[toasts.length - 1];
+				if (lastToast) {
+					lastToast.classList.add('success');
+				}
+			}, 0);
+		}
+
+		function showErrorToast(message) {
+			window.showToast(message);
+			setTimeout(() => {
+				const toasts = document.querySelectorAll('.toast-message');
+				const lastToast = toasts[toasts.length - 1];
+				if (lastToast) {
+					lastToast.classList.add('error');
+				}
+			}, 0);
+		}
+
+		function webhookForm(initial = {}) {
+			return {
+				url: initial.url || '',
+				secret: initial.secret || '',
+				teamId: 1,
+
+				get isFormValid() {
+					return this.url.trim() === '' || this.url.startsWith('http');
+				},
+
+				saveWebhook() {
+					if (!this.isFormValid) return;
+
+					fetch('/settings/webhook', {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/x-www-form-urlencoded',
+							'HX-Request': 'true'
+						},
+						body: new URLSearchParams({
+							team_id: this.teamId,
+							url: this.url,
+							secret: this.secret
+						})
+					})
+					.then(response => {
+						if (response.status === 200) {
+							if (this.url.trim() === '') {
+								showSuccessToast('Webhook successfully reset');
+							} else {
+								showSuccessToast('Webhook saved and verified');
+							}
+						} else if (response.status === 500) {
+							showErrorToast('Failed to verify webhook');
+						}
+					})
+					.catch(error => {
+						showErrorToast('Failed to verify webhook');
+					});
+				},
+			};
+		}
+	</script>
 }
