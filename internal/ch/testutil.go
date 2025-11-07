@@ -177,8 +177,8 @@ func (i *ClickHouseTestInstance) Close() (retErr error) {
 }
 
 // NewDatabase creates a new database suitable for use in testing. It returns an
-// established database connection (driver.Conn) and the configuration.
-func (i *ClickHouseTestInstance) NewDatabase(tb testing.TB) driver.Conn {
+// established database connection (driver.Conn) and the DSN.
+func (i *ClickHouseTestInstance) NewDatabase(tb testing.TB) (driver.Conn, string) {
 	tb.Helper()
 
 	if i.skipReason != "" {
@@ -225,7 +225,7 @@ func (i *ClickHouseTestInstance) NewDatabase(tb testing.TB) driver.Conn {
 		}
 	})
 
-	return db
+	return db, dsn
 }
 
 // createAndMigrate creates a new database with a random name and runs migrations.

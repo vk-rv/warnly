@@ -40,7 +40,7 @@ func TestServer_HandleEventIngestion(t *testing.T) {
 		ctx := t.Context()
 
 		testDB, _ := testMySQLDatabaseInstance.NewDatabase(t)
-		testOlapDB := testClickHouseDatabaseInstance.NewDatabase(t)
+		testOlapDB, _ := testClickHouseDatabaseInstance.NewDatabase(t)
 
 		logger, _ := getTestLogger()
 
@@ -81,7 +81,7 @@ func TestServer_HandleEventIngestion(t *testing.T) {
 		logger, _ := getTestLogger()
 
 		testDB, _ := testMySQLDatabaseInstance.NewDatabase(t)
-		testOlapDB := testClickHouseDatabaseInstance.NewDatabase(t)
+		testOlapDB, _ := testClickHouseDatabaseInstance.NewDatabase(t)
 
 		s := getTestStores(testDB, testOlapDB, logger)
 

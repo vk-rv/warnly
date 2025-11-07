@@ -103,7 +103,7 @@ func TestServer_HandleProjectDetails(t *testing.T) {
 			ctx := t.Context()
 
 			testDB, _ := testMySQLDatabaseInstance.NewDatabase(t)
-			testOlapDB := testClickHouseDatabaseInstance.NewDatabase(t)
+			testOlapDB, _ := testClickHouseDatabaseInstance.NewDatabase(t)
 			logger, _ := getTestLogger()
 			s := getTestStores(testDB, testOlapDB, logger)
 
