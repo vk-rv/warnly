@@ -62,7 +62,7 @@ func TestSlogLogger_Errorf(t *testing.T) {
 	}
 }
 
-func TestNewSlogLogger_JSON(t *testing.T) {
+func TestSlogLogger_Logf_JSON(t *testing.T) {
 	t.Parallel()
 
 	var buf bytes.Buffer
@@ -79,5 +79,41 @@ func TestNewSlogLogger_JSON(t *testing.T) {
 	}
 	if !strings.Contains(output, `"level":"INFO"`) {
 		t.Errorf("Logf() JSON output does not contain INFO level: %s", output)
+	}
+}
+
+func TestNewSlogLogger_Text(t *testing.T) {
+	t.Parallel()
+
+	var buf bytes.Buffer
+	logger := stdlog.NewSlogLogger(&buf, true)
+	if logger == nil {
+		t.Fatal("NewSlogLogger returned nil")
+	}
+
+	logger.Info("test message")
+
+	output := buf.String()
+
+	if !strings.Contains(output, "test message") {
+		t.Errorf("output does not contain test message: %s", output)
+	}
+}
+
+func TestNewSlogLogger_JSON(t *testing.T) {
+	t.Parallel()
+
+	var buf bytes.Buffer
+	logger := stdlog.NewSlogLogger(&buf, false)
+	if logger == nil {
+		t.Fatal("NewSlogLogger returned nil")
+	}
+
+	logger.Info("test message")
+
+	output := buf.String()
+
+	if !strings.Contains(output, `"msg":"test message"`) {
+		t.Errorf("output does not contain expected JSON message: %s", output)
 	}
 }

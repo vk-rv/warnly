@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"log/slog"
 	"net"
 	"net/http"
@@ -53,7 +54,10 @@ import (
 )
 
 func main() {
-	const failed = 1
+	const (
+		failed = 1
+		stdout = "stdout"
+	)
 
 	cfg := config{}
 	if err := cleanenv.ReadEnv(&cfg); err != nil {
@@ -61,7 +65,12 @@ func main() {
 		os.Exit(failed)
 	}
 
-	logger := stdlog.NewSlogLogger(cfg.Log.Output, cfg.Log.Text)
+	var w io.Writer = os.Stderr
+	if cfg.Log.Output == stdout {
+		w = os.Stdout
+	}
+
+	logger := stdlog.NewSlogLogger(w, cfg.Log.Text)
 	slog.SetDefault(logger)
 
 	if err := run(&cfg, logger); err != nil {

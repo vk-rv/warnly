@@ -4,18 +4,8 @@ package stdlog
 
 import (
 	"fmt"
+	"io"
 	"log/slog"
-	"os"
-)
-
-// LogOutput represents the output destination for the logger.
-type LogOutput = string
-
-const (
-	// Stdout is the standard output stream.
-	Stdout LogOutput = "stdout"
-	// Stderr is the standard error stream.
-	Stderr LogOutput = "stderr"
 )
 
 // SlogLogger is the implementation of Logger using slog.
@@ -28,25 +18,14 @@ func NewLogger(logger *slog.Logger) *SlogLogger {
 	return &SlogLogger{logger: logger}
 }
 
-// NewSlogLogger creates a new slog.Logger instance with the specified destination output and format.
-func NewSlogLogger(output LogOutput, isText bool) *slog.Logger {
-	var (
-		out     *os.File
-		handler slog.Handler
-	)
-
-	if output == Stdout {
-		out = os.Stdout
-	} else {
-		out = os.Stderr
-	}
-
+// NewSlogLogger creates a new slog.Logger instance with the specified writer and format.
+func NewSlogLogger(w io.Writer, isText bool) *slog.Logger {
+	var handler slog.Handler
 	if isText {
-		handler = slog.NewTextHandler(out, nil)
+		handler = slog.NewTextHandler(w, nil)
 	} else {
-		handler = slog.NewJSONHandler(out, nil)
+		handler = slog.NewJSONHandler(w, nil)
 	}
-
 	return slog.New(handler)
 }
 
