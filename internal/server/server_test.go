@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 	"time"
 
@@ -136,6 +137,15 @@ func getListProjectsRequest(ctx context.Context, name string, teamID int) (*http
 		path = "/projects"
 	}
 	r := httptest.NewRequest(http.MethodGet, path, http.NoBody)
+	r = r.WithContext(server.NewContextWithUser(ctx, testUser))
+	w := httptest.NewRecorder()
+	return w, r
+}
+
+func getDeleteProjectRequest(ctx context.Context, projectID int) (*httptest.ResponseRecorder, *http.Request) {
+	path := fmt.Sprintf("/projects/%d", projectID)
+	r := httptest.NewRequest(http.MethodDelete, path, http.NoBody)
+	r.SetPathValue("id", strconv.Itoa(projectID))
 	r = r.WithContext(server.NewContextWithUser(ctx, testUser))
 	w := httptest.NewRecorder()
 	return w, r

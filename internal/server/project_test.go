@@ -469,6 +469,78 @@ func TestServer_ListProjects(t *testing.T) {
 	})
 }
 
+func TestServer_DeleteProject(t *testing.T) {
+	t.Parallel()
+
+	t.Run("delete project and verify 0 projects in list", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+
+		testDB, _ := testMySQLDatabaseInstance.NewDatabase(t)
+		testOlapDB, _ := testClickHouseDatabaseInstance.NewDatabase(t)
+		logger, _ := getTestLogger()
+		s := getTestStores(testDB, testOlapDB, logger)
+
+		projectSvc := project.NewProjectService(
+			s.projectStore,
+			s.assingmentStore,
+			s.teamStore,
+			s.issueStore,
+			s.messageStore,
+			s.mentionStore,
+			s.olap,
+			s.uow,
+			bluemonday.NewPolicy(),
+			testBaseURL,
+			testBaseScheme,
+			testBaseURL,
+			testBaseScheme,
+			nowTime,
+			logger,
+		)
+		projectHandler := server.NewProjectHandler(projectSvc, logger)
+
+		require.NoError(t, s.teamStore.CreateTeam(ctx, warnly.Team{
+			CreatedAt: nowTime(),
+			Name:      testTeamName,
+			OwnerID:   testOwnerID,
+		}))
+
+		require.NoError(t, s.projectStore.CreateProject(ctx, &warnly.Project{
+			CreatedAt: nowTime(),
+			Name:      "project-to-del",
+			Key:       "delete",
+			UserID:    testOwnerID,
+			TeamID:    testOwnerID,
+			Platform:  warnly.PlatformGolang,
+		}))
+
+		w, r := getListProjectsRequest(ctx, "", 0)
+		projectHandler.ListProjects(w, r)
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		doc, err := goquery.NewDocumentFromReader(w.Body)
+		require.NoError(t, err)
+
+		projectCards := doc.Find(projectCardClass)
+		assert.Equal(t, 1, projectCards.Length(), "should have exactly 1 project before deletion")
+
+		wDelete, rDelete := getDeleteProjectRequest(ctx, 1)
+		projectHandler.DeleteProject(wDelete, rDelete)
+
+		wList, rList := getListProjectsRequest(ctx, "", 0)
+		projectHandler.ListProjects(wList, rList)
+		assert.Equal(t, http.StatusOK, wList.Code)
+
+		docAfter, err := goquery.NewDocumentFromReader(wList.Body)
+		require.NoError(t, err)
+
+		projectCardsAfter := docAfter.Find(projectCardClass)
+		assert.Equal(t, 0, projectCardsAfter.Length(), "should have 0 projects after deletion")
+	})
+}
+
 func TestServer_HandleProjectDetails(t *testing.T) {
 	t.Parallel()
 
