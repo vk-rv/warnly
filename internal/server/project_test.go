@@ -472,7 +472,7 @@ func TestServer_ListProjects(t *testing.T) {
 func TestServer_DeleteProject(t *testing.T) {
 	t.Parallel()
 
-	t.Run("delete project and verify 0 projects in list", func(t *testing.T) {
+	t.Run("create project via handler then delete and verify 0 projects in list", func(t *testing.T) {
 		t.Parallel()
 
 		ctx := t.Context()
@@ -507,14 +507,9 @@ func TestServer_DeleteProject(t *testing.T) {
 			OwnerID:   testOwnerID,
 		}))
 
-		require.NoError(t, s.projectStore.CreateProject(ctx, &warnly.Project{
-			CreatedAt: nowTime(),
-			Name:      "project-to-del",
-			Key:       "delete",
-			UserID:    testOwnerID,
-			TeamID:    testOwnerID,
-			Platform:  warnly.PlatformGolang,
-		}))
+		wCreate, rCreate := getCreateProjectRequest(ctx, "project-to-delete", "golang", testOwnerID)
+		projectHandler.CreateProject(wCreate, rCreate)
+		assert.Equal(t, http.StatusOK, wCreate.Code, "CreateProject handler should return OK")
 
 		w, r := getListProjectsRequest(ctx, "", 0)
 		projectHandler.ListProjects(w, r)
@@ -524,7 +519,7 @@ func TestServer_DeleteProject(t *testing.T) {
 		require.NoError(t, err)
 
 		projectCards := doc.Find(projectCardClass)
-		assert.Equal(t, 1, projectCards.Length(), "should have exactly 1 project before deletion")
+		assert.Equal(t, 1, projectCards.Length(), "should have exactly 1 project after creation")
 
 		wDelete, rDelete := getDeleteProjectRequest(ctx, 1)
 		projectHandler.DeleteProject(wDelete, rDelete)

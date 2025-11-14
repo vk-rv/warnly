@@ -150,3 +150,12 @@ func getDeleteProjectRequest(ctx context.Context, projectID int) (*httptest.Resp
 	w := httptest.NewRecorder()
 	return w, r
 }
+
+func getCreateProjectRequest(ctx context.Context, projectName, platform string, teamID int) (*httptest.ResponseRecorder, *http.Request) {
+	formData := fmt.Sprintf("projectName=%s&platform=%s&team=%d", projectName, platform, teamID)
+	r := httptest.NewRequest(http.MethodPost, "/projects", bytes.NewBufferString(formData))
+	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	r = r.WithContext(server.NewContextWithUser(ctx, testUser))
+	w := httptest.NewRecorder()
+	return w, r
+}
