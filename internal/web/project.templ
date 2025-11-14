@@ -103,13 +103,13 @@ func teamSelect(res *warnly.ListProjectsResult) string {
 templ ProjectGrid(res *warnly.ListProjectsResult) {
 	<div id="projectGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
 		for _, project := range res.Projects {
-			<div data-chart={ project.Events.DashboardData(time.Now) } class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+			<div data-chart={ project.Events.DashboardData(time.Now) } class="project-card bg-white border border-gray-200 rounded-lg overflow-hidden">
 				<div class="border-b border-gray-300 p-3 md:p-4 flex justify-between items-center">
 					<div class="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
 						<div class="w-8 h-8 bg-gray-100 rounded flex items-center justify-center flex-shrink-0">{ string(project.Name[0]) }</div>
 						<a hx-get={ fmt.Sprintf("/projects/%d?issues=all&period=24h", project.ID) } hx-target="#content" hx-swap="outerHTML settle:0" hx-push-url="true" class="cursor-pointer min-w-0 flex-1">
 							<h3 class="font-medium text-sm md:text-base truncate">{ project.Name }</h3>
-							<p class="text-xs text-gray-600">Errors: { project.Events.TotalErrors() } | Last 24 hours</p>
+							<p class="text-xs text-gray-600">Errors: <span class="project-error-count">{ project.Events.TotalErrors() }</span> | Last 24 hours</p>
 						</a>
 					</div>
 					<div class="flex gap-1 flex-shrink-0">

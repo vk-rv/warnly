@@ -191,17 +191,9 @@ func (s *IssueStore) StoreIssue(ctx context.Context, i *warnly.Issue) error {
 func (s *IssueStore) UpdateLastSeen(ctx context.Context, upd *warnly.UpdateLastSeen) error {
 	const query = `UPDATE issue SET last_seen = ?, message = ?, error_type = ?, view = ? WHERE id = ?`
 
-	res, err := s.db.ExecContext(ctx, query, upd.LastSeen, upd.Message, upd.ErrorType, upd.View, upd.IssueID)
+	_, err := s.db.ExecContext(ctx, query, upd.LastSeen, upd.Message, upd.ErrorType, upd.View, upd.IssueID)
 	if err != nil {
 		return fmt.Errorf("mysql issue store: update last seen: %w", err)
-	}
-
-	affected, err := res.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("mysql issue store: update last seen, rows affected: %w", err)
-	}
-	if affected != 1 {
-		return fmt.Errorf("mysql issue store: update last seen, affected is %d", affected)
 	}
 
 	return nil

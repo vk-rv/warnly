@@ -1,10 +1,13 @@
 package server_test
 
 import (
+	"fmt"
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/google/uuid"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -34,10 +37,43 @@ var zapsentryEventWithErr = []byte(`{"event_id":"243f84fd26384830b657fe30ea2956b
 {"contexts":{"device":{"arch":"arm64","num_cpu":8},"os":{"name":"darwin"},"runtime":{"go_maxprocs":8,"go_numcgocalls":0,"go_numroutines":6,"name":"go","version":"go1.24.1"},"trace":{"span_id":"45a6199b001477cc","trace_id":"3181480b4def35afd1fc3d3dbc3e0f81"}},"environment":"production","event_id":"243f84fd26384830b657fe30ea2956bc","extra":{"error":"an example error occurred at 2025-10-11T02:59:21+03:00"},"level":"error","message":"my error log message","platform":"go","release":"1.0.0","sdk":{"name":"sentry.go","version":"0.35.3","integrations":["ContextifyFrames","Environment","GlobalTags","IgnoreErrors","IgnoreTransactions","Modules"],"packages":[{"name":"sentry-go","version":"0.35.3"}]},"server_name":"Olegs-MacBook-Pro.local","tags":{"component":"my-component","key":"value"},"user":{},"modules":{"":"","github.com/BurntSushi/toml":"v1.2.1","github.com/TheZeroSlave/zapsentry":"v1.23.0","github.com/benbjohnson/agency":"v0.0.0-20170601160516-33de8fbf97c4","github.com/beorn7/perks":"v1.0.1","github.com/buger/jsonparser":"v1.1.1","github.com/cespare/xxhash/v2":"v2.2.0","github.com/dgryski/go-rendezvous":"v0.0.0-20200823014737-9f7001d12a5f","github.com/getsentry/sentry-go":"v0.35.3","github.com/getsentry/sentry-go/zerolog":"v0.35.3","github.com/go-chi/chi":"v1.5.4","github.com/go-sql-driver/mysql":"v1.7.1","github.com/golang/protobuf":"v1.5.3","github.com/ilyakaznacheev/cleanenv":"v1.5.0","github.com/joho/godotenv":"v1.5.1","github.com/josharian/intern":"v1.0.0","github.com/mailru/easyjson":"v0.7.7","github.com/matoous/go-nanoid/v2":"v2.0.0","github.com/mattn/go-colorable":"v0.1.13","github.com/mattn/go-isatty":"v0.0.20","github.com/matttproud/golang_protobuf_extensions":"v1.0.4","github.com/mroth/weightedrand/v2":"v2.1.0","github.com/newrelic/go-agent/v3":"v3.24.1","github.com/newrelic/go-agent/v3/integrations/nrredis-v9":"v1.0.0","github.com/prometheus/client_golang":"v1.16.0","github.com/prometheus/client_model":"v0.3.0","github.com/prometheus/common":"v0.42.0","github.com/prometheus/procfs":"v0.10.1","github.com/redis/go-redis/v9":"v9.0.5","github.com/rs/zerolog":"v1.33.0","github.com/shopspring/decimal":"v1.3.1","github.com/sourcegraph/conc":"v0.3.0","github.com/valyala/bytebufferpool":"v1.0.0","github.com/valyala/quicktemplate":"v1.7.0","github.com/vk-rv/wasteland":"(devel)","go.uber.org/multierr":"v1.10.0","go.uber.org/zap":"v1.25.0","golang.org/x/crypto":"v0.21.0","golang.org/x/net":"v0.23.0","golang.org/x/sys":"v0.18.0","golang.org/x/text":"v0.14.0","google.golang.org/genproto":"v0.0.0-20230110181048-76db0878b65f","google.golang.org/grpc":"v1.54.0","google.golang.org/protobuf":"v1.33.0","gopkg.in/yaml.v3":"v3.0.1","olympos.io/encoding/edn":"v0.0.0-20201019073823-d3554ca0b0a3"},"exception":[{"type":"*errors.errorString","value":"an example error occurred at 2025-10-11T02:59:21+03:00","stacktrace":{"frames":[{"function":"main","module":"main","abs_path":"/Users/johndoev/wasteland/cmd/wasteland/main.go","lineno":98,"pre_context":["\tif err != nil {","\t\tfmt.Printf(\"failed to create logger: %s\\n\", err)","\t\tos.Exit(failed)","\t}",""],"context_line":"\tif err := run(logger, atomicLevel); err != nil {","post_context":["\t\tlogger.Error(\"wasteland web server start / shutdown problem\", zap.Error(err))","\t\tos.Exit(failed)","\t}","}",""],"in_app":true},{"function":"run","module":"main","abs_path":"/Users/johndoev/wasteland/cmd/wasteland/main.go","lineno":171,"pre_context":["\tfor {","\t\ttime.Sleep(time.Second * 10)","\t\t// randomize error message","\t\tnow := time.Now()","\t\terr := fmt.Errorf(\"an example error occurred at %s\", now.Format(time.RFC3339))"],"context_line":"\t\tmyLogger.Error(\"my error log message\", zap.Error(err), zapsentry.Tag(\"component\", \"my-component\"), zapsentry.Tag(\"key\", \"value\"))","post_context":["\t\t_ = sentryLogger","\t\t//sentryLogger.Error(fmt.Sprintf(\"My info message at %s\", now.Format(time.RFC3339)))","","\t\terr = fmt.Errorf(\"an example error occurred at %s\", now.Format(time.RFC3339))","\t\t//myLogger.Error(\"An example error occurred\", zap.Error(err), zap.String(\"user_id\", \"12345\"))"],"in_app":true}]}}],"timestamp":"2025-10-11T02:59:21.674005+03:00"}`)
 
 const (
-	issTypeClass = ".iss-type"
-	issMsgClass  = ".iss-msg"
-	issViewClass = ".iss-view"
+	issTypeClass           = ".iss-type"
+	issMsgClass            = ".iss-msg"
+	issViewClass           = ".iss-view"
+	projectErrorCountClass = ".project-error-count"
+	projectCardClass       = ".project-card"
 )
+
+func generateUniqueEventPayload(basePayload []byte, index int) []byte {
+	payload := string(basePayload)
+
+	newEventID := strings.ReplaceAll(uuid.New().String(), "-", "")
+	newTraceID := strings.ReplaceAll(uuid.New().String(), "-", "")
+	newSpanID := strings.ReplaceAll(uuid.New().String(), "-", "")[:16]
+
+	oldEventID := "243f84fd26384830b657fe30ea2956bc"
+	payload = strings.ReplaceAll(payload, oldEventID, newEventID)
+
+	oldTraceID := "3181480b4def35afd1fc3d3dbc3e0f81"
+	payload = strings.ReplaceAll(payload, oldTraceID, newTraceID)
+
+	oldSpanID := "45a6199b001477cc"
+	payload = strings.ReplaceAll(payload, oldSpanID, newSpanID)
+
+	oldSentAt := "2025-10-11T02:59:21.675039+03:00"
+	newSentAt := fmt.Sprintf("2025-10-11T02:59:%02d.675039+03:00", 21+index)
+	payload = strings.ReplaceAll(payload, oldSentAt, newSentAt)
+
+	oldTimestamp := "2025-10-11T02:59:21.674005+03:00"
+	newTimestamp := fmt.Sprintf("2025-10-11T02:59:%02d.674005+03:00", 21+index)
+	payload = strings.ReplaceAll(payload, oldTimestamp, newTimestamp)
+
+	oldMsg := "my error log message"
+	newMsg := fmt.Sprintf("my error log message %d", index)
+	payload = strings.ReplaceAll(payload, oldMsg, newMsg)
+
+	return []byte(payload)
+}
 
 var (
 	zapsentryErrExpectedType = "*errors.errorString"
@@ -55,6 +91,383 @@ var (
 	zerologNoErrExpectedMsg  = "(No error message)"
 	zerologNoErrExpectedView = ""
 )
+
+func TestServer_ListProjects(t *testing.T) {
+	t.Parallel()
+
+	t.Run("list all projects", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+
+		testDB, _ := testMySQLDatabaseInstance.NewDatabase(t)
+		testOlapDB, _ := testClickHouseDatabaseInstance.NewDatabase(t)
+		logger, _ := getTestLogger()
+		s := getTestStores(testDB, testOlapDB, logger)
+
+		projectSvc := project.NewProjectService(
+			s.projectStore,
+			s.assingmentStore,
+			s.teamStore,
+			s.issueStore,
+			s.messageStore,
+			s.mentionStore,
+			s.olap,
+			s.uow,
+			bluemonday.NewPolicy(),
+			testBaseURL,
+			testBaseScheme,
+			testBaseURL,
+			testBaseScheme,
+			nowTime,
+			logger,
+		)
+		projectHandler := server.NewProjectHandler(projectSvc, logger)
+
+		require.NoError(t, s.teamStore.CreateTeam(ctx, warnly.Team{
+			CreatedAt: nowTime(),
+			Name:      testTeamName,
+			OwnerID:   testOwnerID,
+		}))
+
+		for i := 1; i <= 3; i++ {
+			require.NoError(t, s.projectStore.CreateProject(ctx, &warnly.Project{
+				CreatedAt: nowTime(),
+				Name:      fmt.Sprintf("project-%d", i),
+				Key:       fmt.Sprintf("key-%d", i),
+				UserID:    testOwnerID,
+				TeamID:    testOwnerID,
+				Platform:  warnly.PlatformGolang,
+			}))
+		}
+
+		w, r := getListProjectsRequest(ctx, "", 0)
+		projectHandler.ListProjects(w, r)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		doc, err := goquery.NewDocumentFromReader(w.Body)
+		require.NoError(t, err)
+
+		projectCards := doc.Find(projectCardClass)
+		assert.Equal(t, 3, projectCards.Length(), "should have exactly 3 projects")
+	})
+
+	t.Run("list projects filtered by team", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+
+		testDB, _ := testMySQLDatabaseInstance.NewDatabase(t)
+		testOlapDB, _ := testClickHouseDatabaseInstance.NewDatabase(t)
+		logger, _ := getTestLogger()
+		s := getTestStores(testDB, testOlapDB, logger)
+
+		projectSvc := project.NewProjectService(
+			s.projectStore,
+			s.assingmentStore,
+			s.teamStore,
+			s.issueStore,
+			s.messageStore,
+			s.mentionStore,
+			s.olap,
+			s.uow,
+			bluemonday.NewPolicy(),
+			testBaseURL,
+			testBaseScheme,
+			testBaseURL,
+			testBaseScheme,
+			nowTime,
+			logger,
+		)
+		projectHandler := server.NewProjectHandler(projectSvc, logger)
+
+		require.NoError(t, s.teamStore.CreateTeam(ctx, warnly.Team{
+			CreatedAt: nowTime(),
+			Name:      "team-1",
+			OwnerID:   testOwnerID,
+		}))
+		require.NoError(t, s.teamStore.CreateTeam(ctx, warnly.Team{
+			CreatedAt: nowTime(),
+			Name:      "team-2",
+			OwnerID:   testOwnerID,
+		}))
+
+		require.NoError(t, s.projectStore.CreateProject(ctx, &warnly.Project{
+			CreatedAt: nowTime(),
+			Name:      "project-team-1",
+			Key:       "key1",
+			UserID:    testOwnerID,
+			TeamID:    1,
+			Platform:  warnly.PlatformGolang,
+		}))
+		require.NoError(t, s.projectStore.CreateProject(ctx, &warnly.Project{
+			CreatedAt: nowTime(),
+			Name:      "project-team-2",
+			Key:       "key2",
+			UserID:    testOwnerID,
+			TeamID:    2,
+			Platform:  warnly.PlatformGolang,
+		}))
+
+		w, r := getListProjectsRequest(ctx, "", 1)
+		projectHandler.ListProjects(w, r)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		doc, err := goquery.NewDocumentFromReader(w.Body)
+		require.NoError(t, err)
+
+		projectCards := doc.Find(projectCardClass)
+		assert.Equal(t, 1, projectCards.Length(), "should have exactly 1 project filtered by team")
+	})
+
+	t.Run("list projects filtered by name", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+
+		testDB, _ := testMySQLDatabaseInstance.NewDatabase(t)
+		testOlapDB, _ := testClickHouseDatabaseInstance.NewDatabase(t)
+		logger, _ := getTestLogger()
+		s := getTestStores(testDB, testOlapDB, logger)
+
+		projectSvc := project.NewProjectService(
+			s.projectStore,
+			s.assingmentStore,
+			s.teamStore,
+			s.issueStore,
+			s.messageStore,
+			s.mentionStore,
+			s.olap,
+			s.uow,
+			bluemonday.NewPolicy(),
+			testBaseURL,
+			testBaseScheme,
+			testBaseURL,
+			testBaseScheme,
+			nowTime,
+			logger,
+		)
+		projectHandler := server.NewProjectHandler(projectSvc, logger)
+
+		require.NoError(t, s.teamStore.CreateTeam(ctx, warnly.Team{
+			CreatedAt: nowTime(),
+			Name:      testTeamName,
+			OwnerID:   testOwnerID,
+		}))
+
+		require.NoError(t, s.projectStore.CreateProject(ctx, &warnly.Project{
+			CreatedAt: nowTime(),
+			Name:      "api-service",
+			Key:       "api-key",
+			UserID:    testOwnerID,
+			TeamID:    testOwnerID,
+			Platform:  warnly.PlatformGolang,
+		}))
+		require.NoError(t, s.projectStore.CreateProject(ctx, &warnly.Project{
+			CreatedAt: nowTime(),
+			Name:      "web-app",
+			Key:       "web-key",
+			UserID:    testOwnerID,
+			TeamID:    testOwnerID,
+			Platform:  warnly.PlatformGolang,
+		}))
+
+		w, r := getListProjectsRequest(ctx, "api", 0)
+		projectHandler.ListProjects(w, r)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		doc, err := goquery.NewDocumentFromReader(w.Body)
+		require.NoError(t, err)
+
+		projectCards := doc.Find(projectCardClass)
+		assert.Equal(t, 1, projectCards.Length(), "should have exactly 1 project filtered by name")
+	})
+
+	t.Run("list projects with both team and name filters", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+
+		testDB, _ := testMySQLDatabaseInstance.NewDatabase(t)
+		testOlapDB, _ := testClickHouseDatabaseInstance.NewDatabase(t)
+		logger, _ := getTestLogger()
+		s := getTestStores(testDB, testOlapDB, logger)
+
+		projectSvc := project.NewProjectService(
+			s.projectStore,
+			s.assingmentStore,
+			s.teamStore,
+			s.issueStore,
+			s.messageStore,
+			s.mentionStore,
+			s.olap,
+			s.uow,
+			bluemonday.NewPolicy(),
+			testBaseURL,
+			testBaseScheme,
+			testBaseURL,
+			testBaseScheme,
+			nowTime,
+			logger,
+		)
+		projectHandler := server.NewProjectHandler(projectSvc, logger)
+
+		require.NoError(t, s.teamStore.CreateTeam(ctx, warnly.Team{
+			CreatedAt: nowTime(),
+			Name:      testTeamName,
+			OwnerID:   testOwnerID,
+		}))
+
+		require.NoError(t, s.projectStore.CreateProject(ctx, &warnly.Project{
+			CreatedAt: nowTime(),
+			Name:      "api-service",
+			Key:       "api-key",
+			UserID:    testOwnerID,
+			TeamID:    1,
+			Platform:  warnly.PlatformGolang,
+		}))
+
+		w, r := getListProjectsRequest(ctx, "api", 1)
+		projectHandler.ListProjects(w, r)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		doc, err := goquery.NewDocumentFromReader(w.Body)
+		require.NoError(t, err)
+
+		projectCards := doc.Find(projectCardClass)
+		assert.Equal(t, 1, projectCards.Length(), "should have exactly 1 project with both filters")
+	})
+
+	t.Run("list projects with empty result", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+
+		testDB, _ := testMySQLDatabaseInstance.NewDatabase(t)
+		testOlapDB, _ := testClickHouseDatabaseInstance.NewDatabase(t)
+		logger, _ := getTestLogger()
+		s := getTestStores(testDB, testOlapDB, logger)
+
+		projectSvc := project.NewProjectService(
+			s.projectStore,
+			s.assingmentStore,
+			s.teamStore,
+			s.issueStore,
+			s.messageStore,
+			s.mentionStore,
+			s.olap,
+			s.uow,
+			bluemonday.NewPolicy(),
+			testBaseURL,
+			testBaseScheme,
+			testBaseURL,
+			testBaseScheme,
+			nowTime,
+			logger,
+		)
+		projectHandler := server.NewProjectHandler(projectSvc, logger)
+
+		require.NoError(t, s.teamStore.CreateTeam(ctx, warnly.Team{
+			CreatedAt: nowTime(),
+			Name:      testTeamName,
+			OwnerID:   testOwnerID,
+		}))
+
+		w, r := getListProjectsRequest(ctx, "nonexistent", 0)
+		projectHandler.ListProjects(w, r)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		doc, err := goquery.NewDocumentFromReader(w.Body)
+		require.NoError(t, err)
+
+		projectCards := doc.Find(projectCardClass)
+		assert.Equal(t, 0, projectCards.Length(), "should have no projects for nonexistent search")
+	})
+
+	t.Run("list projects with event ingestion and event count verification", func(t *testing.T) {
+		t.Parallel()
+
+		ctx := t.Context()
+
+		testDB, _ := testMySQLDatabaseInstance.NewDatabase(t)
+		testOlapDB, _ := testClickHouseDatabaseInstance.NewDatabase(t)
+		logger, buf := getTestLogger()
+		s := getTestStores(testDB, testOlapDB, logger)
+
+		eventSvc := event.NewEventService(
+			s.projectStore,
+			s.issueStore,
+			s.memoryCache,
+			s.olap,
+			nowHalfAnHourBefore,
+		)
+		eventHandler := server.NewEventAPIHandler(eventSvc, logger)
+
+		projectSvc := project.NewProjectService(
+			s.projectStore,
+			s.assingmentStore,
+			s.teamStore,
+			s.issueStore,
+			s.messageStore,
+			s.mentionStore,
+			s.olap,
+			s.uow,
+			bluemonday.NewPolicy(),
+			testBaseURL,
+			testBaseScheme,
+			testBaseURL,
+			testBaseScheme,
+			nowTime,
+			logger,
+		)
+		projectHandler := server.NewProjectHandler(projectSvc, logger)
+
+		require.NoError(t, s.teamStore.CreateTeam(ctx, warnly.Team{
+			CreatedAt: nowTime(),
+			Name:      testTeamName,
+			OwnerID:   testOwnerID,
+		}))
+
+		require.NoError(t, s.projectStore.CreateProject(ctx, &warnly.Project{
+			CreatedAt: nowTime(),
+			Name:      "project-with-events",
+			Key:       testProjectKey,
+			UserID:    testOwnerID,
+			TeamID:    testOwnerID,
+			Platform:  warnly.PlatformGolang,
+		}))
+
+		for i := range 3 {
+			wIngest, rIngest := getIngestRequest(generateUniqueEventPayload(zapsentryEventWithErr, i))
+			eventHandler.IngestEvent(wIngest, rIngest)
+			if wIngest.Code != http.StatusOK {
+				t.Log("=== LOGGER OUTPUT ===")
+				t.Log(buf.String())
+				t.Logf("Response body: %s", wIngest.Body.String())
+			}
+			require.Equal(t, http.StatusOK, wIngest.Code)
+		}
+
+		w, r := getListProjectsRequest(ctx, "", 0)
+		projectHandler.ListProjects(w, r)
+
+		assert.Equal(t, http.StatusOK, w.Code)
+
+		doc, err := goquery.NewDocumentFromReader(w.Body)
+		require.NoError(t, err)
+
+		errorCount := doc.Find(projectErrorCountClass).First().Text()
+		assert.Equal(t, "3", errorCount)
+
+		projectCards := doc.Find(projectCardClass)
+		assert.Equal(t, 1, projectCards.Length(), "should have exactly 1 project")
+	})
+}
 
 func TestServer_HandleProjectDetails(t *testing.T) {
 	t.Parallel()

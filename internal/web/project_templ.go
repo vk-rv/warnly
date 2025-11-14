@@ -299,7 +299,7 @@ func ProjectGrid(res *warnly.ListProjectsResult) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "\" class=\"bg-white border border-gray-200 rounded-lg overflow-hidden\"><div class=\"border-b border-gray-300 p-3 md:p-4 flex justify-between items-center\"><div class=\"flex items-center gap-2 md:gap-3 flex-1 min-w-0\"><div class=\"w-8 h-8 bg-gray-100 rounded flex items-center justify-center flex-shrink-0\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 21, "\" class=\"project-card bg-white border border-gray-200 rounded-lg overflow-hidden\"><div class=\"border-b border-gray-300 p-3 md:p-4 flex justify-between items-center\"><div class=\"flex items-center gap-2 md:gap-3 flex-1 min-w-0\"><div class=\"w-8 h-8 bg-gray-100 rounded flex items-center justify-center flex-shrink-0\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -338,20 +338,20 @@ func ProjectGrid(res *warnly.ListProjectsResult) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "</h3><p class=\"text-xs text-gray-600\">Errors: ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 24, "</h3><p class=\"text-xs text-gray-600\">Errors: <span class=\"project-error-count\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var18 string
 			templ_7745c5c3_Var18, templ_7745c5c3_Err = templ.JoinStringErrs(project.Events.TotalErrors())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project.templ`, Line: 112, Col: 78}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/project.templ`, Line: 112, Col: 112}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var18))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, " | Last 24 hours</p></a></div><div class=\"flex gap-1 flex-shrink-0\"><a hx-get=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 25, "</span> | Last 24 hours</p></a></div><div class=\"flex gap-1 flex-shrink-0\"><a hx-get=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

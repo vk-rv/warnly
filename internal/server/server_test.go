@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"database/sql"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
@@ -92,9 +93,9 @@ func getTestStores(testDB *sql.DB, testOlapDB clickhouse.Conn, logger *slog.Logg
 	}
 }
 
-func getTestLogger() (*slog.Logger, bytes.Buffer) {
-	var buf bytes.Buffer
-	logger := slog.New(slog.NewJSONHandler(&buf, nil))
+func getTestLogger() (*slog.Logger, *bytes.Buffer) {
+	buf := &bytes.Buffer{}
+	logger := slog.New(slog.NewJSONHandler(buf, nil))
 	return logger, buf
 }
 
@@ -119,5 +120,23 @@ func getProjectDetailsRequest(ctx context.Context) (*httptest.ResponseRecorder, 
 
 	w := httptest.NewRecorder()
 
+	return w, r
+}
+
+func getListProjectsRequest(ctx context.Context, name string, teamID int) (*httptest.ResponseRecorder, *http.Request) {
+	var path string
+	switch {
+	case name != "" && teamID != 0:
+		path = fmt.Sprintf("/projects?name=%s&team=%d", name, teamID)
+	case name != "":
+		path = "/projects?name=" + name
+	case teamID != 0:
+		path = fmt.Sprintf("/projects?team=%d", teamID)
+	default:
+		path = "/projects"
+	}
+	r := httptest.NewRequest(http.MethodGet, path, http.NoBody)
+	r = r.WithContext(server.NewContextWithUser(ctx, testUser))
+	w := httptest.NewRecorder()
 	return w, r
 }
