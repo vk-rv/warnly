@@ -181,3 +181,269 @@ func TestParseQuery(t *testing.T) {
 		})
 	}
 }
+
+func TestTeammateAvatarInitials(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		teammate *warnly.Teammate
+		want     string
+	}{
+		{
+			name: "normal case",
+			teammate: &warnly.Teammate{
+				Name:    "John",
+				Surname: "Doe",
+			},
+			want: "JD",
+		},
+		{
+			name: "single character names",
+			teammate: &warnly.Teammate{
+				Name:    "A",
+				Surname: "B",
+			},
+			want: "AB",
+		},
+		{
+			name: "long names",
+			teammate: &warnly.Teammate{
+				Name:    "Alexander",
+				Surname: "Sokolov",
+			},
+			want: "AS",
+		},
+		{
+			name: "lowercase names",
+			teammate: &warnly.Teammate{
+				Name:    "john",
+				Surname: "doe",
+			},
+			want: "JD",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			result := tt.teammate.AvatarInitials()
+			if result != tt.want {
+				t.Errorf("AvatarInitials() = %q, want %q", result, tt.want)
+			}
+		})
+	}
+}
+
+func TestListIssuesResultNoIssues(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		result   *warnly.ListIssuesResult
+		name     string
+		wantTrue bool
+	}{
+		{
+			name:     "empty issues",
+			result:   &warnly.ListIssuesResult{Issues: []warnly.IssueEntry{}},
+			wantTrue: true,
+		},
+		{
+			name:     "nil issues",
+			result:   &warnly.ListIssuesResult{Issues: nil},
+			wantTrue: true,
+		},
+		{
+			name: "single issue",
+			result: &warnly.ListIssuesResult{
+				Issues: []warnly.IssueEntry{
+					{ID: 1, Message: "Error 1"},
+				},
+			},
+			wantTrue: false,
+		},
+		{
+			name: "multiple issues",
+			result: &warnly.ListIssuesResult{
+				Issues: []warnly.IssueEntry{
+					{ID: 1, Message: "Error 1"},
+					{ID: 2, Message: "Error 2"},
+					{ID: 3, Message: "Error 3"},
+				},
+			},
+			wantTrue: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			result := tt.result.NoIssues()
+			if result != tt.wantTrue {
+				t.Errorf("NoIssues() = %v, want %v", result, tt.wantTrue)
+			}
+		})
+	}
+}
+
+func TestTeammateFullName(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		teammate *warnly.Teammate
+		want     string
+	}{
+		{
+			name: "normal case",
+			teammate: &warnly.Teammate{
+				Name:    "John",
+				Surname: "Doe",
+			},
+			want: "John Doe",
+		},
+		{
+			name: "single character names",
+			teammate: &warnly.Teammate{
+				Name:    "A",
+				Surname: "B",
+			},
+			want: "A B",
+		},
+		{
+			name: "long names",
+			teammate: &warnly.Teammate{
+				Name:    "Alexander",
+				Surname: "Sokolov",
+			},
+			want: "Alexander Sokolov",
+		},
+		{
+			name: "mixed case",
+			teammate: &warnly.Teammate{
+				Name:    "john",
+				Surname: "DOE",
+			},
+			want: "john DOE",
+		},
+		{
+			name: "empty name",
+			teammate: &warnly.Teammate{
+				Name:    "",
+				Surname: "Doe",
+			},
+			want: " Doe",
+		},
+		{
+			name: "empty surname",
+			teammate: &warnly.Teammate{
+				Name:    "John",
+				Surname: "",
+			},
+			want: "John ",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			result := tt.teammate.FullName()
+			if result != tt.want {
+				t.Errorf("FullName() = %q, want %q", result, tt.want)
+			}
+		})
+	}
+}
+
+func TestTimeAgo(t *testing.T) {
+	t.Parallel()
+
+	now := time.Date(2025, 1, 15, 12, 0, 0, 0, time.UTC)
+	mockNow := func() time.Time { return now }
+
+	tests := []struct {
+		t          time.Time
+		name       string
+		wantWide   string
+		wantNarrow string
+		narrow     bool
+	}{
+		{
+			name:       "30 seconds ago",
+			t:          now.Add(-30 * time.Second),
+			narrow:     false,
+			wantWide:   "30 seconds",
+			wantNarrow: "30sec",
+		},
+		{
+			name:       "1 second ago",
+			t:          now.Add(-time.Second),
+			narrow:     false,
+			wantWide:   "1 second",
+			wantNarrow: "1sec",
+		},
+		{
+			name:       "5 minutes ago",
+			t:          now.Add(-5 * time.Minute),
+			narrow:     false,
+			wantWide:   "5 minutes",
+			wantNarrow: "5min",
+		},
+		{
+			name:       "2 hours ago",
+			t:          now.Add(-2 * time.Hour),
+			narrow:     false,
+			wantWide:   "2 hours",
+			wantNarrow: "2h",
+		},
+		{
+			name:       "10 days ago",
+			t:          now.Add(-10 * 24 * time.Hour),
+			narrow:     false,
+			wantWide:   "10 days",
+			wantNarrow: "10d",
+		},
+		{
+			name:       "2 months ago",
+			t:          now.Add(-60 * 24 * time.Hour),
+			narrow:     false,
+			wantWide:   "2 months",
+			wantNarrow: "2mo",
+		},
+		{
+			name:       "2 years ago",
+			t:          now.Add(-730 * 24 * time.Hour),
+			narrow:     false,
+			wantWide:   "2 years",
+			wantNarrow: "2y",
+		},
+		{
+			name:       "30 seconds ago (narrow)",
+			t:          now.Add(-30 * time.Second),
+			narrow:     true,
+			wantWide:   "",
+			wantNarrow: "30sec",
+		},
+		{
+			name:       "5 minutes ago (narrow)",
+			t:          now.Add(-5 * time.Minute),
+			narrow:     true,
+			wantWide:   "",
+			wantNarrow: "5min",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			result := warnly.TimeAgo(mockNow, tt.t, tt.narrow)
+			want := tt.wantWide
+			if tt.narrow {
+				want = tt.wantNarrow
+			}
+			if result != want {
+				t.Errorf("TimeAgo() = %q, want %q", result, want)
+			}
+		})
+	}
+}

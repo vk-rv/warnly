@@ -168,3 +168,18 @@ func TestUUID_Value(t *testing.T) {
 		t.Errorf("UUID.Value() = %v, want %v", v, u)
 	}
 }
+
+func TestUUIDPtr(t *testing.T) {
+	t.Parallel()
+
+	u := warnly.UUID{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}
+	ptr := warnly.UUIDPtr(u)
+
+	if ptr == nil {
+		t.Errorf("UUIDPtr() returned nil")
+		return
+	}
+	if string(*ptr) != string(u) {
+		t.Errorf("UUIDPtr() dereference = %v, want %v", *ptr, u)
+	}
+}

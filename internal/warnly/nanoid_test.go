@@ -90,3 +90,60 @@ func TestValidateNanoID(t *testing.T) {
 		})
 	}
 }
+
+func TestNewNanoID(t *testing.T) {
+	t.Parallel()
+
+	id1, err := warnly.NewNanoID()
+	if err != nil {
+		t.Errorf("NewNanoID() error = %v, wantErr false", err)
+		return
+	}
+
+	id2, err := warnly.NewNanoID()
+	if err != nil {
+		t.Errorf("NewNanoID() error = %v, wantErr false", err)
+		return
+	}
+
+	if len(id1) != 7 {
+		t.Errorf("NewNanoID() len = %d, want 7", len(id1))
+	}
+	if len(id2) != 7 {
+		t.Errorf("NewNanoID() len = %d, want 7", len(id2))
+	}
+	if id1 == id2 {
+		t.Errorf("NewNanoID() generated same ID twice: %v", id1)
+	}
+
+	if err := warnly.ValidateNanoID("id", id1); err != nil {
+		t.Errorf("NewNanoID() generated invalid ID: %v", err)
+	}
+	if err := warnly.ValidateNanoID("id", id2); err != nil {
+		t.Errorf("NewNanoID() generated invalid ID: %v", err)
+	}
+}
+
+func TestMustNanoID(t *testing.T) {
+	t.Parallel()
+
+	id1 := warnly.MustNanoID()
+	id2 := warnly.MustNanoID()
+
+	if len(id1) != 7 {
+		t.Errorf("MustNanoID() len = %d, want 7", len(id1))
+	}
+	if len(id2) != 7 {
+		t.Errorf("MustNanoID() len = %d, want 7", len(id2))
+	}
+	if id1 == id2 {
+		t.Errorf("MustNanoID() generated same ID twice: %v", id1)
+	}
+
+	if err := warnly.ValidateNanoID("id", id1); err != nil {
+		t.Errorf("MustNanoID() generated invalid ID: %v", err)
+	}
+	if err := warnly.ValidateNanoID("id", id2); err != nil {
+		t.Errorf("MustNanoID() generated invalid ID: %v", err)
+	}
+}

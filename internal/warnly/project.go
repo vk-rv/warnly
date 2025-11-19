@@ -83,7 +83,11 @@ func formatTime(value int, narrowUnit, fullUnit string, narrow bool) string {
 	if narrow {
 		return fmt.Sprintf("%d%s", value, narrowUnit)
 	}
-	return fmt.Sprintf("%d %s", value, fullUnit)
+	unit := fullUnit
+	if value == 1 {
+		unit = fullUnit[:len(fullUnit)-1]
+	}
+	return fmt.Sprintf("%d %s", value, unit)
 }
 
 type EventsList []EventsPerHour
@@ -206,9 +210,9 @@ type Teammate struct {
 	ID       int64
 }
 
-// AvatarInitials returns the initials of the teammate.
+// AvatarInitials returns the initials of the teammate in uppercase.
 func (t *Teammate) AvatarInitials() string {
-	return string(t.Name[0]) + string(t.Surname[0])
+	return strings.ToUpper(string(t.Name[0]) + string(t.Surname[0]))
 }
 
 // FullName returns the full name of the teammate.
