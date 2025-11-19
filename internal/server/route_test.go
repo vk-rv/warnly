@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/vk-rv/warnly/internal/server"
 	"github.com/vk-rv/warnly/internal/session"
 )
@@ -37,15 +39,7 @@ func TestNewHandlerReturnsValidHandler(t *testing.T) {
 	}
 
 	handler, err := server.NewHandler(backend)
-	if err != nil {
-		t.Fatalf("NewHandler() error = %v, want nil", err)
-	}
-
-	if handler == nil {
-		t.Fatal("NewHandler() returned nil handler, want *Handler")
-	}
-
-	if handler.ServeMux == nil {
-		t.Fatal("NewHandler() handler.ServeMux is nil, want *http.ServeMux")
-	}
+	require.NoError(t, err)
+	assert.NotNil(t, handler)
+	assert.NotNil(t, handler.ServeMux)
 }
