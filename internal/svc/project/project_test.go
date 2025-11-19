@@ -2,6 +2,7 @@ package project_test
 
 import (
 	"context"
+	"database/sql"
 	"log/slog"
 	"testing"
 	"time"
@@ -457,4 +458,480 @@ func TestListTeamsUserNoTeams(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotNil(t, result)
 	assert.Empty(t, result)
+}
+
+func TestGetProjectDetailsSuccess(t *testing.T) {
+	t.Parallel()
+
+	ctx := t.Context()
+	user := &warnly.User{ID: 1}
+	projectID := 5
+	teamID := 10
+	customTime := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+	customTimeFunc := func() time.Time {
+		return customTime
+	}
+
+	teamStore := &mock.TeamStore{
+		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
+			return []warnly.Team{
+				{ID: teamID, Name: "Team A"},
+			}, nil
+		},
+		ListTeammatesFn: func(_ context.Context, _ []int) ([]warnly.Teammate, error) {
+			return []warnly.Teammate{}, nil
+		},
+	}
+
+	projectStore := &mock.ProjectStore{
+		GetProjectFn: func(_ context.Context, _ int) (*warnly.Project, error) {
+			return &warnly.Project{
+				ID:     projectID,
+				TeamID: teamID,
+				Name:   "Test Project",
+			}, nil
+		},
+	}
+
+	issueStore := &mock.IssueStore{
+		ListIssuesFn: func(_ context.Context, _ *warnly.ListIssuesCriteria) ([]warnly.Issue, error) {
+			return []warnly.Issue{
+				{
+					ID:        1,
+					ProjectID: projectID,
+					ErrorType: "TypeError",
+					Message:   "Test error",
+					FirstSeen: customTime.Add(-1 * time.Hour),
+				},
+			}, nil
+		},
+		GetIssueByIDFn: func(_ context.Context, _ int64) (*warnly.Issue, error) {
+			return &warnly.Issue{
+				ID:        1,
+				ProjectID: projectID,
+				ErrorType: "TypeError",
+				Message:   "Test error",
+				FirstSeen: customTime.Add(-1 * time.Hour),
+			}, nil
+		},
+	}
+
+	analyticsStore := &mock.AnalyticsStore{
+		CalculateEventsFn: func(_ context.Context, _ *warnly.ListIssueMetricsCriteria) ([]warnly.EventsPerHour, error) {
+			return []warnly.EventsPerHour{
+				{ProjectID: projectID, Count: 10},
+			}, nil
+		},
+		ListIssueMetricsFn: func(_ context.Context, _ *warnly.ListIssueMetricsCriteria) ([]warnly.IssueMetrics, error) {
+			return []warnly.IssueMetrics{
+				{
+					GID:       1,
+					TimesSeen: 10,
+					UserCount: 5,
+					FirstSeen: customTime.Add(-1 * time.Hour),
+					LastSeen:  customTime,
+				},
+			}, nil
+		},
+	}
+
+	messageStore := &mock.MessageStore{
+		CountMessagesByIDsFn: func(_ context.Context, _ []int64) ([]warnly.MessageCount, error) {
+			return []warnly.MessageCount{
+				{IssueID: 1, MessageCount: 3},
+			}, nil
+		},
+	}
+
+	svc := project.NewProjectService(
+		projectStore,
+		&mock.AssingmentStore{},
+		teamStore,
+		issueStore,
+		messageStore,
+		&mock.MentionStore{},
+		analyticsStore,
+		mock.StartUnitOfWork,
+		bluemonday.NewPolicy(),
+		"localhost:8080",
+		"http",
+		"localhost:8080",
+		"http",
+		customTimeFunc,
+		slog.Default(),
+	)
+
+	req := &warnly.ProjectDetailsRequest{
+		ProjectID: projectID,
+		Issues:    warnly.IssuesTypeAll,
+		Period:    "24h",
+	}
+
+	result, err := svc.GetProjectDetails(ctx, req, user)
+
+	require.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.NotNil(t, result.Project)
+	assert.Equal(t, projectID, result.Project.ID)
+	assert.Equal(t, "Test Project", result.Project.Name)
+	assert.NotEmpty(t, result.Project.Events)
+	assert.Equal(t, 1, result.Project.AllLength)
+}
+
+func TestGetProjectDetailsNoIssues(t *testing.T) {
+	t.Parallel()
+
+	ctx := t.Context()
+	user := &warnly.User{ID: 1}
+	projectID := 5
+	teamID := 10
+
+	teamStore := &mock.TeamStore{
+		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
+			return []warnly.Team{
+				{ID: teamID, Name: "Team A"},
+			}, nil
+		},
+		ListTeammatesFn: func(_ context.Context, _ []int) ([]warnly.Teammate, error) {
+			return []warnly.Teammate{}, nil
+		},
+	}
+
+	projectStore := &mock.ProjectStore{
+		GetProjectFn: func(_ context.Context, _ int) (*warnly.Project, error) {
+			return &warnly.Project{
+				ID:     projectID,
+				TeamID: teamID,
+				Name:   "Test Project",
+			}, nil
+		},
+	}
+
+	issueStore := &mock.IssueStore{
+		ListIssuesFn: func(_ context.Context, _ *warnly.ListIssuesCriteria) ([]warnly.Issue, error) {
+			return []warnly.Issue{}, nil
+		},
+	}
+
+	svc := project.NewProjectService(
+		projectStore,
+		&mock.AssingmentStore{},
+		teamStore,
+		issueStore,
+		&mock.MessageStore{},
+		&mock.MentionStore{},
+		&mock.AnalyticsStore{},
+		mock.StartUnitOfWork,
+		bluemonday.NewPolicy(),
+		"localhost:8080",
+		"http",
+		"localhost:8080",
+		"http",
+		time.Now,
+		slog.Default(),
+	)
+
+	req := &warnly.ProjectDetailsRequest{
+		ProjectID: projectID,
+		Issues:    warnly.IssuesTypeAll,
+		Period:    "24h",
+	}
+
+	result, err := svc.GetProjectDetails(ctx, req, user)
+
+	require.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, projectID, result.Project.ID)
+	assert.Equal(t, 0, result.Project.AllLength)
+}
+
+func TestGetProjectDetailsWithTeammates(t *testing.T) {
+	t.Parallel()
+
+	ctx := t.Context()
+	user := &warnly.User{ID: 1}
+	projectID := 5
+	teamID := 10
+	customTime := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+	customTimeFunc := func() time.Time {
+		return customTime
+	}
+
+	projectStore := &mock.ProjectStore{
+		GetProjectFn: func(_ context.Context, _ int) (*warnly.Project, error) {
+			return &warnly.Project{
+				ID:     projectID,
+				TeamID: teamID,
+				Name:   "Test Project",
+			}, nil
+		},
+	}
+
+	issueStore := &mock.IssueStore{
+		ListIssuesFn: func(_ context.Context, _ *warnly.ListIssuesCriteria) ([]warnly.Issue, error) {
+			return []warnly.Issue{
+				{
+					ID:        1,
+					ProjectID: projectID,
+					ErrorType: "TypeError",
+					Message:   "Test error",
+					FirstSeen: customTime.Add(-1 * time.Hour),
+				},
+			}, nil
+		},
+	}
+
+	analyticsStore := &mock.AnalyticsStore{
+		CalculateEventsFn: func(_ context.Context, _ *warnly.ListIssueMetricsCriteria) ([]warnly.EventsPerHour, error) {
+			return []warnly.EventsPerHour{
+				{ProjectID: projectID, Count: 10},
+			}, nil
+		},
+		ListIssueMetricsFn: func(_ context.Context, _ *warnly.ListIssueMetricsCriteria) ([]warnly.IssueMetrics, error) {
+			return []warnly.IssueMetrics{
+				{
+					GID:       1,
+					TimesSeen: 10,
+					UserCount: 5,
+					FirstSeen: customTime.Add(-1 * time.Hour),
+					LastSeen:  customTime,
+				},
+			}, nil
+		},
+	}
+
+	messageStore := &mock.MessageStore{
+		CountMessagesByIDsFn: func(_ context.Context, _ []int64) ([]warnly.MessageCount, error) {
+			return []warnly.MessageCount{
+				{IssueID: 1, MessageCount: 3},
+			}, nil
+		},
+	}
+
+	assingmentStore := &mock.AssingmentStore{
+		ListAssingmentsFn: func(_ context.Context, _ []int64) ([]*warnly.AssignedUser, error) {
+			return []*warnly.AssignedUser{
+				{
+					IssueID:          1,
+					AssignedToUserID: sql.NullInt64{Int64: 2, Valid: true},
+				},
+			}, nil
+		},
+	}
+
+	teamStore2 := &mock.TeamStore{
+		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
+			return []warnly.Team{
+				{ID: teamID, Name: "Team A"},
+			}, nil
+		},
+		ListTeammatesFn: func(_ context.Context, _ []int) ([]warnly.Teammate, error) {
+			return []warnly.Teammate{
+				{ID: 2, Name: "John Doe", Email: "john@example.com"},
+			}, nil
+		},
+	}
+
+	svc := project.NewProjectService(
+		projectStore,
+		assingmentStore,
+		teamStore2,
+		issueStore,
+		messageStore,
+		&mock.MentionStore{},
+		analyticsStore,
+		mock.StartUnitOfWork,
+		bluemonday.NewPolicy(),
+		"localhost:8080",
+		"http",
+		"localhost:8080",
+		"http",
+		customTimeFunc,
+		slog.Default(),
+	)
+
+	req := &warnly.ProjectDetailsRequest{
+		ProjectID: projectID,
+		Issues:    warnly.IssuesTypeAll,
+		Period:    "24h",
+	}
+
+	result, err := svc.GetProjectDetails(ctx, req, user)
+
+	require.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.NotNil(t, result.Teammates)
+}
+
+func TestGetDiscussionSuccess(t *testing.T) {
+	t.Parallel()
+
+	ctx := t.Context()
+	user := &warnly.User{ID: 1}
+	projectID := 5
+	teamID := 10
+	issueID := 100
+
+	teamStore := &mock.TeamStore{
+		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
+			return []warnly.Team{
+				{ID: teamID, Name: "Team A"},
+			}, nil
+		},
+		ListTeammatesFn: func(_ context.Context, _ []int) ([]warnly.Teammate, error) {
+			return []warnly.Teammate{
+				{ID: 2, Name: "John Doe", Email: "john@example.com"},
+			}, nil
+		},
+	}
+
+	projectStore := &mock.ProjectStore{
+		GetProjectFn: func(_ context.Context, _ int) (*warnly.Project, error) {
+			return &warnly.Project{
+				ID:     projectID,
+				TeamID: teamID,
+				Name:   "Test Project",
+			}, nil
+		},
+	}
+
+	issueStore := &mock.IssueStore{
+		GetIssueByIDFn: func(_ context.Context, _ int64) (*warnly.Issue, error) {
+			return &warnly.Issue{
+				ID:        int64(issueID),
+				ProjectID: projectID,
+				ErrorType: "TypeError",
+				Message:   "Test error",
+				FirstSeen: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
+			}, nil
+		},
+	}
+
+	messageStore := &mock.MessageStore{
+		ListIssueMessagesFn: func(_ context.Context, _ int64) ([]warnly.IssueMessage, error) {
+			return []warnly.IssueMessage{
+				{ID: 1, Content: "First message", Username: "user1"},
+				{ID: 2, Content: "Second message", Username: "user2"},
+			}, nil
+		},
+	}
+
+	svc := project.NewProjectService(
+		projectStore,
+		&mock.AssingmentStore{},
+		teamStore,
+		issueStore,
+		messageStore,
+		&mock.MentionStore{},
+		&mock.AnalyticsStore{},
+		mock.StartUnitOfWork,
+		bluemonday.NewPolicy(),
+		"localhost:8080",
+		"http",
+		"localhost:8080",
+		"http",
+		time.Now,
+		slog.Default(),
+	)
+
+	req := &warnly.GetDiscussionsRequest{
+		ProjectID: projectID,
+		IssueID:   issueID,
+		User:      user,
+	}
+
+	result, err := svc.GetDiscussion(ctx, req)
+
+	require.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.NotNil(t, result.Teammates)
+	assert.Len(t, result.Teammates, 1)
+	assert.Len(t, result.Messages, 2)
+	assert.Equal(t, projectID, result.Info.ProjectID)
+	assert.Equal(t, issueID, result.Info.IssueID)
+	assert.Equal(t, "John Doe", result.Teammates[0].Name)
+	assert.Equal(t, "First message", result.Messages[0].Content)
+	assert.Equal(t, "Second message", result.Messages[1].Content)
+}
+
+func TestGetDiscussionNoMessages(t *testing.T) {
+	t.Parallel()
+
+	ctx := t.Context()
+	user := &warnly.User{ID: 1}
+	projectID := 5
+	teamID := 10
+	issueID := 100
+
+	teamStore := &mock.TeamStore{
+		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
+			return []warnly.Team{
+				{ID: teamID, Name: "Team A"},
+			}, nil
+		},
+		ListTeammatesFn: func(_ context.Context, _ []int) ([]warnly.Teammate, error) {
+			return []warnly.Teammate{
+				{ID: 2, Name: "John Doe", Email: "john@example.com"},
+			}, nil
+		},
+	}
+
+	projectStore := &mock.ProjectStore{
+		GetProjectFn: func(_ context.Context, _ int) (*warnly.Project, error) {
+			return &warnly.Project{
+				ID:     projectID,
+				TeamID: teamID,
+				Name:   "Test Project",
+			}, nil
+		},
+	}
+
+	issueStore := &mock.IssueStore{
+		GetIssueByIDFn: func(_ context.Context, _ int64) (*warnly.Issue, error) {
+			return &warnly.Issue{
+				ID:        int64(issueID),
+				ProjectID: projectID,
+				ErrorType: "TypeError",
+				Message:   "Test error",
+				FirstSeen: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
+			}, nil
+		},
+	}
+
+	messageStore := &mock.MessageStore{
+		ListIssueMessagesFn: func(_ context.Context, _ int64) ([]warnly.IssueMessage, error) {
+			return []warnly.IssueMessage{}, nil
+		},
+	}
+
+	svc := project.NewProjectService(
+		projectStore,
+		&mock.AssingmentStore{},
+		teamStore,
+		issueStore,
+		messageStore,
+		&mock.MentionStore{},
+		&mock.AnalyticsStore{},
+		mock.StartUnitOfWork,
+		bluemonday.NewPolicy(),
+		"localhost:8080",
+		"http",
+		"localhost:8080",
+		"http",
+		time.Now,
+		slog.Default(),
+	)
+
+	req := &warnly.GetDiscussionsRequest{
+		ProjectID: projectID,
+		IssueID:   issueID,
+		User:      user,
+	}
+
+	result, err := svc.GetDiscussion(ctx, req)
+
+	require.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Empty(t, result.Messages)
+	assert.Len(t, result.Teammates, 1)
 }
