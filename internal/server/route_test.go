@@ -1,4 +1,4 @@
-package server
+package server_test
 
 import (
 	"log/slog"
@@ -7,13 +7,14 @@ import (
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/vk-rv/warnly/internal/server"
 	"github.com/vk-rv/warnly/internal/session"
 )
 
 func TestNewHandlerReturnsValidHandler(t *testing.T) {
 	t.Parallel()
 
-	backend := &Backend{
+	backend := &server.Backend{
 		Now:                 time.Now,
 		SessionStore:        nil,
 		UserStore:           nil,
@@ -23,7 +24,7 @@ func TestNewHandlerReturnsValidHandler(t *testing.T) {
 		SystemService:       nil,
 		AlertService:        nil,
 		NotificationService: nil,
-		OIDC: &OIDC{
+		OIDC: &server.OIDC{
 			ProviderName: "test",
 			EmailMatches: []*regexp.Regexp{},
 		},
@@ -35,7 +36,7 @@ func TestNewHandlerReturnsValidHandler(t *testing.T) {
 		IsDemo:              false,
 	}
 
-	handler, err := NewHandler(backend)
+	handler, err := server.NewHandler(backend)
 	if err != nil {
 		t.Fatalf("NewHandler() error = %v, want nil", err)
 	}
