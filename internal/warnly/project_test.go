@@ -1,6 +1,7 @@
 package warnly_test
 
 import (
+	"strings"
 	"testing"
 	"time"
 
@@ -1940,6 +1941,466 @@ func TestTimeAgo(t *testing.T) {
 			}
 			if result != want {
 				t.Errorf("TimeAgo() = %q, want %q", result, want)
+			}
+		})
+	}
+}
+
+func TestListProjectsCriteriaIsEmpty(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		criteria *warnly.ListProjectsCriteria
+		name     string
+		want     bool
+	}{
+		{
+			name:     "both fields empty",
+			criteria: &warnly.ListProjectsCriteria{TeamID: 0, Name: ""},
+			want:     true,
+		},
+		{
+			name:     "TeamID set, Name empty",
+			criteria: &warnly.ListProjectsCriteria{TeamID: 1, Name: ""},
+			want:     false,
+		},
+		{
+			name:     "TeamID empty, Name set",
+			criteria: &warnly.ListProjectsCriteria{TeamID: 0, Name: "my-project"},
+			want:     false,
+		},
+		{
+			name:     "both fields set",
+			criteria: &warnly.ListProjectsCriteria{TeamID: 5, Name: "test-project"},
+			want:     false,
+		},
+		{
+			name:     "TeamID with large value",
+			criteria: &warnly.ListProjectsCriteria{TeamID: 999999, Name: ""},
+			want:     false,
+		},
+		{
+			name:     "Name with whitespace only",
+			criteria: &warnly.ListProjectsCriteria{TeamID: 0, Name: "   "},
+			want:     false,
+		},
+		{
+			name:     "Name with special characters",
+			criteria: &warnly.ListProjectsCriteria{TeamID: 0, Name: "!@#$%"},
+			want:     false,
+		},
+		{
+			name:     "negative TeamID with empty Name",
+			criteria: &warnly.ListProjectsCriteria{TeamID: -1, Name: ""},
+			want:     false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			result := tt.criteria.IsEmpty()
+			if result != tt.want {
+				t.Errorf("IsEmpty() = %v, want %v", result, tt.want)
+			}
+		})
+	}
+}
+
+func TestPlatformByName(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input string
+		want  warnly.Platform
+	}{
+		{
+			name:  "go platform lowercase",
+			input: "go",
+			want:  warnly.PlatformGolang,
+		},
+		{
+			name:  "go platform uppercase",
+			input: "GO",
+			want:  0,
+		},
+		{
+			name:  "go platform mixed case",
+			input: "Go",
+			want:  0,
+		},
+		{
+			name:  "unknown platform name",
+			input: "python",
+			want:  0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			result := warnly.PlatformByName(tt.input)
+			if result != tt.want {
+				t.Errorf("PlatformByName(%q) = %v, want %v", tt.input, result, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetSDKID(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name  string
+		input string
+		want  uint8
+	}{
+		{
+			name:  "sentry.go sdk",
+			input: "sentry.go",
+			want:  1,
+		},
+		{
+			name:  "sentry.go uppercase",
+			input: "SENTRY.GO",
+			want:  0,
+		},
+		{
+			name:  "unknown sdk",
+			input: "unknown",
+			want:  0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			result := warnly.GetSDKID(tt.input)
+			if result != tt.want {
+				t.Errorf("GetSDKID(%q) = %d, want %d", tt.input, result, tt.want)
+			}
+		})
+	}
+}
+
+func TestEventListDashboardData(t *testing.T) {
+	t.Parallel()
+
+	now := time.Date(2025, 1, 15, 12, 0, 0, 0, time.UTC)
+	mockNow := func() time.Time { return now }
+
+	tests := []struct {
+		name     string
+		validate func(t *testing.T, result string)
+		events   warnly.EventsList
+	}{
+		{
+			name:   "empty events list",
+			events: warnly.EventsList{},
+			validate: func(t *testing.T, result string) {
+				t.Helper()
+				// even with empty events, should return valid JSON with timestamps
+				if !strings.HasPrefix(result, "[[") || !strings.HasSuffix(result, "]]") {
+					t.Errorf("expected valid JSON format for empty list, got %q", result)
+				}
+				// should have the structure [[timestamps],[counts]]
+				if !strings.Contains(result, "],[") {
+					t.Errorf("expected [[...],[...]] format, got %q", result)
+				}
+			},
+		},
+		{
+			name: "single event",
+			events: warnly.EventsList{
+				{TS: now.Add(-1 * time.Hour), Count: 10},
+			},
+			validate: func(t *testing.T, result string) {
+				t.Helper()
+				if !strings.HasPrefix(result, "[[") || !strings.HasSuffix(result, "]]") {
+					t.Errorf("result must be valid JSON array format: %q", result)
+				}
+				if !strings.Contains(result, "10") {
+					t.Errorf("result should contain count 10: %q", result)
+				}
+			},
+		},
+		{
+			name: "multiple events within 24h",
+			events: warnly.EventsList{
+				{TS: now.Add(-12 * time.Hour), Count: 5},
+				{TS: now.Add(-6 * time.Hour), Count: 15},
+				{TS: now.Add(-1 * time.Hour), Count: 20},
+			},
+			validate: func(t *testing.T, result string) {
+				t.Helper()
+				if !strings.HasPrefix(result, "[[") || !strings.HasSuffix(result, "]]") {
+					t.Errorf("result must be valid JSON array format: %q", result)
+				}
+				if !strings.Contains(result, ",") {
+					t.Errorf("result should contain multiple data points: %q", result)
+				}
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			result := tt.events.DashboardData(mockNow)
+			tt.validate(t, result)
+		})
+	}
+}
+
+func TestEventListDashboardDataStructure(t *testing.T) {
+	t.Parallel()
+
+	now := time.Date(2025, 1, 15, 12, 0, 0, 0, time.UTC)
+	mockNow := func() time.Time { return now }
+
+	events := warnly.EventsList{
+		{TS: now.Add(-1 * time.Hour), Count: 10},
+		{TS: now.Add(-2 * time.Hour), Count: 20},
+	}
+
+	result := events.DashboardData(mockNow)
+
+	if !strings.HasPrefix(result, "[[") || !strings.HasSuffix(result, "]]") {
+		t.Fatalf("DashboardData should return [[timestamps], [counts]], got: %q", result)
+	}
+
+	middleIdx := strings.Index(result, "],[")
+	if middleIdx == -1 {
+		t.Fatalf("DashboardData result should contain '],[' separator, got: %q", result)
+	}
+
+	timestampsStr := result[1 : middleIdx+1]
+	countsStr := result[middleIdx+2 : len(result)-1]
+
+	if timestampsStr == "" || countsStr == "" {
+		t.Errorf("both timestamps and counts arrays should be non-empty")
+	}
+}
+
+func TestEventListDashboardDataCallsPeriodWithDefault(t *testing.T) {
+	t.Parallel()
+
+	now := time.Date(2025, 1, 15, 12, 0, 0, 0, time.UTC)
+	mockNow := func() time.Time { return now }
+
+	events := warnly.EventsList{
+		{TS: now.Add(-1 * time.Hour), Count: 5},
+	}
+
+	dashboardResult := events.DashboardData(mockNow)
+	periodResult := events.DashboardDataForPeriod(mockNow, "24h")
+
+	if dashboardResult != periodResult {
+		t.Errorf("DashboardData() should match DashboardDataForPeriod(..., \"24h\")\nDashboardData: %q\nDashboardDataForPeriod: %q", dashboardResult, periodResult)
+	}
+}
+
+func TestEventListTotalErrors(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name   string
+		want   string
+		events warnly.EventsList
+	}{
+		{
+			name:   "empty events list",
+			events: warnly.EventsList{},
+			want:   "0",
+		},
+		{
+			name: "single event with zero count",
+			events: warnly.EventsList{
+				{Count: 0},
+			},
+			want: "0",
+		},
+		{
+			name: "single event with small count",
+			events: warnly.EventsList{
+				{Count: 42},
+			},
+			want: "42",
+		},
+		{
+			name: "single event with count of 999",
+			events: warnly.EventsList{
+				{Count: 999},
+			},
+			want: "999",
+		},
+		{
+			name: "single event with count of 1000",
+			events: warnly.EventsList{
+				{Count: 1000},
+			},
+			want: "1000",
+		},
+		{
+			name: "single event with count of 1001",
+			events: warnly.EventsList{
+				{Count: 1001},
+			},
+			want: "1.0k",
+		},
+		{
+			name: "single event with count of 5000",
+			events: warnly.EventsList{
+				{Count: 5000},
+			},
+			want: "5k",
+		},
+		{
+			name: "single event with count of 5500",
+			events: warnly.EventsList{
+				{Count: 5500},
+			},
+			want: "5.5k",
+		},
+		{
+			name: "single event with count of 999999",
+			events: warnly.EventsList{
+				{Count: 999999},
+			},
+			want: "1000.0k",
+		},
+		{
+			name: "single event with count of 1000000",
+			events: warnly.EventsList{
+				{Count: 1000000},
+			},
+			want: "1000k",
+		},
+		{
+			name: "single event with count of 1000001",
+			events: warnly.EventsList{
+				{Count: 1000001},
+			},
+			want: "1.0m",
+		},
+		{
+			name: "single event with count of 1500000",
+			events: warnly.EventsList{
+				{Count: 1500000},
+			},
+			want: "1.5m",
+		},
+		{
+			name: "multiple events totaling under 1000",
+			events: warnly.EventsList{
+				{Count: 100},
+				{Count: 200},
+				{Count: 300},
+			},
+			want: "600",
+		},
+		{
+			name: "multiple events totaling 1000",
+			events: warnly.EventsList{
+				{Count: 250},
+				{Count: 250},
+				{Count: 250},
+				{Count: 250},
+			},
+			want: "1000",
+		},
+		{
+			name: "multiple events totaling 1500",
+			events: warnly.EventsList{
+				{Count: 500},
+				{Count: 500},
+				{Count: 500},
+			},
+			want: "1.5k",
+		},
+		{
+			name: "multiple events totaling 10000",
+			events: warnly.EventsList{
+				{Count: 2500},
+				{Count: 2500},
+				{Count: 2500},
+				{Count: 2500},
+			},
+			want: "10k",
+		},
+		{
+			name: "multiple events totaling 1000000",
+			events: warnly.EventsList{
+				{Count: 250000},
+				{Count: 250000},
+				{Count: 250000},
+				{Count: 250000},
+			},
+			want: "1000k",
+		},
+		{
+			name: "multiple events totaling 2500000",
+			events: warnly.EventsList{
+				{Count: 625000},
+				{Count: 625000},
+				{Count: 625000},
+				{Count: 625000},
+			},
+			want: "2.5m",
+		},
+		{
+			name: "many events with varying counts",
+			events: warnly.EventsList{
+				{Count: 10},
+				{Count: 20},
+				{Count: 30},
+				{Count: 40},
+				{Count: 50},
+				{Count: 60},
+				{Count: 70},
+				{Count: 80},
+				{Count: 90},
+				{Count: 100},
+			},
+			want: "550",
+		},
+		{
+			name: "count of 1111",
+			events: warnly.EventsList{
+				{Count: 1111},
+			},
+			want: "1.1k",
+		},
+		{
+			name: "count of 2000",
+			events: warnly.EventsList{
+				{Count: 2000},
+			},
+			want: "2k",
+		},
+		{
+			name: "count of 2001",
+			events: warnly.EventsList{
+				{Count: 2001},
+			},
+			want: "2.0k",
+		},
+		{
+			name: "large number over million",
+			events: warnly.EventsList{
+				{Count: 5555555},
+			},
+			want: "5.6m",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			result := tt.events.TotalErrors()
+			if result != tt.want {
+				t.Errorf("TotalErrors() = %q, want %q", result, tt.want)
 			}
 		})
 	}
