@@ -189,8 +189,6 @@ func TestRecoverMiddleware_MultipleMetrics(t *testing.T) {
 	wrapped := mw.recover(panicHandler)
 
 	for _, tt := range tests {
-		t.Parallel()
-
 		req := httptest.NewRequest(tt.method, tt.pattern, http.NoBody)
 		req.Pattern = tt.pattern
 		w := httptest.NewRecorder()
