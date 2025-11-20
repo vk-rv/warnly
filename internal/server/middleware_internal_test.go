@@ -19,6 +19,8 @@ import (
 	"github.com/vk-rv/warnly/internal/warnly"
 )
 
+const testPattern = "/test"
+
 func TestStatusRecorder_Flush(t *testing.T) {
 	t.Parallel()
 	w := httptest.NewRecorder()
@@ -103,8 +105,8 @@ func TestRecordLatencyWithDifferentMethods(t *testing.T) {
 	wrapped := mw.recordLatency(handler)
 	methods := []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete}
 	for _, method := range methods {
-		req := httptest.NewRequest(method, "/test", http.NoBody)
-		req.Pattern = "/test"
+		req := httptest.NewRequest(method, testPattern, http.NoBody)
+		req.Pattern = testPattern
 		w := httptest.NewRecorder()
 		wrapped(w, req)
 		if w.Code != http.StatusOK {
@@ -160,8 +162,8 @@ func TestRecordLatency(t *testing.T) {
 
 			wrapped := mw.recordLatency(tt.handler)
 
-			req := httptest.NewRequest(http.MethodGet, "/test", http.NoBody)
-			req.Pattern = "/test"
+			req := httptest.NewRequest(http.MethodGet, testPattern, http.NoBody)
+			req.Pattern = testPattern
 			w := httptest.NewRecorder()
 
 			wrapped(w, req)
@@ -183,7 +185,7 @@ func TestRecordLatency(t *testing.T) {
 			assert.Positive(t, collected, "should have collected metrics")
 
 			statusCodeStr := strconv.Itoa(tt.expectedCode)
-			metricResult := testutil.ToFloat64(mw.metrics.requestsTotal.WithLabelValues("/test", http.MethodGet, statusCodeStr))
+			metricResult := testutil.ToFloat64(mw.metrics.requestsTotal.WithLabelValues(testPattern, http.MethodGet, statusCodeStr))
 			assert.InEpsilon(t, 1.0, metricResult, 0.1, "expected %s to have value 1.0 for status %d", tt.expectedMetric, tt.expectedCode)
 		})
 	}
@@ -207,7 +209,7 @@ func TestEmailMatcherMiddleware_AllowedEmail(t *testing.T) {
 	user := warnly.User{Email: "test@example.com", ID: 1}
 	ctx := NewContextWithUser(t.Context(), user)
 
-	req := httptest.NewRequest(http.MethodGet, "/test", http.NoBody)
+	req := httptest.NewRequest(http.MethodGet, testPattern, http.NoBody)
 	req = req.WithContext(ctx)
 	w := httptest.NewRecorder()
 
@@ -234,7 +236,7 @@ func TestEmailMatcherMiddleware_DeniedEmail_WithoutHTMX(t *testing.T) {
 	user := warnly.User{Email: "test@invalid.com", ID: 1}
 	ctx := NewContextWithUser(context.Background(), user)
 
-	req := httptest.NewRequest(http.MethodGet, "/test", http.NoBody)
+	req := httptest.NewRequest(http.MethodGet, testPattern, http.NoBody)
 	req = req.WithContext(ctx)
 	w := httptest.NewRecorder()
 
@@ -262,7 +264,7 @@ func TestEmailMatcherMiddleware_DeniedEmail_WithHTMX(t *testing.T) {
 	user := warnly.User{Email: "test@invalid.com", ID: 1}
 	ctx := NewContextWithUser(context.Background(), user)
 
-	req := httptest.NewRequest(http.MethodGet, "/test", http.NoBody)
+	req := httptest.NewRequest(http.MethodGet, testPattern, http.NoBody)
 	req = req.WithContext(ctx)
 	req.Header.Set(htmxHeader, "true")
 	w := httptest.NewRecorder()
@@ -309,7 +311,7 @@ func TestEmailMatcherMiddleware_MultiplePatterns(t *testing.T) {
 			user := warnly.User{Email: tt.email, ID: 1}
 			ctx := NewContextWithUser(context.Background(), user)
 
-			req := httptest.NewRequest(http.MethodGet, "/test", http.NoBody)
+			req := httptest.NewRequest(http.MethodGet, testPattern, http.NoBody)
 			req = req.WithContext(ctx)
 			w := httptest.NewRecorder()
 
