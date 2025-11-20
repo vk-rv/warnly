@@ -39,7 +39,7 @@ func TestRecoverMiddleware_NormalHandler(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 
 	metricValue := testutil.ToFloat64(mw.metrics.panicRecoversTotal.WithLabelValues(testPattern, http.MethodGet))
-	assert.InEpsilon(t, 0.0, 0, metricValue, "no panics should be recovered")
+	assert.Zero(t, metricValue, "no panics should be recovered")
 }
 
 func TestRecoverMiddleware_PanicRecovery_StringPanic(t *testing.T) {
