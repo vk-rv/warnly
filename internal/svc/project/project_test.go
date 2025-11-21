@@ -1793,3 +1793,292 @@ func TestCreateMessageWithMentions(t *testing.T) {
 	assert.Len(t, result.Teammates, 3)
 	assert.Len(t, result.Messages, 1)
 }
+
+func TestListTagValuesSuccess(t *testing.T) {
+	t.Parallel()
+
+	ctx := t.Context()
+	user := &warnly.User{ID: 1}
+	teamID := 10
+	customTime := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	teamStore := &mock.TeamStore{
+		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
+			return []warnly.Team{
+				{ID: teamID, Name: "Team A"},
+			}, nil
+		},
+	}
+
+	projectStore := &mock.ProjectStore{
+		ListProjectsFn: func(_ context.Context, _ []int, _ string) ([]warnly.Project, error) {
+			return []warnly.Project{
+				{ID: 1, TeamID: teamID, Name: "Test Project"},
+			}, nil
+		},
+	}
+
+	analyticsStore := &mock.AnalyticsStore{
+		ListTagValuesFn: func(_ context.Context, _ *warnly.ListTagValuesCriteria) ([]warnly.TagValueCount, error) {
+			return []warnly.TagValueCount{
+				{Value: "Chrome", Count: 150},
+				{Value: "Firefox", Count: 80},
+				{Value: "Safari", Count: 45},
+			}, nil
+		},
+	}
+
+	svc := project.NewProjectService(
+		projectStore,
+		&mock.AssingmentStore{},
+		teamStore,
+		&mock.IssueStore{},
+		&mock.MessageStore{},
+		&mock.MentionStore{},
+		analyticsStore,
+		mock.StartUnitOfWork,
+		bluemonday.NewPolicy(),
+		"localhost:8080",
+		"http",
+		"localhost:8080",
+		"http",
+		func() time.Time { return customTime },
+		slog.Default(),
+	)
+
+	req := &warnly.ListTagValuesRequest{
+		User:   user,
+		Tag:    "browser",
+		Period: "24h",
+		Limit:  10,
+	}
+
+	result, err := svc.ListTagValues(ctx, req)
+
+	require.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Len(t, result, 3)
+	assert.Equal(t, "Chrome", result[0].Value)
+	assert.Equal(t, uint64(150), result[0].Count)
+	assert.Equal(t, "Firefox", result[1].Value)
+	assert.Equal(t, uint64(80), result[1].Count)
+	assert.Equal(t, "Safari", result[2].Value)
+	assert.Equal(t, uint64(45), result[2].Count)
+}
+
+func TestListTagValuesNoResults(t *testing.T) {
+	t.Parallel()
+
+	ctx := t.Context()
+	user := &warnly.User{ID: 1}
+	teamID := 10
+	customTime := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	teamStore := &mock.TeamStore{
+		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
+			return []warnly.Team{
+				{ID: teamID, Name: "Team A"},
+			}, nil
+		},
+	}
+
+	projectStore := &mock.ProjectStore{
+		ListProjectsFn: func(_ context.Context, _ []int, _ string) ([]warnly.Project, error) {
+			return []warnly.Project{
+				{ID: 1, TeamID: teamID, Name: "Test Project"},
+			}, nil
+		},
+	}
+
+	analyticsStore := &mock.AnalyticsStore{
+		ListTagValuesFn: func(_ context.Context, _ *warnly.ListTagValuesCriteria) ([]warnly.TagValueCount, error) {
+			return []warnly.TagValueCount{}, nil
+		},
+	}
+
+	svc := project.NewProjectService(
+		projectStore,
+		&mock.AssingmentStore{},
+		teamStore,
+		&mock.IssueStore{},
+		&mock.MessageStore{},
+		&mock.MentionStore{},
+		analyticsStore,
+		mock.StartUnitOfWork,
+		bluemonday.NewPolicy(),
+		"localhost:8080",
+		"http",
+		"localhost:8080",
+		"http",
+		func() time.Time { return customTime },
+		slog.Default(),
+	)
+
+	req := &warnly.ListTagValuesRequest{
+		User:   user,
+		Tag:    "browser",
+		Period: "24h",
+		Limit:  10,
+	}
+
+	result, err := svc.ListTagValues(ctx, req)
+
+	require.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Empty(t, result)
+}
+
+func TestSearchProjectSuccess(t *testing.T) {
+	t.Parallel()
+
+	ctx := t.Context()
+	user := &warnly.User{ID: 1}
+	teamID := 10
+	projectID := 5
+	projectName := "Test Project"
+
+	teamStore := &mock.TeamStore{
+		ListTeamsFn: func(_ context.Context, userID int) ([]warnly.Team, error) {
+			assert.Equal(t, 1, userID)
+			return []warnly.Team{
+				{ID: teamID, Name: "Team A"},
+			}, nil
+		},
+	}
+
+	projectStore := &mock.ProjectStore{
+		ListProjectsFn: func(_ context.Context, teamIDs []int, name string) ([]warnly.Project, error) {
+			assert.Len(t, teamIDs, 1)
+			assert.Equal(t, teamID, teamIDs[0])
+			assert.Equal(t, projectName, name)
+			return []warnly.Project{
+				{ID: projectID, TeamID: teamID, Name: projectName},
+			}, nil
+		},
+	}
+
+	svc := project.NewProjectService(
+		projectStore,
+		&mock.AssingmentStore{},
+		teamStore,
+		&mock.IssueStore{},
+		&mock.MessageStore{},
+		&mock.MentionStore{},
+		&mock.AnalyticsStore{},
+		mock.StartUnitOfWork,
+		bluemonday.NewPolicy(),
+		"localhost:8080",
+		"http",
+		"localhost:8080",
+		"http",
+		time.Now,
+		slog.Default(),
+	)
+
+	result, err := svc.SearchProject(ctx, projectName, user)
+
+	require.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, projectID, result.ID)
+	assert.Equal(t, teamID, result.TeamID)
+	assert.Equal(t, projectName, result.Name)
+}
+
+func TestSearchProjectMultipleProjects(t *testing.T) {
+	t.Parallel()
+
+	ctx := t.Context()
+	user := &warnly.User{ID: 1}
+	teamID := 10
+	projectID := 5
+	projectName := "Backend API"
+
+	teamStore := &mock.TeamStore{
+		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
+			return []warnly.Team{
+				{ID: teamID, Name: "Team A"},
+			}, nil
+		},
+	}
+
+	projectStore := &mock.ProjectStore{
+		ListProjectsFn: func(_ context.Context, _ []int, _ string) ([]warnly.Project, error) {
+			return []warnly.Project{
+				{ID: projectID, TeamID: teamID, Name: "Backend API"},
+				{ID: 6, TeamID: teamID, Name: "Frontend Web"},
+				{ID: 7, TeamID: teamID, Name: "Mobile App"},
+			}, nil
+		},
+	}
+
+	svc := project.NewProjectService(
+		projectStore,
+		&mock.AssingmentStore{},
+		teamStore,
+		&mock.IssueStore{},
+		&mock.MessageStore{},
+		&mock.MentionStore{},
+		&mock.AnalyticsStore{},
+		mock.StartUnitOfWork,
+		bluemonday.NewPolicy(),
+		"localhost:8080",
+		"http",
+		"localhost:8080",
+		"http",
+		time.Now,
+		slog.Default(),
+	)
+
+	result, err := svc.SearchProject(ctx, projectName, user)
+
+	require.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, projectID, result.ID)
+	assert.Equal(t, projectName, result.Name)
+}
+
+func TestSearchProjectNotFound(t *testing.T) {
+	t.Parallel()
+
+	ctx := t.Context()
+	user := &warnly.User{ID: 1}
+	teamID := 10
+
+	teamStore := &mock.TeamStore{
+		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
+			return []warnly.Team{
+				{ID: teamID, Name: "Team A"},
+			}, nil
+		},
+	}
+
+	projectStore := &mock.ProjectStore{
+		ListProjectsFn: func(_ context.Context, _ []int, _ string) ([]warnly.Project, error) {
+			return []warnly.Project{}, nil
+		},
+	}
+
+	svc := project.NewProjectService(
+		projectStore,
+		&mock.AssingmentStore{},
+		teamStore,
+		&mock.IssueStore{},
+		&mock.MessageStore{},
+		&mock.MentionStore{},
+		&mock.AnalyticsStore{},
+		mock.StartUnitOfWork,
+		bluemonday.NewPolicy(),
+		"localhost:8080",
+		"http",
+		"localhost:8080",
+		"http",
+		time.Now,
+		slog.Default(),
+	)
+
+	result, err := svc.SearchProject(ctx, "Nonexistent Project", user)
+
+	require.Error(t, err)
+	assert.Nil(t, result)
+	assert.Equal(t, warnly.ErrProjectNotFound, err)
+}
