@@ -935,3 +935,404 @@ func TestGetDiscussionNoMessages(t *testing.T) {
 	assert.Empty(t, result.Messages)
 	assert.Len(t, result.Teammates, 1)
 }
+
+func TestListFieldsSuccess(t *testing.T) {
+	t.Parallel()
+
+	ctx := t.Context()
+	user := &warnly.User{ID: 1}
+	projectID := 5
+	teamID := 10
+	issueID := 100
+	customTime := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	teamStore := &mock.TeamStore{
+		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
+			return []warnly.Team{
+				{ID: teamID, Name: "Team A"},
+			}, nil
+		},
+	}
+
+	projectStore := &mock.ProjectStore{
+		GetProjectFn: func(_ context.Context, _ int) (*warnly.Project, error) {
+			return &warnly.Project{
+				ID:     projectID,
+				TeamID: teamID,
+				Name:   "Test Project",
+			}, nil
+		},
+	}
+
+	issueStore := &mock.IssueStore{
+		GetIssueByIDFn: func(_ context.Context, _ int64) (*warnly.Issue, error) {
+			return &warnly.Issue{
+				ID:        int64(issueID),
+				ProjectID: projectID,
+				ErrorType: "TypeError",
+				Message:   "Test error",
+				FirstSeen: customTime.Add(-24 * time.Hour),
+			}, nil
+		},
+	}
+
+	analyticsStore := &mock.AnalyticsStore{
+		CalculateFieldsFn: func(_ context.Context, _ warnly.FieldsCriteria) ([]warnly.TagCount, error) {
+			return []warnly.TagCount{
+				{Tag: "browser", Count: 100},
+				{Tag: "os", Count: 50},
+			}, nil
+		},
+		CountFieldsFn: func(_ context.Context, _ *warnly.EventDefCriteria) ([]warnly.FieldValueNum, error) {
+			return []warnly.FieldValueNum{
+				{
+					Tag:             "browser",
+					Value:           "Chrome",
+					Count:           60,
+					PercentsOfTotal: 0,
+					FirstSeen:       customTime.Add(-24 * time.Hour),
+					LastSeen:        customTime,
+				},
+				{
+					Tag:             "browser",
+					Value:           "Firefox",
+					Count:           40,
+					PercentsOfTotal: 0,
+					FirstSeen:       customTime.Add(-24 * time.Hour),
+					LastSeen:        customTime,
+				},
+				{
+					Tag:             "os",
+					Value:           "Linux",
+					Count:           30,
+					PercentsOfTotal: 0,
+					FirstSeen:       customTime.Add(-24 * time.Hour),
+					LastSeen:        customTime,
+				},
+				{
+					Tag:             "os",
+					Value:           "Windows",
+					Count:           20,
+					PercentsOfTotal: 0,
+					FirstSeen:       customTime.Add(-24 * time.Hour),
+					LastSeen:        customTime,
+				},
+			}, nil
+		},
+	}
+
+	svc := project.NewProjectService(
+		projectStore,
+		&mock.AssingmentStore{},
+		teamStore,
+		issueStore,
+		&mock.MessageStore{},
+		&mock.MentionStore{},
+		analyticsStore,
+		mock.StartUnitOfWork,
+		bluemonday.NewPolicy(),
+		"localhost:8080",
+		"http",
+		"localhost:8080",
+		"http",
+		func() time.Time { return customTime },
+		slog.Default(),
+	)
+
+	req := &warnly.ListFieldsRequest{
+		ProjectID: projectID,
+		IssueID:   issueID,
+		User:      user,
+	}
+
+	result, err := svc.ListFields(ctx, req)
+
+	require.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, "Test Project", result.ProjectName)
+	assert.Len(t, result.TagCount, 2)
+	assert.Equal(t, "browser", result.TagCount[0].Tag)
+	assert.Equal(t, uint64(100), result.TagCount[0].Count)
+	assert.Equal(t, "os", result.TagCount[1].Tag)
+	assert.Equal(t, uint64(50), result.TagCount[1].Count)
+	assert.Len(t, result.FieldValueNum, 4)
+	assert.InEpsilon(t, 60.0, result.FieldValueNum[0].PercentsOfTotal, 0.01)
+	assert.InEpsilon(t, 40.0, result.FieldValueNum[1].PercentsOfTotal, 0.01)
+	assert.InEpsilon(t, 60.0, result.FieldValueNum[2].PercentsOfTotal, 0.01)
+	assert.InEpsilon(t, 40.0, result.FieldValueNum[3].PercentsOfTotal, 0.01)
+}
+
+func TestListFieldsNoFields(t *testing.T) {
+	t.Parallel()
+
+	ctx := t.Context()
+	user := &warnly.User{ID: 1}
+	projectID := 5
+	teamID := 10
+	issueID := 100
+	customTime := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	teamStore := &mock.TeamStore{
+		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
+			return []warnly.Team{
+				{ID: teamID, Name: "Team A"},
+			}, nil
+		},
+	}
+
+	projectStore := &mock.ProjectStore{
+		GetProjectFn: func(_ context.Context, _ int) (*warnly.Project, error) {
+			return &warnly.Project{
+				ID:     projectID,
+				TeamID: teamID,
+				Name:   "Test Project",
+			}, nil
+		},
+	}
+
+	issueStore := &mock.IssueStore{
+		GetIssueByIDFn: func(_ context.Context, _ int64) (*warnly.Issue, error) {
+			return &warnly.Issue{
+				ID:        int64(issueID),
+				ProjectID: projectID,
+				ErrorType: "TypeError",
+				Message:   "Test error",
+				FirstSeen: customTime.Add(-24 * time.Hour),
+			}, nil
+		},
+	}
+
+	analyticsStore := &mock.AnalyticsStore{
+		CalculateFieldsFn: func(_ context.Context, _ warnly.FieldsCriteria) ([]warnly.TagCount, error) {
+			return []warnly.TagCount{}, nil
+		},
+		CountFieldsFn: func(_ context.Context, _ *warnly.EventDefCriteria) ([]warnly.FieldValueNum, error) {
+			return []warnly.FieldValueNum{}, nil
+		},
+	}
+
+	svc := project.NewProjectService(
+		projectStore,
+		&mock.AssingmentStore{},
+		teamStore,
+		issueStore,
+		&mock.MessageStore{},
+		&mock.MentionStore{},
+		analyticsStore,
+		mock.StartUnitOfWork,
+		bluemonday.NewPolicy(),
+		"localhost:8080",
+		"http",
+		"localhost:8080",
+		"http",
+		func() time.Time { return customTime },
+		slog.Default(),
+	)
+
+	req := &warnly.ListFieldsRequest{
+		ProjectID: projectID,
+		IssueID:   issueID,
+		User:      user,
+	}
+
+	result, err := svc.ListFields(ctx, req)
+
+	require.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, "Test Project", result.ProjectName)
+	assert.Empty(t, result.TagCount)
+	assert.Empty(t, result.FieldValueNum)
+}
+
+func TestListEventsSuccess(t *testing.T) {
+	t.Parallel()
+
+	ctx := t.Context()
+	user := &warnly.User{ID: 1}
+	projectID := 5
+	teamID := 10
+	issueID := 100
+	customTime := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	teamStore := &mock.TeamStore{
+		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
+			return []warnly.Team{
+				{ID: teamID, Name: "Team A"},
+			}, nil
+		},
+	}
+
+	projectStore := &mock.ProjectStore{
+		GetProjectFn: func(_ context.Context, _ int) (*warnly.Project, error) {
+			return &warnly.Project{
+				ID:     projectID,
+				TeamID: teamID,
+				Name:   "Test Project",
+			}, nil
+		},
+	}
+
+	issueStore := &mock.IssueStore{
+		GetIssueByIDFn: func(_ context.Context, _ int64) (*warnly.Issue, error) {
+			return &warnly.Issue{
+				ID:        int64(issueID),
+				ProjectID: projectID,
+				ErrorType: "TypeError",
+				Message:   "Test error",
+				FirstSeen: customTime.Add(-24 * time.Hour),
+			}, nil
+		},
+	}
+
+	analyticsStore := &mock.AnalyticsStore{
+		CountEventsFn: func(_ context.Context, _ *warnly.EventCriteria) (uint64, error) {
+			return 42, nil
+		},
+		ListEventsFn: func(_ context.Context, _ *warnly.EventCriteria) ([]warnly.EventEntry, error) {
+			return []warnly.EventEntry{
+				{
+					CreatedAt:    customTime.Add(-10 * time.Hour),
+					EventID:      "event-1",
+					Title:        "TypeError",
+					Message:      "Cannot read property 'x' of undefined",
+					Release:      "1.0.0",
+					Env:          "production",
+					UserEmail:    "user@example.com",
+					UserUsername: "john_doe",
+				},
+				{
+					CreatedAt:    customTime.Add(-5 * time.Hour),
+					EventID:      "event-2",
+					Title:        "TypeError",
+					Message:      "Cannot read property 'x' of undefined",
+					Release:      "1.0.0",
+					Env:          "staging",
+					UserEmail:    "admin@example.com",
+					UserUsername: "admin",
+				},
+			}, nil
+		},
+	}
+
+	svc := project.NewProjectService(
+		projectStore,
+		&mock.AssingmentStore{},
+		teamStore,
+		issueStore,
+		&mock.MessageStore{},
+		&mock.MentionStore{},
+		analyticsStore,
+		mock.StartUnitOfWork,
+		bluemonday.NewPolicy(),
+		"localhost:8080",
+		"http",
+		"localhost:8080",
+		"http",
+		func() time.Time { return customTime },
+		slog.Default(),
+	)
+
+	req := &warnly.ListEventsRequest{
+		ProjectID: projectID,
+		IssueID:   issueID,
+		Query:     "",
+		Offset:    0,
+		User:      user,
+	}
+
+	result, err := svc.ListEvents(ctx, req)
+
+	require.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, projectID, result.ProjectID)
+	assert.Equal(t, issueID, result.IssueID)
+	assert.Equal(t, uint64(42), result.TotalEvents)
+	assert.Equal(t, 0, result.Offset)
+	assert.Len(t, result.Events, 2)
+	assert.Equal(t, "event-1", result.Events[0].EventID)
+	assert.Equal(t, "user@example.com", result.Events[0].UserEmail)
+	assert.Equal(t, "event-2", result.Events[1].EventID)
+}
+
+func TestListEventsNoEvents(t *testing.T) {
+	t.Parallel()
+
+	ctx := t.Context()
+	user := &warnly.User{ID: 1}
+	projectID := 5
+	teamID := 10
+	issueID := 100
+	customTime := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+
+	teamStore := &mock.TeamStore{
+		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
+			return []warnly.Team{
+				{ID: teamID, Name: "Team A"},
+			}, nil
+		},
+	}
+
+	projectStore := &mock.ProjectStore{
+		GetProjectFn: func(_ context.Context, _ int) (*warnly.Project, error) {
+			return &warnly.Project{
+				ID:     projectID,
+				TeamID: teamID,
+				Name:   "Test Project",
+			}, nil
+		},
+	}
+
+	issueStore := &mock.IssueStore{
+		GetIssueByIDFn: func(_ context.Context, _ int64) (*warnly.Issue, error) {
+			return &warnly.Issue{
+				ID:        int64(issueID),
+				ProjectID: projectID,
+				ErrorType: "TypeError",
+				Message:   "Test error",
+				FirstSeen: customTime.Add(-24 * time.Hour),
+			}, nil
+		},
+	}
+
+	analyticsStore := &mock.AnalyticsStore{
+		CountEventsFn: func(_ context.Context, _ *warnly.EventCriteria) (uint64, error) {
+			return 0, nil
+		},
+		ListEventsFn: func(_ context.Context, _ *warnly.EventCriteria) ([]warnly.EventEntry, error) {
+			return []warnly.EventEntry{}, nil
+		},
+	}
+
+	svc := project.NewProjectService(
+		projectStore,
+		&mock.AssingmentStore{},
+		teamStore,
+		issueStore,
+		&mock.MessageStore{},
+		&mock.MentionStore{},
+		analyticsStore,
+		mock.StartUnitOfWork,
+		bluemonday.NewPolicy(),
+		"localhost:8080",
+		"http",
+		"localhost:8080",
+		"http",
+		func() time.Time { return customTime },
+		slog.Default(),
+	)
+
+	req := &warnly.ListEventsRequest{
+		ProjectID: projectID,
+		IssueID:   issueID,
+		Query:     "",
+		Offset:    0,
+		User:      user,
+	}
+
+	result, err := svc.ListEvents(ctx, req)
+
+	require.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, uint64(0), result.TotalEvents)
+	assert.Empty(t, result.Events)
+}
