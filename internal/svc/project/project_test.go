@@ -2082,3 +2082,289 @@ func TestSearchProjectNotFound(t *testing.T) {
 	assert.Nil(t, result)
 	assert.Equal(t, warnly.ErrProjectNotFound, err)
 }
+
+func TestGetIssueSuccess(t *testing.T) {
+	t.Parallel()
+
+	ctx := t.Context()
+	user := &warnly.User{ID: 1}
+	projectID := 5
+	issueID := 100
+	teamID := 10
+	customTime := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
+	issueFirstSeen := customTime.Add(-30 * 24 * time.Hour)
+	lastSeen := customTime.Add(-1 * time.Hour)
+
+	teamStore := &mock.TeamStore{
+		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
+			return []warnly.Team{
+				{ID: teamID, Name: "Team A"},
+			}, nil
+		},
+		ListTeammatesFn: func(_ context.Context, _ []int) ([]warnly.Teammate, error) {
+			return []warnly.Teammate{
+				{ID: 1, Name: "John Doe", Email: "john@example.com"},
+				{ID: 2, Name: "Jane Smith", Email: "jane@example.com"},
+			}, nil
+		},
+	}
+
+	projectStore := &mock.ProjectStore{
+		GetProjectFn: func(_ context.Context, _ int) (*warnly.Project, error) {
+			return &warnly.Project{
+				ID:       projectID,
+				TeamID:   teamID,
+				Name:     "Test Project",
+				Platform: warnly.PlatformGolang,
+			}, nil
+		},
+	}
+
+	issueStore := &mock.IssueStore{
+		GetIssueByIDFn: func(_ context.Context, _ int64) (*warnly.Issue, error) {
+			return &warnly.Issue{
+				ID:        int64(issueID),
+				ProjectID: projectID,
+				ErrorType: "RuntimeError",
+				Message:   "Division by zero",
+				View:      "main.go:42",
+				FirstSeen: issueFirstSeen,
+				Priority:  warnly.PriorityHigh,
+			}, nil
+		},
+	}
+
+	analyticsStore := &mock.AnalyticsStore{
+		ListIssueMetricsFn: func(_ context.Context, _ *warnly.ListIssueMetricsCriteria) ([]warnly.IssueMetrics, error) {
+			return []warnly.IssueMetrics{
+				{
+					GID:       uint64(issueID),
+					FirstSeen: issueFirstSeen,
+					LastSeen:  lastSeen,
+					TimesSeen: 150,
+					UserCount: 25,
+				},
+			}, nil
+		},
+		CalculateEventsPerDayFn: func(_ context.Context, _ *warnly.EventDefCriteria) ([]warnly.EventPerDay, error) {
+			return []warnly.EventPerDay{
+				{Time: customTime, GID: uint64(issueID), Count: 25},
+				{Time: customTime.Add(-1 * 24 * time.Hour), GID: uint64(issueID), Count: 50},
+			}, nil
+		},
+		CalculateFieldsFn: func(_ context.Context, _ warnly.FieldsCriteria) ([]warnly.TagCount, error) {
+			return []warnly.TagCount{
+				{Tag: "browser", Count: 60},
+				{Tag: "os", Count: 150},
+			}, nil
+		},
+		CountFieldsFn: func(_ context.Context, _ *warnly.EventDefCriteria) ([]warnly.FieldValueNum, error) {
+			return []warnly.FieldValueNum{
+				{Tag: "browser", Value: "Chrome", Count: 40, PercentsOfTotal: 66.67},
+				{Tag: "browser", Value: "Firefox", Count: 20, PercentsOfTotal: 33.33},
+				{Tag: "os", Value: "Windows", Count: 90, PercentsOfTotal: 60},
+				{Tag: "os", Value: "macOS", Count: 60, PercentsOfTotal: 40},
+			}, nil
+		},
+		GetIssueEventFn: func(_ context.Context, _ *warnly.EventDefCriteria) (*warnly.IssueEvent, error) {
+			return &warnly.IssueEvent{
+				EventID:   "event-123",
+				UserID:    "user-456",
+				UserEmail: "test@example.com",
+				UserName:  "Test User",
+				Message:   "Division by zero at line 42",
+				TagsKey:   []string{"browser", "os"},
+				TagsValue: []string{"Chrome", "Windows"},
+			}, nil
+		},
+	}
+
+	messageStore := &mock.MessageStore{
+		CountMessagesFn: func(_ context.Context, _ int64) (int, error) {
+			return 3, nil
+		},
+	}
+
+	assignmentStore := &mock.AssingmentStore{
+		ListAssingmentsFn: func(_ context.Context, _ []int64) ([]*warnly.AssignedUser, error) {
+			return []*warnly.AssignedUser{
+				{
+					IssueID:          int64(issueID),
+					AssignedToUserID: sql.NullInt64{Int64: 1, Valid: true},
+				},
+			}, nil
+		},
+	}
+
+	svc := project.NewProjectService(
+		projectStore,
+		assignmentStore,
+		teamStore,
+		issueStore,
+		messageStore,
+		&mock.MentionStore{},
+		analyticsStore,
+		mock.StartUnitOfWork,
+		bluemonday.NewPolicy(),
+		"localhost:8080",
+		"http",
+		"localhost:8080",
+		"http",
+		func() time.Time { return customTime },
+		slog.Default(),
+	)
+
+	req := &warnly.GetIssueRequest{
+		User:      user,
+		ProjectID: projectID,
+		IssueID:   issueID,
+		Period:    "24h",
+		EventID:   "event-123",
+	}
+
+	result, err := svc.GetIssue(ctx, req)
+
+	require.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, int64(issueID), result.IssueID)
+	assert.Equal(t, projectID, result.ProjectID)
+	assert.Equal(t, "Test Project", result.ProjectName)
+	assert.Equal(t, "RuntimeError", result.ErrorType)
+	assert.Equal(t, "Division by zero", result.ErrorValue)
+	assert.Equal(t, "main.go:42", result.View)
+	assert.Equal(t, warnly.PriorityHigh, result.Priority)
+	assert.Equal(t, issueFirstSeen, result.FirstSeen)
+	assert.Equal(t, lastSeen, result.LastSeen)
+	assert.Equal(t, uint64(150), result.TimesSeen)
+	assert.Equal(t, uint64(25), result.UserCount)
+	assert.Equal(t, uint64(25), result.Total24Hours)
+	assert.Equal(t, uint64(75), result.Total30Days)
+	assert.Equal(t, 3, result.MessagesCount)
+	assert.Equal(t, warnly.PlatformGolang, result.Platform)
+	assert.Len(t, result.Teammates, 2)
+	assert.NotNil(t, result.Assignments)
+	assert.NotNil(t, result.LastEvent)
+	assert.Equal(t, "event-123", result.LastEvent.EventID)
+	assert.False(t, result.IsNew)
+}
+
+func TestAssignIssueSuccess(t *testing.T) {
+	t.Parallel()
+
+	ctx := t.Context()
+	user := &warnly.User{ID: 1}
+	targetUserID := 2
+	projectID := 5
+	issueID := 100
+	customTime := time.Date(2024, 1, 1, 12, 0, 0, 0, time.UTC)
+
+	teamStore := &mock.TeamStore{
+		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
+			return []warnly.Team{
+				{ID: 10, Name: "Team A"},
+			}, nil
+		},
+		ListTeammatesFn: func(_ context.Context, _ []int) ([]warnly.Teammate, error) {
+			return []warnly.Teammate{
+				{ID: 1, Name: "John Doe", Email: "john@example.com"},
+				{ID: 2, Name: "Jane Smith", Email: "jane@example.com"},
+			}, nil
+		},
+	}
+
+	assignmentStore := &mock.AssingmentStore{
+		CreateAssingmentFn: func(_ context.Context, assignment *warnly.Assignment) error {
+			assert.Equal(t, int64(issueID), assignment.IssueID)
+			assert.Equal(t, int64(targetUserID), assignment.AssignedToUserID)
+			assert.Equal(t, int64(1), assignment.AssignedByUserID)
+			assert.Equal(t, customTime, assignment.AssignedAt)
+			return nil
+		},
+	}
+
+	svc := project.NewProjectService(
+		&mock.ProjectStore{},
+		assignmentStore,
+		teamStore,
+		&mock.IssueStore{},
+		&mock.MessageStore{},
+		&mock.MentionStore{},
+		&mock.AnalyticsStore{},
+		mock.StartUnitOfWork,
+		bluemonday.NewPolicy(),
+		"localhost:8080",
+		"http",
+		"localhost:8080",
+		"http",
+		func() time.Time { return customTime },
+		slog.Default(),
+	)
+
+	req := &warnly.AssignIssueRequest{
+		User:      user,
+		ProjectID: projectID,
+		IssueID:   issueID,
+		UserID:    targetUserID,
+	}
+
+	err := svc.AssignIssue(ctx, req)
+
+	assert.NoError(t, err)
+}
+
+func TestDeleteAssignmentSuccess(t *testing.T) {
+	t.Parallel()
+
+	ctx := t.Context()
+	user := &warnly.User{ID: 1}
+	issueID := 100
+
+	teamStore := &mock.TeamStore{
+		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
+			return []warnly.Team{
+				{ID: 10, Name: "Team A"},
+			}, nil
+		},
+		ListTeammatesFn: func(_ context.Context, _ []int) ([]warnly.Teammate, error) {
+			return []warnly.Teammate{
+				{ID: 1, Name: "John Doe", Email: "john@example.com"},
+				{ID: 2, Name: "Jane Smith", Email: "jane@example.com"},
+			}, nil
+		},
+	}
+
+	assignmentStore := &mock.AssingmentStore{
+		DeleteAssignmentFn: func(_ context.Context, id int64) error {
+			assert.Equal(t, int64(issueID), id)
+			return nil
+		},
+	}
+
+	svc := project.NewProjectService(
+		&mock.ProjectStore{},
+		assignmentStore,
+		teamStore,
+		&mock.IssueStore{},
+		&mock.MessageStore{},
+		&mock.MentionStore{},
+		&mock.AnalyticsStore{},
+		mock.StartUnitOfWork,
+		bluemonday.NewPolicy(),
+		"localhost:8080",
+		"http",
+		"localhost:8080",
+		"http",
+		time.Now,
+		slog.Default(),
+	)
+
+	req := &warnly.UnassignIssueRequest{
+		User:      user,
+		ProjectID: 5,
+		IssueID:   issueID,
+	}
+
+	err := svc.DeleteAssignment(ctx, req)
+
+	assert.NoError(t, err)
+}
