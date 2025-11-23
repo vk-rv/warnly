@@ -719,6 +719,18 @@ func (s *ProjectService) GetIssue(ctx context.Context, req *warnly.GetIssueReque
 		return nil, err
 	}
 
+	nextID, prevID, firstID, lastID, err := s.getEventPaginationIDs(
+		ctx,
+		project.ID,
+		int(issue.ID),
+		event.EventID,
+		event.CreatedAt,
+		to,
+	)
+	if err != nil {
+		return nil, err
+	}
+
 	messagesCount, err := s.messageStore.CountMessages(ctx, int64(req.IssueID))
 	if err != nil {
 		return nil, err
@@ -762,6 +774,10 @@ func (s *ProjectService) GetIssue(ctx context.Context, req *warnly.GetIssueReque
 		Assignments:   assignments,
 		Teammates:     teammates,
 		Request:       req,
+		NextEventID:   nextID,
+		PrevEventID:   prevID,
+		FirstEventID:  firstID,
+		LastEventID:   lastID,
 	}, nil
 }
 
@@ -1522,4 +1538,40 @@ func (s *ProjectService) getTimeRangeFromPeriod(period string) (from, to time.Ti
 	now := s.now().UTC()
 
 	return now.Add(-dur), now, nil
+}
+
+func (s *ProjectService) getEventPaginationIDs(
+	ctx context.Context,
+	projectID, groupID int,
+	eventID string,
+	createdAt, to time.Time,
+) (nextID, prevID, firstID, lastID *string, err error) {
+	pagination, err := s.analyticsStore.GetEventPagination(ctx, &warnly.EventPaginationCriteria{
+		ProjectID: projectID,
+		GroupID:   groupID,
+		EventID:   eventID,
+		CreatedAt: createdAt,
+		From:      to.Add(-360 * 24 * time.Hour),
+		To:        to,
+	})
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+
+	if pagination != nil {
+		if pagination.NextEventID != "" && pagination.NextEventID != eventID {
+			nextID = &pagination.NextEventID
+		}
+		if pagination.PrevEventID != "" && pagination.PrevEventID != eventID {
+			prevID = &pagination.PrevEventID
+		}
+		if pagination.FirstEventID != "" && pagination.FirstEventID != eventID {
+			firstID = &pagination.FirstEventID
+		}
+		if pagination.LastEventID != "" && pagination.LastEventID != eventID {
+			lastID = &pagination.LastEventID
+		}
+	}
+
+	return nextID, prevID, firstID, lastID, nil
 }

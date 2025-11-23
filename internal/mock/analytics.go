@@ -27,6 +27,7 @@ type AnalyticsStore struct {
 	ListPopularTagsFn       func(ctx context.Context, criteria *warnly.ListPopularTagsCriteria) ([]warnly.TagCount, error)
 	ListTagValuesFn         func(ctx context.Context, criteria *warnly.ListTagValuesCriteria) ([]warnly.TagValueCount, error)
 	GetFilteredGroupIDsFn   func(ctx context.Context, tokens []warnly.QueryToken, from, to time.Time, projectIDs []int) ([]int64, error)
+	GetEventPaginationFn    func(ctx context.Context, c *warnly.EventPaginationCriteria) (*warnly.EventPagination, error)
 }
 
 func (m *AnalyticsStore) CalculateEvents(
@@ -136,4 +137,14 @@ func (m *AnalyticsStore) GetFilteredGroupIDs(
 	projectIDs []int,
 ) ([]int64, error) {
 	return m.GetFilteredGroupIDsFn(ctx, tokens, from, to, projectIDs)
+}
+
+func (m *AnalyticsStore) GetEventPagination(
+	ctx context.Context,
+	c *warnly.EventPaginationCriteria,
+) (*warnly.EventPagination, error) {
+	if m.GetEventPaginationFn != nil {
+		return m.GetEventPaginationFn(ctx, c)
+	}
+	return &warnly.EventPagination{}, nil
 }

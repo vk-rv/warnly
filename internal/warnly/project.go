@@ -442,6 +442,7 @@ type IssueEvent struct {
 	UserName                string
 	UserUsername            string
 	EventID                 string
+	CreatedAt               time.Time
 	Env                     string
 	Release                 string
 	TagsKey                 []string
@@ -462,6 +463,10 @@ type IssueDetails struct {
 	LastEvent     *IssueEvent
 	Assignments   *Assignments
 	Request       *GetIssueRequest
+	NextEventID   *string
+	PrevEventID   *string
+	FirstEventID  *string
+	LastEventID   *string
 	View          string
 	ErrorValue    string
 	Message       string

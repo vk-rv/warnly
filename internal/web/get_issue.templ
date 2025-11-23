@@ -95,6 +95,44 @@ templ GetIssueContent(issue *warnly.IssueDetails, user *warnly.User) {
 						<path fill-rule="evenodd" clip-rule="evenodd" d="M8 2H16C17.1 2 18 2.9 18 4V6H16V4H8V6H6V4C6 2.9 6.9 2 8 2ZM6 8H18C19.1 8 20 8.9 20 10V20C20 21.1 19.1 22 18 22H6C4.9 22 4 21.1 4 20V10C4 8.9 4.9 8 6 8ZM6 10V20H18V10H6Z" fill="currentColor"></path>
 					</svg>
 				</div>
+				<div class="flex items-center space-x-2">
+					if issue.LastEventID != nil {
+						<a hx-target="#issue_content" hx-swap="outerHTML settle:0" hx-push-url="true" hx-get={ fmt.Sprintf("/projects/%d/issues/%d?period=%s&source=issue&event_id=%s", issue.ProjectID, issue.IssueID, issue.Request.Period, *issue.LastEventID) } class="px-3 md:px-4 cursor-pointer py-2 text-xs md:text-sm border rounded-lg hover:bg-gray-50 flex items-center justify-center border-gray-300" title="Oldest">
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path></svg>
+						</a>
+					} else {
+						<span class="px-3 md:px-4 py-2 text-xs md:text-sm border rounded-lg flex items-center justify-center border-gray-200 cursor-not-allowed opacity-60 bg-gray-100 hover:bg-gray-100">
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path></svg>
+						</span>
+					}
+					if issue.NextEventID != nil {
+						<a hx-target="#issue_content" hx-swap="outerHTML settle:0" hx-push-url="true" hx-get={ fmt.Sprintf("/projects/%d/issues/%d?period=%s&source=issue&event_id=%s", issue.ProjectID, issue.IssueID, issue.Request.Period, *issue.NextEventID) } class="px-3 md:px-4 cursor-pointer py-2 text-xs md:text-sm border rounded-lg hover:bg-gray-50 flex items-center justify-center border-gray-300" title="Older">
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+						</a>
+					} else {
+						<span class="px-3 md:px-4 py-2 text-xs md:text-sm border rounded-lg flex items-center justify-center border-gray-200 cursor-not-allowed opacity-60 bg-gray-100 hover:bg-gray-100">
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+						</span>
+					}
+					if issue.PrevEventID != nil {
+						<a hx-target="#issue_content" hx-swap="outerHTML settle:0" hx-push-url="true" hx-get={ fmt.Sprintf("/projects/%d/issues/%d?period=%s&source=issue&event_id=%s", issue.ProjectID, issue.IssueID, issue.Request.Period, *issue.PrevEventID) } class="px-3 md:px-4 cursor-pointer py-2 text-xs md:text-sm border rounded-lg hover:bg-gray-50 flex items-center justify-center border-gray-300" title="Newer">
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+						</a>
+					} else {
+						<span class="px-3 md:px-4 py-2 text-xs md:text-sm border rounded-lg flex items-center justify-center border-gray-200 cursor-not-allowed opacity-60 bg-gray-100 hover:bg-gray-100">
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+						</span>
+					}
+					if issue.FirstEventID != nil {
+						<a hx-target="#issue_content" hx-swap="outerHTML settle:0" hx-push-url="true" hx-get={ fmt.Sprintf("/projects/%d/issues/%d?period=%s&source=issue&event_id=%s", issue.ProjectID, issue.IssueID, issue.Request.Period, *issue.FirstEventID) } class="px-3 md:px-4 cursor-pointer py-2 text-xs md:text-sm border rounded-lg hover:bg-gray-50 flex items-center justify-center border-gray-300" title="Newest">
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg>
+						</a>
+					} else {
+						<span class="px-3 md:px-4 py-2 text-xs md:text-sm border rounded-lg flex items-center justify-center border-gray-200 cursor-not-allowed opacity-60 bg-gray-100 hover:bg-gray-100">
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path></svg>
+						</span>
+					}
+				</div>
 			</div>
 			if issue.LastEvent.UserID != "" {
 				<div class="bg-white rounded-lg mb-6 max-lg:mb-4">

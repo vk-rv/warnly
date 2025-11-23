@@ -2,6 +2,8 @@ package ch
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -215,6 +217,7 @@ func (s *ClickhouseStore) GetIssueEvent(ctx context.Context, c *warnly.EventDefC
 
 	if c.EventID != "" {
 		query = `SELECT replaceAll(toString(event_id), '-', '') AS event_id,
+			created_at,
 			env, release,
 			user, user_username, user_name, user_email,
 			tags.key, tags.value, contexts.key, contexts.value, message,
@@ -230,6 +233,7 @@ func (s *ClickhouseStore) GetIssueEvent(ctx context.Context, c *warnly.EventDefC
 		args = []any{c.EventID, c.ProjectID, c.GroupID}
 	} else {
 		query = `SELECT replaceAll(toString(event_id), '-', '') AS event_id,
+			created_at,
 			env, release,
 			user, user_username, user_name, user_email,
 			tags.key, tags.value, contexts.key, contexts.value, message,
@@ -260,6 +264,7 @@ func (s *ClickhouseStore) GetIssueEvent(ctx context.Context, c *warnly.EventDefC
 	if rows.Next() {
 		if err := rows.Scan(
 			&i.EventID,
+			&i.CreatedAt,
 			&i.Env,
 			&i.Release,
 			&i.UserID,
@@ -578,6 +583,92 @@ func (s *ClickhouseStore) CountEvents(ctx context.Context, criteria *warnly.Even
 	return count, nil
 }
 
+// GetEventPagination returns the pagination for an event.
+func (s *ClickhouseStore) GetEventPagination(
+	ctx context.Context,
+	c *warnly.EventPaginationCriteria,
+) (*warnly.EventPagination, error) {
+	ctx, span := s.tracer.Start(ctx, "ClickhouseStore.GetEventPagination")
+	defer span.End()
+
+	p := &warnly.EventPagination{}
+
+	const queryFirst = `SELECT replaceAll(toString(event_id), '-', '') FROM event 
+		WHERE deleted = 0 AND pid = ? AND gid = ? 
+		AND created_at >= toDateTime(?, 'UTC') AND created_at <= toDateTime(?, 'UTC')
+		ORDER BY created_at DESC LIMIT 1`
+	if err := s.conn.QueryRow(
+		ctx,
+		queryFirst,
+		c.ProjectID,
+		c.GroupID,
+		c.From,
+		c.To).
+		Scan(&p.FirstEventID); err != nil {
+		if !errors.Is(err, sql.ErrNoRows) {
+			return nil, fmt.Errorf("clickhouse: get event pagination query first: %w", err)
+		}
+	}
+
+	const queryLast = `SELECT replaceAll(toString(event_id), '-', '') FROM event 
+		WHERE deleted = 0 AND pid = ? AND gid = ? 
+		AND created_at >= toDateTime(?, 'UTC') AND created_at <= toDateTime(?, 'UTC')
+		ORDER BY created_at ASC LIMIT 1`
+	if err := s.conn.QueryRow(
+		ctx,
+		queryLast,
+		c.ProjectID,
+		c.GroupID,
+		c.From,
+		c.To).Scan(&p.LastEventID); err != nil {
+		if !errors.Is(err, sql.ErrNoRows) {
+			return nil, fmt.Errorf("clickhouse: get event pagination query last: %w", err)
+		}
+	}
+
+	const queryNext = `SELECT replaceAll(toString(event_id), '-', '') FROM event 
+		WHERE deleted = 0 AND pid = ? AND gid = ? 
+		AND created_at >= toDateTime(?, 'UTC') AND created_at <= toDateTime(?, 'UTC')
+		AND (created_at < toDateTime(?, 'UTC') OR (created_at = toDateTime(?, 'UTC') AND event_id < toUUID(?)))
+		ORDER BY created_at DESC, event_id DESC LIMIT 1`
+	if err := s.conn.QueryRow(
+		ctx,
+		queryNext,
+		c.ProjectID,
+		c.GroupID,
+		c.From,
+		c.To,
+		c.CreatedAt,
+		c.CreatedAt,
+		c.EventID).Scan(&p.NextEventID); err != nil {
+		if !errors.Is(err, sql.ErrNoRows) {
+			return nil, fmt.Errorf("clickhouse: get event pagination query next: %w", err)
+		}
+	}
+
+	const queryPrev = `SELECT replaceAll(toString(event_id), '-', '') FROM event 
+		WHERE deleted = 0 AND pid = ? AND gid = ? 
+		AND created_at >= toDateTime(?, 'UTC') AND created_at <= toDateTime(?, 'UTC')
+		AND (created_at > toDateTime(?, 'UTC') OR (created_at = toDateTime(?, 'UTC') AND event_id > toUUID(?)))
+		ORDER BY created_at ASC, event_id ASC LIMIT 1`
+	if err := s.conn.QueryRow(
+		ctx,
+		queryPrev,
+		c.ProjectID,
+		c.GroupID,
+		c.From,
+		c.To,
+		c.CreatedAt,
+		c.CreatedAt,
+		c.EventID).Scan(&p.PrevEventID); err != nil {
+		if !errors.Is(err, sql.ErrNoRows) {
+			return nil, fmt.Errorf("clickhouse: get event pagination query prev: %w", err)
+		}
+	}
+
+	return p, nil
+}
+
 // ListSchemas lists olap database schemas from largest to smallest.
 func (s *ClickhouseStore) ListSchemas(ctx context.Context) ([]warnly.Schema, error) {
 	ctx, span := s.tracer.Start(ctx, "ClickhouseStore.ListSchemas")
@@ -645,20 +736,20 @@ func (s *ClickhouseStore) ListErrors(ctx context.Context, c warnly.ListErrorsCri
 		}
 	}()
 
-	errors := make([]warnly.AnalyticsStoreErr, 0, 10)
+	errs := make([]warnly.AnalyticsStoreErr, 0, 10)
 	for rows.Next() {
 		var e warnly.AnalyticsStoreErr
 		if err := rows.Scan(&e.Name, &e.Count, &e.MaxLastErrorTime); err != nil {
 			return nil, fmt.Errorf("clickhouse: list errors, scan result: %w", err)
 		}
-		errors = append(errors, e)
+		errs = append(errs, e)
 	}
 
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("clickhouse: list errors, rows.Err: %w", err)
 	}
 
-	return errors, nil
+	return errs, nil
 }
 
 // ListSlowQueries lists slow SQL queries from the olap system and their statistics.

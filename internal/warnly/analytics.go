@@ -46,6 +46,24 @@ type AnalyticsStore interface {
 	ListTagValues(ctx context.Context, criteria *ListTagValuesCriteria) ([]TagValueCount, error)
 	// GetFilteredGroupIDs returns group IDs that match the query filters.
 	GetFilteredGroupIDs(ctx context.Context, tokens []QueryToken, from, to time.Time, projectIDs []int) ([]int64, error)
+	// GetEventPagination returns the pagination for an event.
+	GetEventPagination(ctx context.Context, c *EventPaginationCriteria) (*EventPagination, error)
+}
+
+type EventPaginationCriteria struct {
+	CreatedAt time.Time
+	From      time.Time
+	To        time.Time
+	EventID   string
+	ProjectID int
+	GroupID   int
+}
+
+type EventPagination struct {
+	NextEventID  string
+	PrevEventID  string
+	FirstEventID string
+	LastEventID  string
 }
 
 type FieldFilterCriteria struct {
