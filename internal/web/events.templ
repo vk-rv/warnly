@@ -170,7 +170,7 @@ func paginationSummary(res *warnly.ListEventsResult) string {
 
 templ eventSearchBar(res *warnly.ListEventsResult) {
 	<div
-		x-data={ fmt.Sprintf("searchInput(%s, %s, { period: '%s' })", getEventSearchTokens(res.Request), getEventPopularTagsCategories(res.PopularTags), res.Request.Period) }
+		x-data={ buildEventSearchOptions(res) }
 		class="search-container w-full"
 		@click.away="closeAllDropdowns()"
 	>
@@ -354,6 +354,26 @@ func getEventPopularTagsCategories(tags []warnly.TagCount) string {
 	jsonBytes, _ := json.Marshal(categories)
 
 	return string(jsonBytes)
+}
+
+func buildEventSearchOptions(res *warnly.ListEventsResult) string {
+	options := map[string]string{}
+	if res.Request.Period != "" {
+		options["period"] = res.Request.Period
+	} else {
+		if res.Request.Start != "" {
+			options["start"] = res.Request.Start
+		}
+		if res.Request.End != "" {
+			options["end"] = res.Request.End
+		}
+	}
+
+	optionsJSON, _ := json.Marshal(options)
+	tokens := getEventSearchTokens(res.Request)
+	categories := getEventPopularTagsCategories(res.PopularTags)
+
+	return fmt.Sprintf("searchInput(%s, %s, %s)", tokens, categories, string(optionsJSON))
 }
 
 templ timePeriodSelector(initialPeriod, start, end string) {

@@ -192,6 +192,8 @@ type ListTagValuesRequest struct {
 	Tag         string
 	ProjectName string
 	Period      string
+	Start       string
+	End         string
 	Limit       int
 }
 

@@ -166,7 +166,19 @@ window.searchInput = function(initialTokens, filterCategories, options) {
     },
 
     loadTagValues(tag) {
-      const url = `/api/search/tag-values?tag=${encodeURIComponent(tag)}&project_name=${encodeURIComponent(this.getProjectName())}&period=${encodeURIComponent(this.getPeriod())}`;
+      let url = `/api/search/tag-values?tag=${encodeURIComponent(tag)}&project_name=${encodeURIComponent(this.getProjectName())}`;
+      
+      const period = this.getPeriod();
+      if (period) {
+        url += `&period=${encodeURIComponent(period)}`;
+      }
+      
+      const start = this.getStart();
+      const end = this.getEnd();
+      if (start && end) {
+        url += `&start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
+      }
+
       fetch(url)
         .then(response => response.json())
         .then(data => {
@@ -200,7 +212,23 @@ window.searchInput = function(initialTokens, filterCategories, options) {
         return this.options.period;
       }
       const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get('period') || '14d';
+      return urlParams.get('period');
+    },
+
+    getStart() {
+      if (this.options.start) {
+        return this.options.start;
+      }
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get('start');
+    },
+
+    getEnd() {
+      if (this.options.end) {
+        return this.options.end;
+      }
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get('end');
     },
 
     setActiveCategory(index) {

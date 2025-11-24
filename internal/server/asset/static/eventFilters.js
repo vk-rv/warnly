@@ -24,7 +24,7 @@ window.eventFilters = function(initialData) {
             });
         },
         offset: initialData.offset || 0,
-        period: initialData.period || '14d',
+        period: initialData.period,
         startDate: initialData.start || '',
         endDate: initialData.end || '',
         eventCount: initialData.eventCount || 0,

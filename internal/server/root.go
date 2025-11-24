@@ -294,6 +294,8 @@ func (h *rootHandler) listTagValues(w http.ResponseWriter, r *http.Request) {
 	tag := r.URL.Query().Get("tag")
 	projectName := r.URL.Query().Get("project_name")
 	period := r.URL.Query().Get("period")
+	start := r.URL.Query().Get("start")
+	end := r.URL.Query().Get("end")
 	limitStr := r.URL.Query().Get("limit")
 	limit := 100
 	if limitStr != "" {
@@ -307,6 +309,8 @@ func (h *rootHandler) listTagValues(w http.ResponseWriter, r *http.Request) {
 		Tag:         tag,
 		ProjectName: projectName,
 		Period:      period,
+		Start:       start,
+		End:         end,
 		Limit:       limit,
 	}
 

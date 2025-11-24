@@ -190,9 +190,9 @@ func eventSearchBar(res *warnly.ListEventsResult) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var5 string
-		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("searchInput(%s, %s, { period: '%s' })", getEventSearchTokens(res.Request), getEventPopularTagsCategories(res.PopularTags), res.Request.Period))
+		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(buildEventSearchOptions(res))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/events.templ`, Line: 173, Col: 166}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/events.templ`, Line: 173, Col: 39}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
@@ -306,6 +306,26 @@ func getEventPopularTagsCategories(tags []warnly.TagCount) string {
 	return string(jsonBytes)
 }
 
+func buildEventSearchOptions(res *warnly.ListEventsResult) string {
+	options := map[string]string{}
+	if res.Request.Period != "" {
+		options["period"] = res.Request.Period
+	} else {
+		if res.Request.Start != "" {
+			options["start"] = res.Request.Start
+		}
+		if res.Request.End != "" {
+			options["end"] = res.Request.End
+		}
+	}
+
+	optionsJSON, _ := json.Marshal(options)
+	tokens := getEventSearchTokens(res.Request)
+	categories := getEventPopularTagsCategories(res.PopularTags)
+
+	return fmt.Sprintf("searchInput(%s, %s, %s)", tokens, categories, string(optionsJSON))
+}
+
 func timePeriodSelector(initialPeriod, start, end string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
@@ -334,7 +354,7 @@ func timePeriodSelector(initialPeriod, start, end string) templ.Component {
 		var templ_7745c5c3_Var9 string
 		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("timePeriodSelector('%s', '%s', '%s')", getPeriodOrDefault(initialPeriod), start, end))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/events.templ`, Line: 360, Col: 135}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/events.templ`, Line: 380, Col: 135}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 		if templ_7745c5c3_Err != nil {

@@ -1000,9 +1000,23 @@ func (s *ProjectService) ListTagValues(ctx context.Context, req *warnly.ListTagV
 		return nil, err
 	}
 
-	from, to, err := s.getTimeRangeFromPeriod(req.Period)
-	if err != nil {
-		return nil, err
+	var from, to time.Time
+	if req.Period == "" && req.Start == "" && req.End == "" {
+		req.Period = defaultPeriod
+	}
+	if req.Period != "" {
+		dur, err := warnly.ParseDuration(req.Period)
+		if err != nil {
+			return nil, err
+		}
+		now := s.now().UTC()
+		from = now.Add(-dur)
+		to = now
+	} else {
+		from, to, err = warnly.ParseTimeRange(req.Start, req.End)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	criteria := &warnly.ListTagValuesCriteria{
