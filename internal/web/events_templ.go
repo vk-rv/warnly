@@ -49,14 +49,14 @@ func Events(res *warnly.ListEventsResult) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\" @click.away=\"hideContextMenu()\"><div class=\"mb-4 relative\"><div class=\"flex items-center gap-2 p-2 bg-white border border-border rounded-lg min-h-[40px] flex-wrap\"><template x-for=\"(filter, index) in filters\" :key=\"index\"><div class=\"flex items-center gap-1 bg-gray-100 px-2 py-1 rounded text-sm\"><span x-text=\"filter.key\"></span> <span x-text=\"filter.operator\"></span> <span x-text=\"filter.value\" class=\"text-black font-bold\"></span> <button @click=\"removeFilter(index)\" class=\"ml-1 text-gray-500 hover:text-gray-700\">×</button></div></template><input type=\"text\" x-model=\"searchQuery\" placeholder=\"Search errors...\" class=\"flex-1 outline-none bg-transparent min-w-[200px]\"></div></div><div x-show=\"contextMenu.show\" x-transition :style=\"`position: fixed; left: ${contextMenu.x}px; top: ${contextMenu.y}px`\" class=\"bg-white border border-border rounded-lg shadow-lg py-1 z-50\" @click.away=\"hideContextMenu\"><button @click=\"addFilter(contextMenu.column, contextMenu.value)\" class=\"w-full px-4 py-2 text-sm text-left hover:bg-gray-50\">Add to filter</button> <button @click=\"excludeFromFilter(contextMenu.column, contextMenu.value)\" class=\"w-full px-4 py-2 text-sm text-left hover:bg-gray-50\">Exclude from filter</button></div><div class=\"overflow-x-auto border border-border rounded-lg\"><div class=\"p-4 border-t border-border flex items-center justify-end gap-4 text-xs text-gray-500\"><span>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\" @click.away=\"hideContextMenu()\"><div class=\"mb-4 relative\"><div class=\"flex items-center gap-2 p-2 bg-white border border-border rounded-lg min-h-[40px] flex-wrap\"><template x-for=\"(filter, index) in filters\" :key=\"index\"><div class=\"flex items-center gap-1 bg-gray-100 px-2 py-1 rounded text-sm\"><span x-text=\"filter.key\"></span> <span x-text=\"filter.operator\"></span> <span x-text=\"filter.value\" class=\"text-black font-bold\"></span> <button @click=\"removeFilter(index)\" class=\"ml-1 text-gray-500 hover:text-gray-700\">×</button></div></template><input type=\"text\" x-model=\"searchQuery\" placeholder=\"Search errors...\" class=\"flex-1 outline-none bg-transparent min-w-[200px]\"></div></div><div x-show=\"contextMenu.show\" x-transition :style=\"`position: fixed; left: ${contextMenu.x}px; top: ${contextMenu.y}px`\" class=\"bg-white border border-border rounded-lg shadow-lg py-1 z-50\" @click.away=\"hideContextMenu\"></div><div class=\"overflow-x-auto border border-border rounded-lg\"><div class=\"p-4 border-t border-border flex items-center justify-end gap-4 text-xs text-gray-500\"><span>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(paginationSummary(res))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/events.templ`, Line: 57, Col: 30}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/events.templ`, Line: 45, Col: 30}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -69,7 +69,7 @@ func Events(res *warnly.ListEventsResult) templ.Component {
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("paginatePrev('%d', '%d')", res.ProjectID, res.IssueID))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/events.templ`, Line: 60, Col: 90}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/events.templ`, Line: 48, Col: 90}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
@@ -82,13 +82,13 @@ func Events(res *warnly.ListEventsResult) templ.Component {
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("paginateNext('%d', '%d')", res.ProjectID, res.IssueID))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/events.templ`, Line: 65, Col: 90}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/events.templ`, Line: 53, Col: 90}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\" class=\"p-1 cursor-pointer rounded border border-border\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M9 5l7 7-7 7\"></path></svg></button></div></div><table id=\"eventtable\" class=\"w-full\"><thead><tr class=\"border-b border-border bg-gray-50\"><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">ID</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">CREATED</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">TITLE</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">RELEASE</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">ENVIRONMENT</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">USER</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">OS</th></tr></thead> <tbody><template x-for=\"event in events\" :key=\"event.id\"><tr class=\"border-b border-border hover:bg-gray-50\"><td @contextmenu.prevent=\"showContextMenu($event, 'event.id', event.id)\" @click=\"\n\t\t\t\t\t\t\t\t\t\tnavigateToEvent(event.full_id); \n\t\t\t\t\t\t\t\t\t\tactiveTab = 'details';\n\t\t\t\t\t\t\t\t\t\" class=\"px-4 py-2 text-sm text-black cursor-pointer font-semibold\" x-text=\"event.id\"></td><td @contextmenu.prevent=\"showContextMenu($event, 'timestamp', event.timestamp)\" class=\"px-4 py-2 text-sm\" x-text=\"event.timestamp\"></td><td @contextmenu.prevent=\"showContextMenu($event, 'title', event.title)\" class=\"px-4 py-2 text-sm\" x-text=\"event.title\"></td><td @contextmenu.prevent=\"showContextMenu($event, 'release', event.release)\" class=\"px-4 py-2 text-sm text-black\" x-text=\"event.release\"></td><td @contextmenu.prevent=\"showContextMenu($event, 'environment', event.environment)\" class=\"px-4 py-2 text-sm relative group\"><div class=\"flex items-center gap-1\"><span x-text=\"event.environment\"></span> <button @click=\"showContextMenu($event, 'environment', event.environment)\" class=\"opacity-0 group-hover:opacity-100 text-gray-400\">•••</button></div></td><td @contextmenu.prevent=\"showContextMenu($event, 'user', event.user)\" class=\"px-4 py-2 text-sm text-gray-500\" x-text=\"event.user\"></td><td @contextmenu.prevent=\"showContextMenu($event, 'os', event.os)\" class=\"px-4 py-2 text-sm text-gray-500\" x-text=\"event.os\"></td></tr></template></tbody></table></div></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\" class=\"p-1 cursor-pointer rounded border border-border\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M9 5l7 7-7 7\"></path></svg></button></div></div><table id=\"eventtable\" class=\"w-full\"><thead><tr class=\"border-b border-border bg-gray-50\"><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">ID</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">CREATED</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">TITLE</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">RELEASE</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">ENVIRONMENT</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">USER</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">OS</th></tr></thead> <tbody><template x-for=\"event in events\" :key=\"event.id\"><tr class=\"border-b border-border hover:bg-gray-50\"><td @contextmenu.prevent=\"showContextMenu($event, 'event.id', event.id)\" @click=\"\n\t\t\t\t\t\t\t\t\t\tnavigateToEvent(event.full_id); \n\t\t\t\t\t\t\t\t\t\tactiveTab = 'details';\n\t\t\t\t\t\t\t\t\t\" class=\"px-4 py-2 text-sm text-black cursor-pointer font-semibold\" x-text=\"event.id\"></td><td class=\"px-4 py-2 text-sm\" x-text=\"event.timestamp\"></td><td class=\"px-4 py-2 text-sm\" x-text=\"event.title\"></td><td class=\"px-4 py-2 text-sm text-black\" x-text=\"event.release\"></td><td class=\"px-4 py-2 text-sm relative group\"><div class=\"flex items-center gap-1\"><span x-text=\"event.environment\"></span></div></td><td class=\"px-4 py-2 text-sm text-gray-500\" x-text=\"event.user\"></td><td class=\"px-4 py-2 text-sm text-gray-500\" x-text=\"event.os\"></td></tr></template></tbody></table></div></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -151,25 +151,6 @@ func alpineData(res *warnly.ListEventsResult) string {
 		},
 		removeFilter(index) {
 			this.filters.splice(index, 1)
-		},
-		addFilter(column, value) {
-			this.filters.push({ key: column, operator: 'is', value: value })
-			this.contextMenu.show = false
-		},
-		excludeFromFilter(column, value) {
-			this.filters.push({ key: column, operator: 'is not', value: value })
-			this.contextMenu.show = false
-		},
-		showContextMenu(event, column, value) {
-			event.preventDefault()
-			this.contextMenu.show = true
-			this.contextMenu.x = event.clientX
-			this.contextMenu.y = event.clientY
-			this.contextMenu.column = column
-			this.contextMenu.value = value
-		},
-		hideContextMenu() {
-			this.contextMenu.show = false
 		},
 		navigateToEvent(eventId) {
 			const url = new URL('/projects/' + %s + '/issues/' + %s, window.location.origin);
