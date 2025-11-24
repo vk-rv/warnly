@@ -414,44 +414,10 @@ func (s *ProjectService) ListFields(ctx context.Context, req *warnly.ListFieldsR
 	}, nil
 }
 
-// parseSearchQuery parses the search query into raw text and structured key-value pairs.
-func parseSearchQuery(query string) (raw string, structured map[string]warnly.QueryValue, err error) {
-	raw = query
-	structured = make(map[string]warnly.QueryValue)
-
-	if query == "" {
-		return raw, structured, nil
-	}
-
-	parts := strings.Split(query, " ")
-	for _, part := range parts {
-		if strings.Contains(part, ":") {
-			kv := strings.Split(part, ":")
-			if len(kv) != 2 {
-				return "", nil, fmt.Errorf("invalid query: %s", query)
-			}
-			key := kv[0]
-			value := kv[1]
-			queryValue := warnly.QueryValue{Value: value}
-			if strings.HasPrefix(key, "!") {
-				queryValue.IsNot = true
-				key = strings.TrimPrefix(key, "!")
-			}
-			structured[key] = queryValue
-		} else {
-			raw = part
-		}
-	}
-
-	return raw, structured, nil
-}
-
 // ListEvents handles "All Errors" page showing all error events per issue.
 func (s *ProjectService) ListEvents(ctx context.Context, req *warnly.ListEventsRequest) (*warnly.ListEventsResult, error) {
-	raw, structured, err := parseSearchQuery(req.Query)
-	if err != nil {
-		return nil, err
-	}
+	tokens := warnly.ParseQuery(req.Query)
+	raw, structured := convertTokensToCriteria(tokens)
 
 	project, err := s.GetProject(ctx, req.ProjectID, req.User)
 	if err != nil {
@@ -463,13 +429,32 @@ func (s *ProjectService) ListEvents(ctx context.Context, req *warnly.ListEventsR
 		return nil, err
 	}
 
+	var from, to time.Time
 	now := s.now().UTC()
+
+	switch {
+	case req.Period != "":
+		dur, err := warnly.ParseDuration(req.Period)
+		if err != nil {
+			return nil, err
+		}
+		from = now.Add(-dur)
+		to = now
+	case req.Start != "" && req.End != "":
+		from, to, err = warnly.ParseTimeRange(req.Start, req.End)
+		if err != nil {
+			return nil, err
+		}
+	default:
+		from = issue.FirstSeen.Add(-time.Second * 1)
+		to = now
+	}
 
 	criteria := &warnly.EventCriteria{
 		ProjectID: project.ID,
 		GroupID:   req.IssueID,
-		From:      issue.FirstSeen.Add(-time.Second * 1),
-		To:        now,
+		From:      from,
+		To:        to,
 		Message:   raw,
 		Tags:      structured,
 		Limit:     defaultLimit,
@@ -486,12 +471,24 @@ func (s *ProjectService) ListEvents(ctx context.Context, req *warnly.ListEventsR
 		return nil, err
 	}
 
+	popularTags, err := s.analyticsStore.CalculateFields(ctx, warnly.FieldsCriteria{
+		IssueID:   req.IssueID,
+		ProjectID: project.ID,
+		From:      from,
+		To:        to,
+	})
+	if err != nil {
+		return nil, err
+	}
+
 	return &warnly.ListEventsResult{
 		TotalEvents: totalEvents,
 		Events:      events,
 		ProjectID:   project.ID,
 		IssueID:     req.IssueID,
 		Offset:      req.Offset,
+		Request:     req,
+		PopularTags: popularTags,
 	}, nil
 }
 
@@ -1574,4 +1571,24 @@ func (s *ProjectService) getEventPaginationIDs(
 	}
 
 	return nextID, prevID, firstID, lastID, nil
+}
+
+func convertTokensToCriteria(tokens []warnly.QueryToken) (string, map[string]warnly.QueryValue) {
+	rawBuilder := strings.Builder{}
+	structured := make(map[string]warnly.QueryValue)
+	for i := range tokens {
+		if tokens[i].IsRawText {
+			if rawBuilder.Len() > 0 {
+				rawBuilder.WriteString(" ")
+			}
+			rawBuilder.WriteString(tokens[i].Value)
+		} else {
+			structured[tokens[i].Key] = warnly.QueryValue{
+				Value: tokens[i].Value,
+				IsNot: tokens[i].Operator == "is not",
+			}
+		}
+	}
+
+	return rawBuilder.String(), structured
 }

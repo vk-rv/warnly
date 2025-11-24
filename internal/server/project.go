@@ -148,10 +148,17 @@ func (h *ProjectHandler) ListEvents(w http.ResponseWriter, r *http.Request) {
 
 	req := &warnly.ListEventsRequest{
 		Query:     r.URL.Query().Get("query"),
+		Period:    r.URL.Query().Get("period"),
+		Start:     r.URL.Query().Get("start"),
+		End:       r.URL.Query().Get("end"),
 		ProjectID: projectID,
 		IssueID:   issueID,
 		User:      &user,
 		Offset:    offset,
+	}
+
+	if req.Period == "" && req.Start == "" && req.End == "" {
+		req.Period = "90d"
 	}
 
 	res, err := h.svc.ListEvents(ctx, req)

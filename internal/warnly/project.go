@@ -367,6 +367,9 @@ func (l *ListIssuesResult) NoIssues() bool {
 // ListEventsRequest is a request structure for listing all events per issue.
 type ListEventsRequest struct {
 	User      *User
+	Period    string
+	Start     string
+	End       string
 	Query     string
 	ProjectID int
 	IssueID   int
@@ -374,7 +377,9 @@ type ListEventsRequest struct {
 }
 
 type ListEventsResult struct {
+	Request     *ListEventsRequest
 	Events      []EventEntry
+	PopularTags []TagCount
 	ProjectID   int
 	IssueID     int
 	TotalEvents uint64

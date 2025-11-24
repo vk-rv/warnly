@@ -9,6 +9,7 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/vk-rv/warnly/internal/warnly"
 	"strconv"
@@ -43,52 +44,42 @@ func Events(res *warnly.ListEventsResult) templ.Component {
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(alpineData(res))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/events.templ`, Line: 13, Col: 27}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/events.templ`, Line: 14, Col: 27}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\" @click.away=\"hideContextMenu()\"><div class=\"mb-4 relative\"><div class=\"flex items-center gap-2 p-2 bg-white border border-border rounded-lg min-h-[40px] flex-wrap\"><template x-for=\"(filter, index) in filters\" :key=\"index\"><div class=\"flex items-center gap-1 bg-gray-100 px-2 py-1 rounded text-sm\"><span x-text=\"filter.key\"></span> <span x-text=\"filter.operator\"></span> <span x-text=\"filter.value\" class=\"text-black font-bold\"></span> <button @click=\"removeFilter(index)\" class=\"ml-1 text-gray-500 hover:text-gray-700\">×</button></div></template><input type=\"text\" x-model=\"searchQuery\" placeholder=\"Search errors...\" class=\"flex-1 outline-none bg-transparent min-w-[200px]\"></div></div><div x-show=\"contextMenu.show\" x-transition :style=\"`position: fixed; left: ${contextMenu.x}px; top: ${contextMenu.y}px`\" class=\"bg-white border border-border rounded-lg shadow-lg py-1 z-50\" @click.away=\"hideContextMenu\"></div><div class=\"overflow-x-auto border border-border rounded-lg\"><div class=\"p-4 border-t border-border flex items-center justify-end gap-4 text-xs text-gray-500\"><span>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "\" @click.away=\"hideContextMenu()\" @tokens-changed.window=\"handleTokensChanged($event.detail.tokens)\"><div class=\"mb-6\"><div class=\"flex justify-start mb-3\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = timePeriodSelector(res.Request.Period, res.Request.Start, res.Request.End).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</div><div class=\"relative mt-2\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = eventSearchBar(res).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</div></div><div x-show=\"contextMenu.show\" x-transition :style=\"`position: fixed; left: ${contextMenu.x}px; top: ${contextMenu.y}px`\" class=\"bg-white border border-border rounded-lg shadow-lg py-1 z-50\" @click.away=\"hideContextMenu\"></div><div class=\"overflow-x-auto border border-border rounded-lg\"><div class=\"p-4 border-t border-border flex items-center justify-end gap-4 text-xs text-gray-500\"><span>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(paginationSummary(res))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/events.templ`, Line: 45, Col: 30}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/events.templ`, Line: 36, Col: 30}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</span><div class=\"flex gap-2\"><button @click=\"")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		var templ_7745c5c3_Var4 string
-		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("paginatePrev('%d', '%d')", res.ProjectID, res.IssueID))
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/events.templ`, Line: 48, Col: 90}
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "\" class=\"p-1 cursor-pointer rounded border border-border\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M15 19l-7-7 7-7\"></path></svg></button> <button @click=\"")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		var templ_7745c5c3_Var5 string
-		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("paginateNext('%d', '%d')", res.ProjectID, res.IssueID))
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/events.templ`, Line: 53, Col: 90}
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "\" class=\"p-1 cursor-pointer rounded border border-border\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M9 5l7 7-7 7\"></path></svg></button></div></div><table id=\"eventtable\" class=\"w-full\"><thead><tr class=\"border-b border-border bg-gray-50\"><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">ID</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">CREATED</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">TITLE</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">RELEASE</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">ENVIRONMENT</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">USER</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">OS</th></tr></thead> <tbody><template x-for=\"event in events\" :key=\"event.id\"><tr class=\"border-b border-border hover:bg-gray-50\"><td @contextmenu.prevent=\"showContextMenu($event, 'event.id', event.id)\" @click=\"\n\t\t\t\t\t\t\t\t\t\tnavigateToEvent(event.full_id); \n\t\t\t\t\t\t\t\t\t\tactiveTab = 'details';\n\t\t\t\t\t\t\t\t\t\" class=\"px-4 py-2 text-sm text-black cursor-pointer font-semibold\" x-text=\"event.id\"></td><td class=\"px-4 py-2 text-sm\" x-text=\"event.timestamp\"></td><td class=\"px-4 py-2 text-sm\" x-text=\"event.title\"></td><td class=\"px-4 py-2 text-sm text-black\" x-text=\"event.release\"></td><td class=\"px-4 py-2 text-sm relative group\"><div class=\"flex items-center gap-1\"><span x-text=\"event.environment\"></span></div></td><td class=\"px-4 py-2 text-sm text-gray-500\" x-text=\"event.user\"></td><td class=\"px-4 py-2 text-sm text-gray-500\" x-text=\"event.os\"></td></tr></template></tbody></table></div></div></div>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "</span><div class=\"flex gap-2\"><button @click=\"paginatePrev()\" class=\"p-1 cursor-pointer rounded border border-border\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M15 19l-7-7 7-7\"></path></svg></button> <button @click=\"paginateNext()\" class=\"p-1 cursor-pointer rounded border border-border\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M9 5l7 7-7 7\"></path></svg></button></div></div><table id=\"eventtable\" class=\"w-full\"><thead><tr class=\"border-b border-border bg-gray-50\"><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">ID</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">CREATED</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">TITLE</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">RELEASE</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">ENVIRONMENT</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">USER</th><th class=\"px-4 py-2 text-left text-sm font-medium text-gray-500\">OS</th></tr></thead> <tbody><template x-for=\"event in events\" :key=\"event.id\"><tr class=\"border-b border-border hover:bg-gray-50\"><td @contextmenu.prevent=\"showContextMenu($event, 'event.id', event.id)\" @click=\"\n\t\t\t\t\t\t\t\t\t\tnavigateToEvent(event.full_id); \n\t\t\t\t\t\t\t\t\t\tactiveTab = 'details';\n\t\t\t\t\t\t\t\t\t\" class=\"px-4 py-2 text-sm text-black cursor-pointer font-semibold\" x-text=\"event.id\"></td><td class=\"px-4 py-2 text-sm\" x-text=\"event.timestamp\"></td><td class=\"px-4 py-2 text-sm\" x-text=\"event.title\"></td><td class=\"px-4 py-2 text-sm text-black\" x-text=\"event.release\"></td><td class=\"px-4 py-2 text-sm relative group\"><div class=\"flex items-center gap-1\"><span x-text=\"event.environment\"></span></div></td><td class=\"px-4 py-2 text-sm text-gray-500\" x-text=\"event.user\"></td><td class=\"px-4 py-2 text-sm text-gray-500\" x-text=\"event.os\"></td></tr></template></tbody></table></div></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -135,76 +126,18 @@ func alpineData(res *warnly.ListEventsResult) string {
 		)
 	}
 
-	return fmt.Sprintf(`{
-		searchQuery: '',
-		filters: [
-			/* { key: 'issue.id', operator: 'is', value: '6194848708' }, */
-			/* { key: 'environment', operator: 'is', value: 'stage' } */
-		],
+	return fmt.Sprintf(`eventFilters({
+		projectId: '%d',
+		issueId: '%d',
 		events: [%s],
-		contextMenu: {
-			show: false,
-			x: 0,
-			y: 0,
-			column: '',
-			value: ''
-		},
-		removeFilter(index) {
-			this.filters.splice(index, 1)
-		},
-		navigateToEvent(eventId) {
-			const url = new URL('/projects/' + %s + '/issues/' + %s, window.location.origin);
-			url.searchParams.set('event_id', eventId);
-			url.searchParams.set('period', this.period);
-			url.searchParams.set('source', 'issue');
-			htmx.ajax('GET', url.toString(), {
-				target: '#issue_content',
-				swap: 'outerHTML settle:0',
-			});
-		},
 		offset: %d,
-		period: '14d',
 		eventCount: %d,
 		totalErrors: %d,
-		paginatePrev(pid, issueID) {
-			if (this.offset <= 0) {
-				this.offset = 0;
-				return;
-			}
-			this.offset = Math.max(0, this.offset - 50);
-			const url = new URL('/projects/' + pid + '/issues/' + issueID + '/events', window.location.origin);
-			url.searchParams.set('offset', this.offset);
-			url.searchParams.set('period', this.period);
-			htmx.ajax('GET', url.toString(), {
-				target: '#issue_content',
-				swap: 'outerHTML settle:0',
-			}).then(() => {
-				this.updateEventCount();
-			});
-		},
-		paginateNext(pid, issueID) {
-			if (this.offset + 50 > this.totalErrors) {
-				return;
-			} else {
-				this.offset += 50;
-			}
-			const url = new URL('/projects/' + pid + '/issues/' + issueID + '/events', window.location.origin);
-			url.searchParams.set('offset', this.offset);
-			url.searchParams.set('period', this.period);
-			htmx.ajax('GET', url.toString(), {
-				target: '#issue_content',
-				swap: 'outerHTML settle:0',
-			}).then(() => {
-				this.updateEventCount();
-			});
-		},
-		updateEventCount() {
-			const tableBody = document.querySelector('#eventtable tbody');
-			if (tableBody) {
-				this.eventCount = tableBody.rows.length;
-			}
-		}
-	}`, strings.Join(events, ", "), strconv.Itoa(int(res.ProjectID)), strconv.Itoa(int(res.IssueID)), res.Offset, len(res.Events), res.TotalEvents)
+		searchQuery: '%s',
+		period: '%s',
+		start: '%s',
+		end: '%s'
+	})`, int(res.ProjectID), int(res.IssueID), strings.Join(events, ", "), res.Offset, len(res.Events), res.TotalEvents, res.Request.Query, res.Request.Period, res.Request.Start, res.Request.End)
 }
 
 // paginationSummary returns a summary string for the pagination status.
@@ -229,6 +162,198 @@ func paginationSummary(res *warnly.ListEventsResult) string {
 	}
 
 	return fmt.Sprintf("Showing %d-%d of %d matching events (%s)", start, end, res.TotalEvents, pageInfo)
+}
+
+func eventSearchBar(res *warnly.ListEventsResult) templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var4 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var4 == nil {
+			templ_7745c5c3_Var4 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<div x-data=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var5 string
+		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("searchInput(%s, %s, { period: '%s' })", getEventSearchTokens(res.Request), getEventPopularTagsCategories(res.PopularTags), res.Request.Period))
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/events.templ`, Line: 173, Col: 166}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "\" class=\"search-container w-full\" @click.away=\"closeAllDropdowns()\"><div class=\"flex border rounded-lg bg-white border-gray-300 min-h-[2.5rem]\"><div class=\"relative flex-1 flex items-center px-2 text-sm\"><div class=\"text-purple-500 ml-2 mr-1 flex-shrink-0\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"black\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z\"></path></svg></div><div class=\"search-input-wrapper\" @click=\"focusInput()\"><template x-for=\"(token, index) in tokens\" :key=\"index\"><div class=\"tag-pill\"><template x-if=\"!token.isRawText\"><div class=\"flex items-center\"><span x-text=\"token.key\" class=\"text-gray-800\"></span> <span class=\"tag-pill-operator mx-1\" x-text=\"token.operator\" @click.stop=\"openOperatorDropdown(index, $event)\"></span> <span x-text=\"token.value\" class=\"text-gray-800\"></span></div></template><template x-if=\"token.isRawText\"><span x-text=\"token.value\" class=\"text-gray-800\"></span></template><button @click.stop=\"removeToken(index)\" class=\"ml-1 text-gray-500 hover:text-gray-700\"><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M6 18L18 6M6 6l12 12\"></path></svg></button></div></template><input x-ref=\"searchInput\" type=\"text\" x-model=\"inputValue\" :placeholder=\"tokens.length === 0 ? 'Search events...' : ''\" class=\"search-input\" @click=\"handleInputClick()\" @focus=\"handleInputFocus()\" @keydown.enter=\"handleEnterKey()\" @keydown.backspace=\"handleBackspace()\" @input=\"handleInput()\"></div><button x-show=\"tokens.length > 0 || inputValue.length > 0\" @click.stop=\"clearAll()\" class=\"mr-4 text-gray-400 hover:text-gray-600\" x-cloak><svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M6 18L18 6M6 6l12 12\"></path></svg></button></div></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = eventSearchSuggestions().Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = eventOperatorDropdown().Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+func eventSearchSuggestions() templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var6 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var6 == nil {
+			templ_7745c5c3_Var6 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<div x-show=\"showTagSuggestions\" class=\"dropdown-container text-sm\" x-cloak><div class=\"flex border-b border-gray-200 px-4 py-2 justify-between items-center\"><div class=\"flex space-x-4 hidden md:flex\"><template x-for=\"(category, index) in filterCategories\" :key=\"index\"><button class=\"px-2 py-1 rounded\" :class=\"category.active ? 'bg-black text-white' : 'text-gray-600 hover:bg-gray-200'\" x-text=\"category.name\" @click=\"setActiveCategory(index)\"></button></template></div><template x-if=\"isInTagValuesMode()\"><input x-model=\"customValue\" @keydown.enter=\"addCustomValue()\" placeholder=\"Type custom tag value and press Enter\" class=\"px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 w-80\"></template></div><div class=\"py-2\"><template x-for=\"category in filterCategories\" :key=\"category.name || 'default'\"><template x-if=\"category.active\"><div><template x-for=\"item in category.items\" :key=\"item.value\"><div @click=\"addFilterFromCategory(item)\" class=\"px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm\"><span x-text=\"item.key === item.value ? item.value : item.key + ':' + item.value\"></span></div></template></div></template></template></div></div><div x-show=\"showTagMatch\" class=\"dropdown-container text-sm\" x-cloak><div class=\"py-2\"><div @click=\"selectMatchedTag()\" class=\"px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm\"><span x-text=\"matchedTag ? matchedTag.key : ''\"></span></div></div></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+func eventOperatorDropdown() templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var7 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var7 == nil {
+			templ_7745c5c3_Var7 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<div x-show=\"showOperatorDropdown\" class=\"operator-dropdown text-sm\" :style=\"`top: ${operatorDropdownPosition.top}px; left: ${operatorDropdownPosition.left}px;`\" x-cloak><div class=\"operator-option\" :class=\"{'selected': tokens[activeTokenIndex]?.operator === 'is'}\" @click=\"changeOperator(activeTokenIndex, 'is')\"><svg x-show=\"tokens[activeTokenIndex]?.operator === 'is'\" class=\"h-5 w-5 mr-2 text-black\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 20 20\" fill=\"currentColor\"><path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"></path></svg> <span x-show=\"tokens[activeTokenIndex]?.operator !== 'is'\" class=\"h-5 w-5 mr-2\"></span> <span>is</span></div><div class=\"operator-option\" :class=\"{'selected': tokens[activeTokenIndex]?.operator === 'is not'}\" @click=\"changeOperator(activeTokenIndex, 'is not')\"><svg x-show=\"tokens[activeTokenIndex]?.operator === 'is not'\" class=\"h-5 w-5 mr-2 text-black\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 20 20\" fill=\"currentColor\"><path fill-rule=\"evenodd\" d=\"M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z\" clip-rule=\"evenodd\"></path></svg> <span x-show=\"tokens[activeTokenIndex]?.operator !== 'is not'\" class=\"h-5 w-5 mr-2\"></span> <span>is not</span></div></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
+}
+
+func getEventSearchTokens(req *warnly.ListEventsRequest) string {
+	if req.Query == "" {
+		return "[]"
+	}
+	tokens := warnly.ParseQuery(req.Query)
+	jsonBytes, _ := json.Marshal(tokens)
+	return string(jsonBytes)
+}
+
+func getEventPopularTagsCategories(tags []warnly.TagCount) string {
+	items := []map[string]string{}
+	for _, t := range tags {
+		items = append(items, map[string]string{
+			"key":   t.Tag,
+			"value": t.Tag,
+		})
+	}
+	categories := []map[string]any{
+		{
+			"name":   "Tags",
+			"active": true,
+			"items":  items,
+		},
+	}
+
+	jsonBytes, _ := json.Marshal(categories)
+
+	return string(jsonBytes)
+}
+
+func timePeriodSelector(initialPeriod, start, end string) templ.Component {
+	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
+		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
+		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
+			return templ_7745c5c3_CtxErr
+		}
+		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templruntime.GetBuffer(templ_7745c5c3_W)
+		if !templ_7745c5c3_IsBuffer {
+			defer func() {
+				templ_7745c5c3_BufErr := templruntime.ReleaseBuffer(templ_7745c5c3_Buffer)
+				if templ_7745c5c3_Err == nil {
+					templ_7745c5c3_Err = templ_7745c5c3_BufErr
+				}
+			}()
+		}
+		ctx = templ.InitializeContext(ctx)
+		templ_7745c5c3_Var8 := templ.GetChildren(ctx)
+		if templ_7745c5c3_Var8 == nil {
+			templ_7745c5c3_Var8 = templ.NopComponent
+		}
+		ctx = templ.ClearChildren(ctx)
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<div class=\"relative z-20\" x-data=\"")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var9 string
+		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("timePeriodSelector('%s', '%s', '%s')", getPeriodOrDefault(initialPeriod), start, end))
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/web/events.templ`, Line: 360, Col: 135}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "\"><div class=\"flex border hover:bg-gray-50 border-gray-300 rounded-md overflow-hidden bg-white\"><button @click=\"toggleDropdown()\" class=\"flex cursor-pointer items-center px-4 py-2 text-sm\"><span x-text=\"displayLabel\"></span> <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-4 w-4 ml-1\" viewBox=\"0 0 20 20\" fill=\"currentColor\" :class=\"{'transform rotate-180': isOpen}\"><path fill-rule=\"evenodd\" d=\"M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z\" clip-rule=\"evenodd\"></path></svg></button></div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = timePeriodDropdown().Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "</div>")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		return nil
+	})
 }
 
 var _ = templruntime.GeneratedTemplate

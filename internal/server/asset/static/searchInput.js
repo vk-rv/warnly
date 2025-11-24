@@ -1,4 +1,4 @@
-window.searchInput = function(initialTokens, filterCategories) {
+window.searchInput = function(initialTokens, filterCategories, options) {
   return {
     tokens: initialTokens || [],
     inputValue: '',
@@ -10,6 +10,7 @@ window.searchInput = function(initialTokens, filterCategories) {
     operatorDropdownPosition: { top: 0, left: 0 },
     tagValues: [],
     customValue: '',
+    options: options || {},
 
     filterCategories: filterCategories || [],
 
@@ -195,6 +196,9 @@ window.searchInput = function(initialTokens, filterCategories) {
     },
 
     getPeriod() {
+      if (this.options.period) {
+        return this.options.period;
+      }
       const urlParams = new URLSearchParams(window.location.search);
       return urlParams.get('period') || '14d';
     },
