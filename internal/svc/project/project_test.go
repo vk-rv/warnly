@@ -1212,6 +1212,9 @@ func TestListEventsSuccess(t *testing.T) {
 				},
 			}, nil
 		},
+		CalculateFieldsFn: func(_ context.Context, _ warnly.FieldsCriteria) ([]warnly.TagCount, error) {
+			return []warnly.TagCount{}, nil
+		},
 	}
 
 	svc := project.NewProjectService(
@@ -1300,6 +1303,9 @@ func TestListEventsNoEvents(t *testing.T) {
 		},
 		ListEventsFn: func(_ context.Context, _ *warnly.EventCriteria) ([]warnly.EventEntry, error) {
 			return []warnly.EventEntry{}, nil
+		},
+		CalculateFieldsFn: func(_ context.Context, _ warnly.FieldsCriteria) ([]warnly.TagCount, error) {
+			return []warnly.TagCount{}, nil
 		},
 	}
 
