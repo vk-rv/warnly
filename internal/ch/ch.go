@@ -147,6 +147,8 @@ func (s *ClickhouseStore) CountFields(ctx context.Context, c *warnly.EventDefCri
 }
 
 // StoreEvent stores an event in the analytics database.
+//
+//nolint:staticcheck // dont forget to replace in future
 func (s *ClickhouseStore) StoreEvent(ctx context.Context, ev *warnly.EventClickhouse) error {
 	ctx, span := s.tracer.Start(ctx, "ClickhouseStore.StoreEvent")
 	defer span.End()
