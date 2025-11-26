@@ -2,8 +2,12 @@ package warnly
 
 import (
 	"context"
+	"errors"
 	"time"
 )
+
+// ErrDuplicate is returned when an entity already exists in a database.
+var ErrDuplicate = errors.New("entity already exists in a database")
 
 // Issue represents a collection of error events mapped by their hash.
 type Issue struct {

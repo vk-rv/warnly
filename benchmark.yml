@@ -1,0 +1,17 @@
+concurrency: 8
+base: 'http://0.0.0.0:8080'
+iterations: 10000
+rampup: 2
+
+plan:
+  - name: Send Sentry error event
+    request:
+      url: /ingest/api/{{ SENTRY_PROJECT_ID }}/envelope/
+      method: POST
+      headers:
+        Content-Type: 'application/x-sentry-envelope'
+        X-Sentry-Auth: 'Sentry sentry_version=7, sentry_client=sentry.go/0.30.0, sentry_key={{ SENTRY_KEY }}'
+      body: |
+        {"sent_at":"2024-11-26T12:00:00.000+00:00","dsn":"https://j0a8mnx@demo.warnly.io/ingest/{{ SENTRY_PROJECT_ID }}","sdk":{"name":"sentry.go","version":"0.30.0"},"trace":{"environment":"production","public_key":"n8y7bg6","release":"1.0.0"}}
+        {"type":"event","length":500}
+        {"contexts":{"device":{"arch":"x86_64","num_cpu":4},"os":{"name":"linux"},"runtime":{"name":"go","version":"go1.20"}},"environment":"production","level":"error","message":"Database connection failed","platform":"go","release":"1.0.0","sdk":{"name":"sentry.go","version":"0.30.0"},"server_name":"localhost","threads":[{"stacktrace":{"frames":[{"function":"main","module":"main","abs_path":"/app/main.go","lineno":10,"context_line":"panic(\"Database connection failed\")","in_app":true}]},"current":true}],"user":{}}

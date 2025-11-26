@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/go-sql-driver/mysql"
 	"github.com/vk-rv/warnly/internal/warnly"
 )
 
@@ -166,6 +167,10 @@ func (s *IssueStore) StoreIssue(ctx context.Context, i *warnly.Issue) error {
 		i.Priority,
 		i.ErrorType)
 	if err != nil {
+		var mysqlErr *mysql.MySQLError
+		if errors.As(err, &mysqlErr) && mysqlErr.Number == mysqlDuplicateKey {
+			return warnly.ErrDuplicate
+		}
 		return fmt.Errorf("mysql issue store: store issue: %w", err)
 	}
 

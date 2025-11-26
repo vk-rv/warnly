@@ -176,6 +176,11 @@ templ chartInitialization() {
 					},
 					{
 						grid: { show: false },
+						values: (u, vals) => vals.map(v => {
+							if (v >= 1e6) return (v / 1e6).toFixed(0) + 'M';
+							if (v >= 1e3) return (v / 1e3).toFixed(0) + 'k';
+							return v.toFixed(0);
+						}),
 					},
 				],
 				series: [
@@ -189,7 +194,12 @@ templ chartInitialization() {
 						points: {
 							show: false
 						},
-						value: (u, v) => v == null ? "-" : v.toFixed(0),
+						value: (u, v) => {
+							if (v == null) return "-";
+							if (v >= 1e6) return (v / 1e6).toFixed(0) + 'M';
+							if (v >= 1e3) return (v / 1e3).toFixed(0) + 'k';
+							return v.toFixed(0);
+						},
 					},
 				],
 			};

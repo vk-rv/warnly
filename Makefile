@@ -35,3 +35,8 @@ tailwindcss:
 .PHONY: test
 test:
 	INTEGRATION=1 go test -count=1 ./... -v
+
+.PHONY: bench
+bench:
+	@which drill > /dev/null 2>&1 || (echo "drill not installed. Install with: cargo install drill" && false)
+	drill --benchmark benchmark.yml

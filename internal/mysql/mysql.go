@@ -16,6 +16,10 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.9.0"
 )
 
+const (
+	mysqlDuplicateKey = 1062
+)
+
 // SQLogger is a logger for mysql.
 type SQLogger struct {
 	Logger *slog.Logger

@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
+	"net/http/pprof"
 	"net/url"
 	"os"
 	"os/signal"
@@ -382,6 +383,19 @@ func run(cfg *config, logger *slog.Logger) error {
 				Handler(), slog.LevelError),
 			Timeout: time.Second * 1,
 		}))
+		if cfg.Metrics.PprofEnabled {
+			router.HandleFunc("/debug/pprof/", pprof.Index)
+			router.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+			router.HandleFunc("/debug/pprof/profile", pprof.Profile)
+			router.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+			router.HandleFunc("/debug/pprof/trace", pprof.Trace)
+			router.Handle("/debug/pprof/allocs", pprof.Handler("allocs"))
+			router.Handle("/debug/pprof/block", pprof.Handler("block"))
+			router.Handle("/debug/pprof/goroutine", pprof.Handler("goroutine"))
+			router.Handle("/debug/pprof/heap", pprof.Handler("heap"))
+			router.Handle("/debug/pprof/mutex", pprof.Handler("mutex"))
+			router.Handle("/debug/pprof/threadcreate", pprof.Handler("threadcreate"))
+		}
 		metricsSrv = &http.Server{
 			Addr:              net.JoinHostPort(cfg.Server.Host, cfg.Metrics.Port),
 			Handler:           router,
@@ -513,9 +527,10 @@ type config struct {
 		CloseTimeout time.Duration `env:"CLOSE_TIMEOUT" env-default:"5s"`
 	}
 	Metrics struct {
-		Port    string `env:"METRICS_PORT"    env-default:"8081"`
-		Path    string `env:"METRICS_PATH"    env-default:"/metrics"`
-		Enabled bool   `env:"METRICS_ENABLED" env-default:"false"`
+		Port         string `env:"METRICS_PORT"         env-default:"8081"`
+		Path         string `env:"METRICS_PATH"         env-default:"/metrics"`
+		Enabled      bool   `env:"METRICS_ENABLED"      env-default:"false"`
+		PprofEnabled bool   `env:"METRICS_PPROF_ENABLED" env-default:"false"`
 	}
 	Log struct {
 		Output string `env:"LOG_OUTPUT" env-default:"stderr"`
