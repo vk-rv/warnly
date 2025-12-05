@@ -1,5 +1,5 @@
 -- Kafka table engine for consuming events from Kafka
-CREATE TABLE IF NOT EXISTS warnly.event_kafka
+CREATE TABLE IF NOT EXISTS event_kafka
 (
     `pid` UInt16 COMMENT 'Unique project identifier',
     `created_at` DateTime('UTC') COMMENT 'UTC dt',
