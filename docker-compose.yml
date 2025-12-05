@@ -152,12 +152,9 @@ services:
         condition: service_healthy
       clickhouse:
         condition: service_healthy
-      redpanda:
-        condition: service_healthy
-    profiles: ["queue"]
     ports:
       - 8080:8080
-      - 8048:8081
+      - 8067:8067
     volumes:
       - ./:/app
 
