@@ -26,6 +26,12 @@ type EventService struct {
 	sf           *singleflight.Group
 	olap         warnly.AnalyticsStore
 	now          func() time.Time
+	queue        Queue
+}
+
+type Queue struct {
+	Producer warnly.Producer
+	Enabled  bool
 }
 
 // NewEventService is a constructor of event service.
@@ -34,6 +40,7 @@ func NewEventService(
 	issueStore warnly.IssueStore,
 	inMemCache *cache.Cache,
 	olap warnly.AnalyticsStore,
+	queue Queue,
 	now func() time.Time,
 ) *EventService {
 	return &EventService{
@@ -42,6 +49,7 @@ func NewEventService(
 		cache:        inMemCache,
 		olap:         olap,
 		sf:           &singleflight.Group{},
+		queue:        queue,
 		now:          now,
 	}
 }
@@ -175,8 +183,21 @@ func (s *EventService) IngestEvent(ctx context.Context, req warnly.IngestRequest
 		ExceptionFramesInApp:    warnly.GetExceptionFramesInApp(event.Exception),
 	}
 
-	if err := s.olap.StoreEvent(ctx, ev); err != nil {
-		return res, fmt.Errorf("event service ingest: store event in olap %w", err)
+	if s.queue.Enabled {
+		value, err := json.Marshal(ev)
+		if err != nil {
+			return res, fmt.Errorf("event service ingest: marshal event to json %w", err)
+		}
+		if err := s.queue.Producer.Produce(ctx, warnly.Record{
+			Topic: warnly.QueueTopic,
+			Value: value,
+		}); err != nil {
+			return res, fmt.Errorf("event service ingest: produce event to queue %w", err)
+		}
+	} else {
+		if err := s.olap.StoreEvent(ctx, ev); err != nil {
+			return res, fmt.Errorf("event service ingest: store event in olap %w", err)
+		}
 	}
 
 	res.EventID = ev.EventID

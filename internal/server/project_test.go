@@ -404,6 +404,9 @@ func TestServer_ListProjects(t *testing.T) {
 			s.issueStore,
 			s.memoryCache,
 			s.olap,
+			event.Queue{
+				Enabled: false,
+			},
 			nowHalfAnHourBefore,
 		)
 		eventHandler := server.NewEventAPIHandler(eventSvc, logger)
@@ -592,6 +595,9 @@ func TestServer_HandleProjectDetails(t *testing.T) {
 				s.issueStore,
 				s.memoryCache,
 				s.olap,
+				event.Queue{
+					Enabled: false,
+				},
 				nowHalfAnHourBefore,
 			)
 			eventHandler := server.NewEventAPIHandler(eventSvc, logger)

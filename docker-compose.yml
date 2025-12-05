@@ -72,6 +72,48 @@ services:
        timeout: 30s
        retries: 15
 
+  redpanda:
+    image: redpandadata/redpanda:${REDPANDA_TAG:-latest}
+    profiles: ["queue"]
+    command:
+      - redpanda
+      - start
+      - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr internal://redpanda:9092,external://localhost:19092
+      - --pandaproxy-addr internal://0.0.0.0:8082,external://0.0.0.0:18082
+      - --advertise-pandaproxy-addr internal://redpanda:8082,external://localhost:18082
+      - --schema-registry-addr internal://0.0.0.0:8081,external://0.0.0.0:18081
+      - --rpc-addr redpanda:33145
+      - --advertise-rpc-addr redpanda:33145
+      - --mode dev-container
+      - --default-log-level=info
+    ports:
+      - "19092:19092"
+      - "18082:18082"
+      - "18081:18081"
+    healthcheck:
+      test: rpk cluster health
+      interval: 5s
+      timeout: 10s
+      retries: 5
+    environment:
+      - RPK_ALLOW_MEMORY_OVERPROVISIONING=true
+
+  redpanda-console:
+    image: redpandadata/console:${REDPANDA_CONSOLE_TAG:-latest}
+    profiles: ["queue"]
+    depends_on:
+      redpanda:
+        condition: service_healthy
+    ports:
+      - "8888:8080"
+    environment:
+      KAFKA_BROKERS: redpanda:9092
+      KAFKA_SCHEMA_REGISTRY_ENABLED: "true"
+      KAFKA_SCHEMA_REGISTRY_URLS: http://redpanda:8081
+    labels:
+      - dev.orbstack.domains=redpanda-console.local
+
   warnly:
     labels:
       - dev.orbstack.domains=warnly.local
@@ -101,14 +143,21 @@ services:
       - OIDC_REDIRECT_ADDRESS=${OIDC_REDIRECT_ADDRESS}
       - OIDC_SCOPES=${OIDC_SCOPES}
       - NOTIFICATION_ENCRYPTION_KEY=${NOTIFICATION_ENCRYPTION_KEY}
+      - KAFKA_BROKERS=${KAFKA_BROKERS}
+      - KAFKA_NAMESPACE=${KAFKA_NAMESPACE}
+      - KAFKA_CLIENT_ID=${KAFKA_CLIENT_ID}
+      - KAFKA_PRODUCER_SYNC=${KAFKA_PRODUCER_SYNC}
     depends_on:
       mysql:
         condition: service_healthy
       clickhouse:
         condition: service_healthy
+      redpanda:
+        condition: service_healthy
+    profiles: ["queue"]
     ports:
       - 8080:8080
-      - 8067:8067
+      - 8048:8081
     volumes:
       - ./:/app
 

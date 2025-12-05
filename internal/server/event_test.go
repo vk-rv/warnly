@@ -61,6 +61,9 @@ func TestServer_HandleEventIngestion(t *testing.T) {
 			s.issueStore,
 			s.memoryCache,
 			s.olap,
+			event.Queue{
+				Enabled: false,
+			},
 			nowTime,
 		)
 		eventHandler := server.NewEventAPIHandler(svc, logger)
@@ -100,6 +103,9 @@ func TestServer_HandleEventIngestion(t *testing.T) {
 			s.issueStore,
 			s.memoryCache,
 			s.olap,
+			event.Queue{
+				Enabled: false,
+			},
 			nowTime,
 		)
 		eventHandler := server.NewEventAPIHandler(svc, logger)
