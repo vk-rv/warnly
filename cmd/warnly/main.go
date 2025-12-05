@@ -27,6 +27,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/vk-rv/warnly/internal/ch"
 	"github.com/vk-rv/warnly/internal/chprometheus"
+	"github.com/vk-rv/warnly/internal/kafka"
 	"github.com/vk-rv/warnly/internal/migrator"
 	"github.com/vk-rv/warnly/internal/mysql"
 	"github.com/vk-rv/warnly/internal/notifier"
@@ -135,6 +136,30 @@ func run(cfg *config, logger *slog.Logger) error {
 		}
 	}()
 
+	var kafkaProducer warnly.Producer
+	if len(cfg.Kafka.Brokers) > 0 {
+		logger.Info("kafka producer enabled, connecting to brokers", slog.String("brokers", strings.Join(cfg.Kafka.Brokers, ",")))
+		kafkaProducer, err = kafka.NewProducer(&kafka.ProducerConfig{
+			CommonConfig: kafka.CommonConfig{
+				Namespace:        cfg.Kafka.Namespace,
+				Brokers:          cfg.Kafka.Brokers,
+				ClientID:         cfg.Kafka.ClientID,
+				Logger:           logger.With(slog.String("service", "kafka_producer")),
+				DisableTelemetry: cfg.Kafka.DisableTelemetry,
+				MetadataMaxAge:   cfg.Kafka.MetadataMaxAge,
+			},
+			Sync: cfg.Kafka.ProducerSync,
+		})
+		if err != nil {
+			return fmt.Errorf("failed creating kafka producer: %w", err)
+		}
+		defer func() {
+			if err = kafkaProducer.Close(); err != nil {
+				logger.Error("close kafka producer on server shutdown", slog.Any("error", err))
+			}
+		}()
+	}
+
 	dbm, err := migrator.NewMigrator(cfg.Database.DSN, logger)
 	if err != nil {
 		return err
@@ -221,7 +246,16 @@ func run(cfg *config, logger *slog.Logger) error {
 
 	memoryCache := cache.New(5*time.Minute, 10*time.Minute)
 
-	eventService := event.NewEventService(projectStore, issueStore, memoryCache, olap, now)
+	eventService := event.NewEventService(
+		projectStore,
+		issueStore,
+		memoryCache,
+		olap,
+		event.Queue{
+			Enabled:  len(cfg.Kafka.Brokers) > 0,
+			Producer: kafkaProducer,
+		},
+		now)
 
 	alertService := alert.NewAlertService(alertStore, projectStore, teamStore, now, logger.With(slog.String("service", "alert")))
 
@@ -540,6 +574,14 @@ type config struct {
 		ReporterURI string  `env:"TRACING_REPORTER_URI" env-default:""`
 		ServiceName string  `env:"TRACING_SERVICE_NAME" env-default:"warnly"`
 		Probability float64 `env:"TRACING_PROBABILITY"  env-default:"1.0"`
+	}
+	Kafka struct {
+		Namespace        string        `env:"KAFKA_NAMESPACE"         env-default:"warnly"`
+		ClientID         string        `env:"KAFKA_CLIENT_ID"         env-default:"warnly"`
+		Brokers          []string      `env:"KAFKA_BROKERS"`
+		MetadataMaxAge   time.Duration `env:"KAFKA_METADATA_MAX_AGE"  env-default:"60s"`
+		ProducerSync     bool          `env:"KAFKA_PRODUCER_SYNC"     env-default:"false"`
+		DisableTelemetry bool          `env:"KAFKA_DISABLE_TELEMETRY" env-default:"false"`
 	}
 	PublicIngestURL           string `env:"PUBLIC_INGEST_URL"`
 	SessionKey                []byte `env:"SESSION_KEY" env-required:"true"`
