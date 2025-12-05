@@ -3,10 +3,35 @@ package warnly
 import (
 	"crypto/md5" //nolint:gosec // Non-crypto use
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
 )
+
+// Uint8Array is a custom type that serializes []uint8 as a JSON array of numbers
+// instead of the default base64 encoding for []byte.
+type Uint8Array []uint8
+
+func (a Uint8Array) MarshalJSON() ([]byte, error) {
+	arr := make([]int, len(a))
+	for i, v := range a {
+		arr[i] = int(v)
+	}
+	return json.Marshal(arr)
+}
+
+func (a *Uint8Array) UnmarshalJSON(data []byte) error {
+	var arr []int
+	if err := json.Unmarshal(data, &arr); err != nil {
+		return err
+	}
+	*a = make(Uint8Array, len(arr))
+	for i, v := range arr {
+		(*a)[i] = uint8(v)
+	}
+	return nil
+}
 
 const defaultExceptionType = "Error"
 
@@ -137,40 +162,40 @@ type EventUser struct {
 //
 //nolint:tagliatelle,tagalign // json tags are used for ClickHouse
 type EventClickhouse struct {
-	CreatedAt               time.Time `ch:"created_at" json:"created_at"`
-	SDKVersion              string    `ch:"sdk_version" json:"sdk_version"`
-	User                    string    `ch:"user" json:"user"`
-	UserEmail               string    `ch:"user_email" json:"user_email"`
-	UserName                string    `ch:"user_name" json:"user_name"`
-	UserUsername            string    `ch:"user_username" json:"user_username"`
-	PrimaryHash             string    `ch:"primary_hash" json:"primary_hash"`
-	Env                     string    `ch:"env" json:"env"`
-	EventID                 string    `ch:"event_id" json:"event_id"`
-	Message                 string    `ch:"message" json:"message"`
-	IPv6                    string    `ch:"ipv6" json:"ipv6"`
-	Release                 string    `ch:"release" json:"release"`
-	Title                   string    `ch:"title" json:"title"`
-	IPv4                    string    `ch:"ipv4" json:"ipv4"`
-	ExceptionFramesInApp    []uint8   `ch:"exception_frames.in_app" json:"exception_frames.in_app"`
-	ContextsKey             []string  `ch:"contexts.key" json:"contexts.key"`
-	ExceptionFramesColNo    []uint32  `ch:"exception_frames.colno" json:"exception_frames.colno"`
-	ExceptionFramesAbsPath  []string  `ch:"exception_frames.abs_path" json:"exception_frames.abs_path"`
-	ExceptionFramesLineNo   []uint32  `ch:"exception_frames.lineno" json:"exception_frames.lineno"`
-	ExceptionStacksType     []string  `ch:"exception_stacks.type" json:"exception_stacks.type"`
-	ExceptionStacksValue    []string  `ch:"exception_stacks.value" json:"exception_stacks.value"`
-	TagsKey                 []string  `ch:"tags.key" json:"tags.key"`
-	ExceptionFramesFunction []string  `ch:"exception_frames.function" json:"exception_frames.function"`
-	TagsValue               []string  `ch:"tags.value" json:"tags.value"`
-	ExceptionFramesFilename []string  `ch:"exception_frames.filename" json:"exception_frames.filename"`
-	ContextsValue           []string  `ch:"contexts.value" json:"contexts.value"`
-	GroupID                 uint64    `ch:"gid" json:"gid"`
-	ProjectID               uint16    `ch:"pid" json:"pid"`
-	Level                   uint8     `ch:"level" json:"level"`
-	Type                    uint8     `ch:"type" json:"type"`
-	SDKID                   uint8     `ch:"sdk_id" json:"sdk_id"`
-	Platform                uint8     `ch:"platform" json:"platform"`
-	RetentionDays           uint8     `ch:"retention_days" json:"retention_days"`
-	Deleted                 uint8     `ch:"deleted" json:"deleted"`
+	CreatedAt               time.Time  `ch:"created_at" json:"created_at"`
+	SDKVersion              string     `ch:"sdk_version" json:"sdk_version"`
+	User                    string     `ch:"user" json:"user"`
+	UserEmail               string     `ch:"user_email" json:"user_email"`
+	UserName                string     `ch:"user_name" json:"user_name"`
+	UserUsername            string     `ch:"user_username" json:"user_username"`
+	PrimaryHash             string     `ch:"primary_hash" json:"primary_hash"`
+	Env                     string     `ch:"env" json:"env"`
+	EventID                 string     `ch:"event_id" json:"event_id"`
+	Message                 string     `ch:"message" json:"message"`
+	IPv6                    string     `ch:"ipv6" json:"ipv6"`
+	Release                 string     `ch:"release" json:"release"`
+	Title                   string     `ch:"title" json:"title"`
+	IPv4                    string     `ch:"ipv4" json:"ipv4"`
+	ExceptionFramesInApp    Uint8Array `ch:"exception_frames.in_app" json:"exception_frames.in_app"`
+	ContextsKey             []string   `ch:"contexts.key" json:"contexts.key"`
+	ExceptionFramesColNo    []uint32   `ch:"exception_frames.colno" json:"exception_frames.colno"`
+	ExceptionFramesAbsPath  []string   `ch:"exception_frames.abs_path" json:"exception_frames.abs_path"`
+	ExceptionFramesLineNo   []uint32   `ch:"exception_frames.lineno" json:"exception_frames.lineno"`
+	ExceptionStacksType     []string   `ch:"exception_stacks.type" json:"exception_stacks.type"`
+	ExceptionStacksValue    []string   `ch:"exception_stacks.value" json:"exception_stacks.value"`
+	TagsKey                 []string   `ch:"tags.key" json:"tags.key"`
+	ExceptionFramesFunction []string   `ch:"exception_frames.function" json:"exception_frames.function"`
+	TagsValue               []string   `ch:"tags.value" json:"tags.value"`
+	ExceptionFramesFilename []string   `ch:"exception_frames.filename" json:"exception_frames.filename"`
+	ContextsValue           []string   `ch:"contexts.value" json:"contexts.value"`
+	GroupID                 uint64     `ch:"gid" json:"gid"`
+	ProjectID               uint16     `ch:"pid" json:"pid"`
+	Level                   uint8      `ch:"level" json:"level"`
+	Type                    uint8      `ch:"type" json:"type"`
+	SDKID                   uint8      `ch:"sdk_id" json:"sdk_id"`
+	Platform                uint8      `ch:"platform" json:"platform"`
+	RetentionDays           uint8      `ch:"retention_days" json:"retention_days"`
+	Deleted                 uint8      `ch:"deleted" json:"deleted"`
 }
 
 // GetExceptionStackTypes returns a list of exception stack types.
@@ -327,12 +352,12 @@ func GetExceptionFramesLineNo(exceptions []Exception) []uint32 {
 	return lineNo
 }
 
-func GetExceptionFramesInApp(exceptions []Exception) []uint8 {
+func GetExceptionFramesInApp(exceptions []Exception) Uint8Array {
 	if len(exceptions) == 0 {
-		return []uint8{}
+		return Uint8Array{}
 	}
 
-	inApp := make([]uint8, 0, len(exceptions))
+	inApp := make(Uint8Array, 0, len(exceptions))
 	for i := range exceptions {
 		for range exceptions[i].StackTrace.Frames {
 			inApp = append(inApp, 1) // for now, all frames are in app

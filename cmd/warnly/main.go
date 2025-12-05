@@ -136,18 +136,23 @@ func run(cfg *config, logger *slog.Logger) error {
 		}
 	}()
 
+	reg := prometheus.NewRegistry()
+
 	var kafkaProducer warnly.Producer
 	if len(cfg.Kafka.Brokers) > 0 {
 		logger.Info("kafka producer enabled, connecting to brokers", slog.String("brokers", strings.Join(cfg.Kafka.Brokers, ",")))
 		kafkaProducer, err = kafka.NewProducer(&kafka.ProducerConfig{
 			CommonConfig: kafka.CommonConfig{
-				Namespace:        cfg.Kafka.Namespace,
-				Brokers:          cfg.Kafka.Brokers,
-				ClientID:         cfg.Kafka.ClientID,
-				Logger:           logger.With(slog.String("service", "kafka_producer")),
-				DisableTelemetry: cfg.Kafka.DisableTelemetry,
-				MetadataMaxAge:   cfg.Kafka.MetadataMaxAge,
+				TracerProvider:        tracingProvider,
+				Namespace:             cfg.Kafka.Namespace,
+				Brokers:               cfg.Kafka.Brokers,
+				ClientID:              cfg.Kafka.ClientID,
+				Logger:                logger.With(slog.String("service", "kafka_producer")),
+				DisableTelemetry:      cfg.Kafka.DisableTelemetry,
+				MetadataMaxAge:        cfg.Kafka.MetadataMaxAge,
+				EnableKafkaHistograms: true,
 			},
+			Reg:  reg,
 			Sync: cfg.Kafka.ProducerSync,
 		})
 		if err != nil {
@@ -194,7 +199,6 @@ func run(cfg *config, logger *slog.Logger) error {
 
 	olap := ch.NewClickhouseStore(clickConn, tracingProvider)
 
-	reg := prometheus.NewRegistry()
 	regCollectors := []prometheus.Collector{
 		collectors.NewGoCollector(),
 		collectors.NewDBStatsCollector(db, "oltp"),

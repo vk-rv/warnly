@@ -136,6 +136,7 @@ func NewProducer(cfg *ProducerConfig) (*Producer, error) {
 		opts = append(opts, kgo.AllowAutoTopicCreation())
 	}
 	client, err := cfg.newClientWithOpts(
+		cfg.Reg,
 		[]clientOptsFn{
 			func(opts *clientOpts) {
 				opts.reg = cfg.Reg

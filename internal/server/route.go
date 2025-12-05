@@ -211,7 +211,7 @@ func NewHandler(b *Backend) (*Handler, error) {
 	mux.HandleFunc("GET /api/search/tag-values", chain(rootHandler.listTagValues))
 	mux.HandleFunc("DELETE /session", chain(rootHandler.destroy))
 
-	mux.HandleFunc("POST /ingest/api/{project_id}/envelope/", eventAPIHandler.IngestEvent)
+	mux.HandleFunc("POST /ingest/api/{project_id}/envelope/", chainWithoutAuth(eventAPIHandler.IngestEvent))
 
 	return &Handler{ServeMux: mux}, nil
 }

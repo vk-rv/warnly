@@ -54,8 +54,14 @@ func (cfg *CommonConfig) finalize() {
 	}
 }
 
-func (cfg *CommonConfig) newClientWithOpts(clientOptsFn []clientOptsFn, additionalOpts ...kgo.Opt) (*kgo.Client, error) {
-	clOpts := &clientOpts{}
+func (cfg *CommonConfig) newClientWithOpts(
+	reg prometheus.Registerer,
+	clientOptsFn []clientOptsFn,
+	additionalOpts ...kgo.Opt,
+) (*kgo.Client, error) {
+	clOpts := &clientOpts{
+		reg: reg,
+	}
 	for _, opt := range clientOptsFn {
 		opt(clOpts)
 	}
