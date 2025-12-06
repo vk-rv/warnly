@@ -52,7 +52,8 @@ func (h *ProjectHandler) DeleteAssignment(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	issues, period := r.URL.Query().Get("issues"), r.URL.Query().Get("period")
+	issues := h.getFormOrQuery(r, "issues")
+	period := h.getFormOrQuery(r, "period")
 	if issues == "" && period == "" {
 		w.WriteHeader(http.StatusNoContent)
 		return
@@ -62,9 +63,9 @@ func (h *ProjectHandler) DeleteAssignment(w http.ResponseWriter, r *http.Request
 		ProjectID: projectID,
 		Issues:    warnly.IssuesType(issues),
 		Period:    period,
-		Start:     r.URL.Query().Get("start"),
-		End:       r.URL.Query().Get("end"),
-		Page:      h.getPage(r.URL.Query().Get("page")),
+		Start:     h.getFormOrQuery(r, "start"),
+		End:       h.getFormOrQuery(r, "end"),
+		Page:      h.getPage(h.getFormOrQuery(r, "page")),
 	}, &user)
 	if err != nil {
 		h.writeError(ctx, w, http.StatusInternalServerError, "delete assignment: get project details", err)
@@ -105,7 +106,8 @@ func (h *ProjectHandler) AssignIssue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	issues, period := r.URL.Query().Get("issues"), r.URL.Query().Get("period")
+	issues := h.getFormOrQuery(r, "issues")
+	period := h.getFormOrQuery(r, "period")
 	if issues == "" && period == "" {
 		w.WriteHeader(http.StatusNoContent)
 		return
@@ -115,9 +117,9 @@ func (h *ProjectHandler) AssignIssue(w http.ResponseWriter, r *http.Request) {
 		ProjectID: projectID,
 		Issues:    warnly.IssuesType(issues),
 		Period:    period,
-		Start:     r.URL.Query().Get("start"),
-		End:       r.URL.Query().Get("end"),
-		Page:      h.getPage(r.URL.Query().Get("page")),
+		Start:     h.getFormOrQuery(r, "start"),
+		End:       h.getFormOrQuery(r, "end"),
+		Page:      h.getPage(h.getFormOrQuery(r, "page")),
 	}, &user)
 	if err != nil {
 		h.writeError(ctx, w, http.StatusInternalServerError, "assign issue: get project details", err)
@@ -553,6 +555,14 @@ func (h *ProjectHandler) getPage(page string) int {
 		return defaultPage
 	}
 	return p
+}
+
+// getFormOrQuery returns the value from form data first, falling back to query parameters.
+func (h *ProjectHandler) getFormOrQuery(r *http.Request, key string) string {
+	if val := r.FormValue(key); val != "" {
+		return val
+	}
+	return r.URL.Query().Get(key)
 }
 
 // writePlatform writes platform information to the response writer.

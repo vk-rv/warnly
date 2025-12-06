@@ -261,7 +261,16 @@ func (s *ProjectService) GetProjectDetails(
 		return nil, err
 	}
 	if len(issues) == 0 {
-		return &warnly.ProjectDetails{Project: project}, nil
+		period := req.Period
+		if period == "" {
+			period = defaultPeriod
+		}
+		return &warnly.ProjectDetails{
+			Project: project,
+			Period:  period,
+			Page:    req.Page,
+			Issues:  req.Issues,
+		}, nil
 	}
 
 	events, err := s.analyticsStore.CalculateEvents(ctx, &warnly.ListIssueMetricsCriteria{
@@ -320,6 +329,8 @@ func (s *ProjectService) GetProjectDetails(
 		Teammates:   teammates,
 		Assignments: assignments,
 		Period:      period,
+		Page:        req.Page,
+		Issues:      req.Issues,
 	}, nil
 }
 

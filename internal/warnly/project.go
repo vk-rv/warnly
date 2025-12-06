@@ -679,7 +679,9 @@ type ProjectDetails struct {
 	Project     *Project
 	Assignments *Assignments
 	Period      string
+	Issues      IssuesType
 	Teammates   []Teammate
+	Page        int
 }
 
 func (pd *ProjectDetails) AllLength() string {

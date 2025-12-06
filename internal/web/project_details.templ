@@ -16,11 +16,13 @@ templ ProjectDetailsHtmx(details *warnly.ProjectDetails, user *warnly.User, isHt
 		id="content"
 		data-project-id={ fmt.Sprint(details.Project.ID) }
 		data-period={ details.Period }
+		data-page={ fmt.Sprint(details.Page) }
+		data-issues={ string(details.Issues) }
 		x-data="{
-        page: 1,
+        page: parseInt($el.dataset.page) || 1,
         pid: parseInt($el.dataset.projectId),
         period: $el.dataset.period,
-        activeTab: 'all',
+        activeTab: $el.dataset.issues || 'all',
         issueListCount: 0,
 
         changeActiveTab(tab) {
@@ -392,10 +394,10 @@ templ IssueListTable(details *warnly.ProjectDetails, isHtmx bool) {
 									if a, ok := details.Assignments.AssignedUser(issue.ID); ok && details.Teammates[i].Name == a.Name {
 										<li
 											class="bg-gray-100 cursor-pointer"
-											hx-post={ fmt.Sprintf("/projects/%d/issues/%d/assignments?issues=all&period=14d", details.Project.ID, issue.ID) }
+											hx-post={ fmt.Sprintf("/projects/%d/issues/%d/assignments", details.Project.ID, issue.ID) }
 											hx-target="#content"
 											hx-swap="outerHTML settle:0"
-											hx-vals={ fmt.Sprintf(`{"user_id":"%d"}`, details.Teammates[i].ID) }
+											:hx-vals={ fmt.Sprintf(`JSON.stringify({user_id: '%d', page: page, period: period, issues: activeTab})`, details.Teammates[i].ID) }
 										>
 											<button class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer">
 												<span class="cursor-pointer">{ details.Teammates[i].FullName() }</span>
@@ -406,10 +408,10 @@ templ IssueListTable(details *warnly.ProjectDetails, isHtmx bool) {
 										</li>
 									} else {
 										<li
-											hx-post={ fmt.Sprintf("/projects/%d/issues/%d/assignments?issues=all&period=14d", details.Project.ID, issue.ID) }
+											hx-post={ fmt.Sprintf("/projects/%d/issues/%d/assignments", details.Project.ID, issue.ID) }
 											hx-target="#content"
 											hx-swap="outerHTML settle:0"
-											hx-vals={ fmt.Sprintf(`{"user_id":"%d"}`, details.Teammates[i].ID) }
+											:hx-vals={ fmt.Sprintf(`JSON.stringify({user_id: '%d', page: page, period: period, issues: activeTab})`, details.Teammates[i].ID) }
 											class="hover:bg-gray-100 cursor-pointer"
 										>
 											<button
@@ -422,9 +424,10 @@ templ IssueListTable(details *warnly.ProjectDetails, isHtmx bool) {
 								}
 								if _, ok := details.Assignments.AssignedUser(issue.ID); ok {
 									<li
-										hx-delete={ fmt.Sprintf("/projects/%d/issues/%d/assignments?issues=all&period=14d", details.Project.ID, issue.ID) }
+										hx-delete={ fmt.Sprintf("/projects/%d/issues/%d/assignments", details.Project.ID, issue.ID) }
 										hx-target="#content"
 										hx-swap="outerHTML settle:0"
+										:hx-vals="JSON.stringify({page: page, period: period, issues: activeTab})"
 										class="hover:bg-gray-100 cursor-pointer"
 									>
 										<button class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer w-full text-left text-red-500">
