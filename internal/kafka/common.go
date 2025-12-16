@@ -4,14 +4,19 @@ package kafka
 import (
 	"context"
 	"crypto/tls"
+	"crypto/x509"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net"
+	"os"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/twmb/franz-go/pkg/kgo"
 	"github.com/twmb/franz-go/pkg/sasl"
+	"github.com/twmb/franz-go/pkg/sasl/plain"
+	"github.com/twmb/franz-go/pkg/sasl/scram"
 	"github.com/twmb/franz-go/plugin/kotel"
 	"github.com/twmb/franz-go/plugin/kprom"
 	"github.com/twmb/franz-go/plugin/kslog"
@@ -22,6 +27,34 @@ import (
 const (
 	MetricsPrefix = "warnly_kafka_client"
 )
+
+type KafkaConfig struct {
+	TLS struct {
+		CertFile string `env:"KAFKA_TLS_CERT_FILE"`
+		KeyFile  string `env:"KAFKA_TLS_KEY_FILE"`
+		CAFile   string `env:"KAFKA_TLS_CA_FILE"`
+		Enabled  bool   `env:"KAFKA_TLS_ENABLED"   env-default:"false"`
+	}
+	SASL struct {
+		Plain struct {
+			User    string `env:"KAFKA_SASL_PLAIN_USER"`
+			Pass    string `env:"KAFKA_SASL_PLAIN_PASS"`
+			Enabled bool   `env:"KAFKA_SASL_PLAIN_ENABLED" env-default:"false"`
+		}
+		SCRAM struct {
+			Algorithm string `env:"KAFKA_SASL_SCRAM_ALGORITHM"` // "SCRAM-SHA-256" or "SCRAM-SHA-512"
+			User      string `env:"KAFKA_SASL_SCRAM_USER"`
+			Pass      string `env:"KAFKA_SASL_SCRAM_PASS"`
+			Enabled   bool   `env:"KAFKA_SASL_SCRAM_ENABLED"   env-default:"false"`
+		}
+	}
+	Namespace        string        `env:"KAFKA_NAMESPACE"         env-default:"warnly"`
+	ClientID         string        `env:"KAFKA_CLIENT_ID"         env-default:"warnly"`
+	Brokers          []string      `env:"KAFKA_BROKERS"`
+	MetadataMaxAge   time.Duration `env:"KAFKA_METADATA_MAX_AGE"  env-default:"60s"`
+	ProducerSync     bool          `env:"KAFKA_PRODUCER_SYNC"     env-default:"false"`
+	DisableTelemetry bool          `env:"KAFKA_DISABLE_TELEMETRY" env-default:"false"`
+}
 
 // SASLMechanism type alias to sasl.Mechanism.
 type SASLMechanism = sasl.Mechanism
@@ -167,4 +200,57 @@ func enableKafkaHistogramMetrics(enable bool) kprom.Opt {
 			})
 	}
 	return kprom.HistogramsFromOpts(histogramOpts...)
+}
+
+//nolint:nilnil // nil is a valid value for configuration tls.
+func BuildKafkaTLSConfig(cfg *KafkaConfig) (*tls.Config, error) {
+	if !cfg.TLS.Enabled {
+		return nil, nil
+	}
+	tlsCfg := &tls.Config{
+		MinVersion: tls.VersionTLS12,
+	}
+	if cfg.TLS.CertFile != "" && cfg.TLS.KeyFile != "" {
+		cert, err := tls.LoadX509KeyPair(cfg.TLS.CertFile, cfg.TLS.KeyFile)
+		if err != nil {
+			return nil, fmt.Errorf("load kafka tls key pair: %w", err)
+		}
+		tlsCfg.Certificates = []tls.Certificate{cert}
+	}
+	if cfg.TLS.CAFile != "" {
+		caCert, err := os.ReadFile(cfg.TLS.CAFile)
+		if err != nil {
+			return nil, fmt.Errorf("read kafka tls ca file: %w", err)
+		}
+		caCertPool := x509.NewCertPool()
+		if !caCertPool.AppendCertsFromPEM(caCert) {
+			return nil, errors.New("failed to append kafka CA certificate")
+		}
+		tlsCfg.RootCAs = caCertPool
+	}
+	return tlsCfg, nil
+}
+
+//nolint:nilnil // nil is a valid value for configuration sasl.
+func BuildKafkaSASLMechanism(cfg *KafkaConfig) (SASLMechanism, error) {
+	if cfg.SASL.Plain.Enabled {
+		return plain.Auth{
+			User: cfg.SASL.Plain.User,
+			Pass: cfg.SASL.Plain.Pass,
+		}.AsMechanism(), nil
+	}
+	if cfg.SASL.SCRAM.Enabled {
+		var auth scram.Auth
+		auth.User = cfg.SASL.SCRAM.User
+		auth.Pass = cfg.SASL.SCRAM.Pass
+		switch cfg.SASL.SCRAM.Algorithm {
+		case "SCRAM-SHA-256":
+			return auth.AsSha256Mechanism(), nil
+		case "SCRAM-SHA-512":
+			return auth.AsSha512Mechanism(), nil
+		default:
+			return nil, fmt.Errorf("unsupported SCRAM algorithm: %s (use SCRAM-SHA-256 or SCRAM-SHA-512)", cfg.SASL.SCRAM.Algorithm)
+		}
+	}
+	return nil, nil
 }
