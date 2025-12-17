@@ -48,11 +48,6 @@ CREATE TABLE IF NOT EXISTS `team` (
   PRIMARY KEY (`id`)
 );
 
-
-INSERT INTO `team` (`created_at`, `name`, `owner_id`) VALUES
-(NOW(), 'default', 1);
-
-
 CREATE TABLE IF NOT EXISTS `team_relation` (
   `id` int NOT NULL AUTO_INCREMENT,
   `created_at` datetime NOT NULL,
@@ -61,9 +56,6 @@ CREATE TABLE IF NOT EXISTS `team_relation` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `team_id` (`team_id`,`user_id`)
 );
-
-INSERT INTO `team_relation` (`created_at`, `team_id`, `user_id`) VALUES
-(NOW(), 1, 1);
 
 CREATE TABLE IF NOT EXISTS `message` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,

@@ -36,6 +36,7 @@ import (
 	"github.com/vk-rv/warnly/internal/stdlog"
 	"github.com/vk-rv/warnly/internal/svc/alert"
 	"github.com/vk-rv/warnly/internal/svc/event"
+	"github.com/vk-rv/warnly/internal/svc/initializer"
 	"github.com/vk-rv/warnly/internal/svc/notification"
 	"github.com/vk-rv/warnly/internal/svc/project"
 	"github.com/vk-rv/warnly/internal/svc/session"
@@ -372,9 +373,9 @@ func run(cfg *config, logger *slog.Logger) error {
 
 	handler = otelhttp.NewHandler(handler, "/", otelhttp.WithTracerProvider(tracingProvider))
 
-	err = sessionService.CreateUserIfNotExists(termCtx, cfg.Admin.Email, cfg.Admin.Password)
-	if err != nil {
-		return err
+	initService := initializer.NewInitService(userStore, teamStore, startUOW, now)
+	if err = initService.Init(termCtx, cfg.Admin.Email, cfg.Admin.Password); err != nil {
+		return fmt.Errorf("init service: %w", err)
 	}
 
 	srv := &http.Server{
