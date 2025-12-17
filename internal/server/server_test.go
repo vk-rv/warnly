@@ -72,6 +72,7 @@ type testStores struct {
 	messageStore    warnly.MessageStore
 	mentionStore    warnly.MentionStore
 	teamStore       warnly.TeamStore
+	userStore       warnly.UserStore
 	issueStore      warnly.IssueStore
 	memoryCache     *cache.Cache
 	olap            *ch.ClickhouseStore
@@ -87,6 +88,7 @@ func getTestStores(testDB *sql.DB, testOlapDB clickhouse.Conn, logger *slog.Logg
 		messageStore:    mysql.NewMessageStore(testDB),
 		mentionStore:    mysql.NewMentionStore(testDB),
 		teamStore:       mysql.NewTeamStore(testDB),
+		userStore:       mysql.NewUserStore(testDB),
 		issueStore:      mysql.NewIssueStore(testDB),
 		memoryCache:     cache.New(5*time.Minute, 10*time.Minute),
 		olap:            olap,
@@ -158,4 +160,22 @@ func getCreateProjectRequest(ctx context.Context, projectName, platform string, 
 	r = r.WithContext(server.NewContextWithUser(ctx, testUser))
 	w := httptest.NewRecorder()
 	return w, r
+}
+
+//nolint:gocritic // ignore huge param in test
+func setupTestUserAndTeam(ctx context.Context, s testStores, now time.Time) error {
+	if err := s.userStore.CreateUser(ctx, testUser.Email, testUser.Username, []byte("password")); err != nil {
+		return err
+	}
+	if err := s.teamStore.CreateTeam(ctx, warnly.Team{
+		CreatedAt: now,
+		Name:      testTeamName,
+		OwnerID:   testOwnerID,
+	}); err != nil {
+		return err
+	}
+	if err := s.teamStore.AddUserToTeam(ctx, now, int64(testOwnerID), testOwnerID); err != nil {
+		return err
+	}
+	return nil
 }

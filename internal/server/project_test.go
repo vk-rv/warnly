@@ -124,11 +124,7 @@ func TestServer_ListProjects(t *testing.T) {
 		)
 		projectHandler := server.NewProjectHandler(projectSvc, logger)
 
-		require.NoError(t, s.teamStore.CreateTeam(ctx, warnly.Team{
-			CreatedAt: nowTime(),
-			Name:      testTeamName,
-			OwnerID:   testOwnerID,
-		}))
+		require.NoError(t, setupTestUserAndTeam(ctx, s, nowTime()))
 
 		for i := 1; i <= 3; i++ {
 			require.NoError(t, s.projectStore.CreateProject(ctx, &warnly.Project{
@@ -182,16 +178,19 @@ func TestServer_ListProjects(t *testing.T) {
 		)
 		projectHandler := server.NewProjectHandler(projectSvc, logger)
 
+		require.NoError(t, s.userStore.CreateUser(ctx, testUser.Email, testUser.Username, []byte("password")))
 		require.NoError(t, s.teamStore.CreateTeam(ctx, warnly.Team{
 			CreatedAt: nowTime(),
 			Name:      "team-1",
 			OwnerID:   testOwnerID,
 		}))
+		require.NoError(t, s.teamStore.AddUserToTeam(ctx, nowTime(), int64(testOwnerID), 1))
 		require.NoError(t, s.teamStore.CreateTeam(ctx, warnly.Team{
 			CreatedAt: nowTime(),
 			Name:      "team-2",
 			OwnerID:   testOwnerID,
 		}))
+		require.NoError(t, s.teamStore.AddUserToTeam(ctx, nowTime(), int64(testOwnerID), 2))
 
 		require.NoError(t, s.projectStore.CreateProject(ctx, &warnly.Project{
 			CreatedAt: nowTime(),
@@ -251,11 +250,7 @@ func TestServer_ListProjects(t *testing.T) {
 		)
 		projectHandler := server.NewProjectHandler(projectSvc, logger)
 
-		require.NoError(t, s.teamStore.CreateTeam(ctx, warnly.Team{
-			CreatedAt: nowTime(),
-			Name:      testTeamName,
-			OwnerID:   testOwnerID,
-		}))
+		require.NoError(t, setupTestUserAndTeam(ctx, s, nowTime()))
 
 		require.NoError(t, s.projectStore.CreateProject(ctx, &warnly.Project{
 			CreatedAt: nowTime(),
@@ -315,11 +310,7 @@ func TestServer_ListProjects(t *testing.T) {
 		)
 		projectHandler := server.NewProjectHandler(projectSvc, logger)
 
-		require.NoError(t, s.teamStore.CreateTeam(ctx, warnly.Team{
-			CreatedAt: nowTime(),
-			Name:      testTeamName,
-			OwnerID:   testOwnerID,
-		}))
+		require.NoError(t, setupTestUserAndTeam(ctx, s, nowTime()))
 
 		require.NoError(t, s.projectStore.CreateProject(ctx, &warnly.Project{
 			CreatedAt: nowTime(),
@@ -371,11 +362,7 @@ func TestServer_ListProjects(t *testing.T) {
 		)
 		projectHandler := server.NewProjectHandler(projectSvc, logger)
 
-		require.NoError(t, s.teamStore.CreateTeam(ctx, warnly.Team{
-			CreatedAt: nowTime(),
-			Name:      testTeamName,
-			OwnerID:   testOwnerID,
-		}))
+		require.NoError(t, setupTestUserAndTeam(ctx, s, nowTime()))
 
 		w, r := getListProjectsRequest(ctx, "nonexistent", 0)
 		projectHandler.ListProjects(w, r)
@@ -430,11 +417,7 @@ func TestServer_ListProjects(t *testing.T) {
 		)
 		projectHandler := server.NewProjectHandler(projectSvc, logger)
 
-		require.NoError(t, s.teamStore.CreateTeam(ctx, warnly.Team{
-			CreatedAt: nowTime(),
-			Name:      testTeamName,
-			OwnerID:   testOwnerID,
-		}))
+		require.NoError(t, setupTestUserAndTeam(ctx, s, nowTime()))
 
 		require.NoError(t, s.projectStore.CreateProject(ctx, &warnly.Project{
 			CreatedAt: nowTime(),
@@ -504,11 +487,7 @@ func TestServer_DeleteProject(t *testing.T) {
 		)
 		projectHandler := server.NewProjectHandler(projectSvc, logger)
 
-		require.NoError(t, s.teamStore.CreateTeam(ctx, warnly.Team{
-			CreatedAt: nowTime(),
-			Name:      testTeamName,
-			OwnerID:   testOwnerID,
-		}))
+		require.NoError(t, setupTestUserAndTeam(ctx, s, nowTime()))
 
 		wCreate, rCreate := getCreateProjectRequest(ctx, "project-to-delete", "golang", testOwnerID)
 		projectHandler.CreateProject(wCreate, rCreate)
@@ -621,11 +600,7 @@ func TestServer_HandleProjectDetails(t *testing.T) {
 			)
 			projectHandler := server.NewProjectHandler(projectSvc, logger)
 
-			require.NoError(t, s.teamStore.CreateTeam(ctx, warnly.Team{
-				CreatedAt: nowTime(),
-				Name:      testTeamName,
-				OwnerID:   testOwnerID,
-			}))
+			require.NoError(t, setupTestUserAndTeam(ctx, s, nowTime()))
 			require.NoError(t, s.projectStore.CreateProject(ctx, &warnly.Project{
 				CreatedAt: nowTime(),
 				Name:      testProjectName,
