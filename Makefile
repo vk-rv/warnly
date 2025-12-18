@@ -1,6 +1,10 @@
 templates:
 	$(shell go env GOPATH)/bin/templ generate
 
+.PHONY: align
+align:
+	$(shell go env GOPATH)/bin/fieldalignment -fix ./...
+
 .PHONY: setup
 setup: ## Setup the precommit hook
 	@which pre-commit > /dev/null 2>&1 || (echo "pre-commit not installed see README." && false)
