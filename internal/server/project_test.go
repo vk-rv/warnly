@@ -429,7 +429,7 @@ func TestServer_ListProjects(t *testing.T) {
 		}))
 
 		for i := range 3 {
-			wIngest, rIngest := getIngestRequest(generateUniqueEventPayload(zapsentryEventWithErr, i))
+			wIngest, rIngest := getIngestRequest(ctx, generateUniqueEventPayload(zapsentryEventWithErr, i))
 			eventHandler.IngestEvent(wIngest, rIngest)
 			if wIngest.Code != http.StatusOK {
 				t.Log("=== LOGGER OUTPUT ===")
@@ -610,7 +610,7 @@ func TestServer_HandleProjectDetails(t *testing.T) {
 				Platform:  warnly.PlatformGolang,
 			}))
 
-			wIngest, rIngest := getIngestRequest(tt.eventPayload)
+			wIngest, rIngest := getIngestRequest(ctx, tt.eventPayload)
 			eventHandler.IngestEvent(wIngest, rIngest)
 			assert.Equal(t, http.StatusOK, wIngest.Code)
 

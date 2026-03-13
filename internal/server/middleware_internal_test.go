@@ -97,6 +97,7 @@ func (m *mockHijacker) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 
 func TestRecordLatencyWithDifferentMethods(t *testing.T) {
 	t.Parallel()
+	ctx := t.Context()
 	registry := prometheus.NewRegistry()
 	mw := newPrometheusMW(registry, time.Now)
 	handler := func(w http.ResponseWriter, r *http.Request) {
@@ -105,7 +106,7 @@ func TestRecordLatencyWithDifferentMethods(t *testing.T) {
 	wrapped := mw.recordLatency(handler)
 	methods := []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete}
 	for _, method := range methods {
-		req := httptest.NewRequest(method, testPattern, http.NoBody)
+		req := httptest.NewRequestWithContext(ctx, method, testPattern, http.NoBody)
 		req.Pattern = testPattern
 		w := httptest.NewRecorder()
 		wrapped(w, req)
@@ -117,6 +118,8 @@ func TestRecordLatencyWithDifferentMethods(t *testing.T) {
 
 func TestRecordLatency(t *testing.T) {
 	t.Parallel()
+
+	ctx := t.Context()
 
 	tests := []struct {
 		handler        http.HandlerFunc
@@ -162,7 +165,7 @@ func TestRecordLatency(t *testing.T) {
 
 			wrapped := mw.recordLatency(tt.handler)
 
-			req := httptest.NewRequest(http.MethodGet, testPattern, http.NoBody)
+			req := httptest.NewRequestWithContext(ctx, http.MethodGet, testPattern, http.NoBody)
 			req.Pattern = testPattern
 			w := httptest.NewRecorder()
 
@@ -209,8 +212,7 @@ func TestEmailMatcherMiddleware_AllowedEmail(t *testing.T) {
 	user := warnly.User{Email: "test@example.com", ID: 1}
 	ctx := NewContextWithUser(t.Context(), user)
 
-	req := httptest.NewRequest(http.MethodGet, testPattern, http.NoBody)
-	req = req.WithContext(ctx)
+	req := httptest.NewRequestWithContext(ctx, http.MethodGet, testPattern, http.NoBody)
 	w := httptest.NewRecorder()
 
 	wrapped(w, req)
@@ -236,8 +238,7 @@ func TestEmailMatcherMiddleware_DeniedEmail_WithoutHTMX(t *testing.T) {
 	user := warnly.User{Email: "test@invalid.com", ID: 1}
 	ctx := NewContextWithUser(context.Background(), user)
 
-	req := httptest.NewRequest(http.MethodGet, testPattern, http.NoBody)
-	req = req.WithContext(ctx)
+	req := httptest.NewRequestWithContext(ctx, http.MethodGet, testPattern, http.NoBody)
 	w := httptest.NewRecorder()
 
 	wrapped(w, req)
@@ -264,8 +265,7 @@ func TestEmailMatcherMiddleware_DeniedEmail_WithHTMX(t *testing.T) {
 	user := warnly.User{Email: "test@invalid.com", ID: 1}
 	ctx := NewContextWithUser(context.Background(), user)
 
-	req := httptest.NewRequest(http.MethodGet, testPattern, http.NoBody)
-	req = req.WithContext(ctx)
+	req := httptest.NewRequestWithContext(ctx, http.MethodGet, testPattern, http.NoBody)
 	req.Header.Set(htmxHeader, "true")
 	w := httptest.NewRecorder()
 
@@ -311,8 +311,7 @@ func TestEmailMatcherMiddleware_MultiplePatterns(t *testing.T) {
 			user := warnly.User{Email: tt.email, ID: 1}
 			ctx := NewContextWithUser(context.Background(), user)
 
-			req := httptest.NewRequest(http.MethodGet, testPattern, http.NoBody)
-			req = req.WithContext(ctx)
+			req := httptest.NewRequestWithContext(ctx, http.MethodGet, testPattern, http.NoBody)
 			w := httptest.NewRecorder()
 
 			wrapped(w, req)

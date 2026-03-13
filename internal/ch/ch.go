@@ -902,7 +902,8 @@ func (s *ClickhouseStore) ListPopularTags(
 
 	pidQuestionMarks, pidArgs := createPlaceholdersAndArgs(c.ProjectIDs)
 
-	args := []any{c.From, c.To}
+	args := make([]any, 0, 2+len(pidArgs)+1)
+	args = append(args, c.From, c.To)
 	args = append(args, pidArgs...)
 
 	query := `SELECT tag, count() AS count
@@ -954,7 +955,8 @@ func (s *ClickhouseStore) ListTagValues(
 
 	pidQuestionMarks, pidArgs := createPlaceholdersAndArgs(c.ProjectIDs)
 
-	args := []any{c.Tag, c.From, c.To}
+	args := make([]any, 0, 3+len(pidArgs)+1)
+	args = append(args, c.Tag, c.From, c.To)
 	args = append(args, pidArgs...)
 
 	query := `SELECT value, count() AS count
@@ -1020,7 +1022,9 @@ func (s *ClickhouseStore) GetFilteredGroupIDs(
 
 	for _, token := range tokens {
 		if token.IsRawText {
-			query.WriteString(" AND (notEquals(positionCaseInsensitive(message, ?), 0) OR notEquals(positionCaseInsensitive(title, ?), 0))")
+			query.WriteString(`
+			 AND (notEquals(positionCaseInsensitive(message, ?), 0) 
+			 OR notEquals(positionCaseInsensitive(title, ?), 0))`)
 			args = append(args, token.Value, token.Value)
 		} else {
 			hash := fmt.Sprintf("%s=%s", token.Key, token.Value)

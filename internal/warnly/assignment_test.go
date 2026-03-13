@@ -24,7 +24,6 @@ func TestAssignments_AssignedUser(t *testing.T) {
 		Email:    "jane@example.com",
 	}
 
-	//nolint:govet // ignore
 	tests := []struct {
 		assignments warnly.Assignments
 		wantUser    *warnly.Teammate

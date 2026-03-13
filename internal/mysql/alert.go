@@ -68,9 +68,9 @@ func (s *AlertStore) ListAlerts(
 		return nil, 0, fmt.Errorf("mysql: count alerts: %w", err)
 	}
 
-	paginationArgs := make([]any, len(args))
+	paginationArgs := make([]any, len(args), len(args)+2)
 	copy(paginationArgs, args)
-	paginationArgs = append(paginationArgs, limit, offset) //nolint:makezero // dont care about it
+	paginationArgs = append(paginationArgs, limit, offset)
 
 	query := fmt.Sprintf(`
 		SELECT 

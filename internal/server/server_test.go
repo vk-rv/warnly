@@ -102,8 +102,9 @@ func getTestLogger() (*slog.Logger, *bytes.Buffer) {
 	return logger, buf
 }
 
-func getIngestRequest(body []byte) (*httptest.ResponseRecorder, *http.Request) {
-	r := httptest.NewRequest(
+func getIngestRequest(ctx context.Context, body []byte) (*httptest.ResponseRecorder, *http.Request) {
+	r := httptest.NewRequestWithContext(
+		ctx,
 		http.MethodPost,
 		ingestEventPath,
 		bytes.NewReader(body))
@@ -117,9 +118,12 @@ func getIngestRequest(body []byte) (*httptest.ResponseRecorder, *http.Request) {
 }
 
 func getProjectDetailsRequest(ctx context.Context) (*httptest.ResponseRecorder, *http.Request) {
-	r := httptest.NewRequest(http.MethodGet, projectDetailsPath, http.NoBody)
+	r := httptest.NewRequestWithContext(
+		server.NewContextWithUser(ctx, testUser),
+		http.MethodGet,
+		projectDetailsPath,
+		http.NoBody)
 	r.SetPathValue("id", "1")
-	r = r.WithContext(server.NewContextWithUser(ctx, testUser))
 
 	w := httptest.NewRecorder()
 
@@ -138,26 +142,35 @@ func getListProjectsRequest(ctx context.Context, name string, teamID int) (*http
 	default:
 		path = "/projects"
 	}
-	r := httptest.NewRequest(http.MethodGet, path, http.NoBody)
-	r = r.WithContext(server.NewContextWithUser(ctx, testUser))
+	r := httptest.NewRequestWithContext(
+		server.NewContextWithUser(ctx, testUser),
+		http.MethodGet,
+		path,
+		http.NoBody)
 	w := httptest.NewRecorder()
 	return w, r
 }
 
 func getDeleteProjectRequest(ctx context.Context, projectID int) (*httptest.ResponseRecorder, *http.Request) {
 	path := fmt.Sprintf("/projects/%d", projectID)
-	r := httptest.NewRequest(http.MethodDelete, path, http.NoBody)
+	r := httptest.NewRequestWithContext(
+		server.NewContextWithUser(ctx, testUser),
+		http.MethodDelete,
+		path,
+		http.NoBody)
 	r.SetPathValue("id", strconv.Itoa(projectID))
-	r = r.WithContext(server.NewContextWithUser(ctx, testUser))
 	w := httptest.NewRecorder()
 	return w, r
 }
 
 func getCreateProjectRequest(ctx context.Context, projectName, platform string, teamID int) (*httptest.ResponseRecorder, *http.Request) {
 	formData := fmt.Sprintf("projectName=%s&platform=%s&team=%d", projectName, platform, teamID)
-	r := httptest.NewRequest(http.MethodPost, "/projects", bytes.NewBufferString(formData))
+	r := httptest.NewRequestWithContext(
+		server.NewContextWithUser(ctx, testUser),
+		http.MethodPost,
+		"/projects",
+		bytes.NewBufferString(formData))
 	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	r = r.WithContext(server.NewContextWithUser(ctx, testUser))
 	w := httptest.NewRecorder()
 	return w, r
 }

@@ -14,8 +14,6 @@ import (
 )
 
 // AlertWorker processes alert rules in the background.
-//
-//nolint:govet // dont care about it for now
 type AlertWorker struct {
 	alertStore        warnly.AlertStore
 	analyticsStore    warnly.AnalyticsStore

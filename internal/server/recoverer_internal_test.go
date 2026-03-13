@@ -15,6 +15,8 @@ import (
 func TestRecoverMiddleware_NormalHandler(t *testing.T) {
 	t.Parallel()
 
+	ctx := t.Context()
+
 	logger := slog.New(slog.DiscardHandler)
 	registry := prometheus.NewRegistry()
 	mw := newRecoverMw(registry, logger)
@@ -29,7 +31,7 @@ func TestRecoverMiddleware_NormalHandler(t *testing.T) {
 
 	wrapped := mw.recover(handler)
 
-	req := httptest.NewRequest(http.MethodGet, testPattern, http.NoBody)
+	req := httptest.NewRequestWithContext(ctx, http.MethodGet, testPattern, http.NoBody)
 	req.Pattern = testPattern
 	w := httptest.NewRecorder()
 
@@ -45,6 +47,8 @@ func TestRecoverMiddleware_NormalHandler(t *testing.T) {
 func TestRecoverMiddleware_PanicRecovery_StringPanic(t *testing.T) {
 	t.Parallel()
 
+	ctx := t.Context()
+
 	logger := slog.New(slog.DiscardHandler)
 	registry := prometheus.NewRegistry()
 	mw := newRecoverMw(registry, logger)
@@ -55,7 +59,7 @@ func TestRecoverMiddleware_PanicRecovery_StringPanic(t *testing.T) {
 
 	wrapped := mw.recover(handler)
 
-	req := httptest.NewRequest(http.MethodGet, testPattern, http.NoBody)
+	req := httptest.NewRequestWithContext(ctx, http.MethodGet, testPattern, http.NoBody)
 	req.Pattern = testPattern
 	w := httptest.NewRecorder()
 
@@ -68,6 +72,8 @@ func TestRecoverMiddleware_PanicRecovery_StringPanic(t *testing.T) {
 func TestRecoverMiddleware_PanicRecovery_ErrorPanic(t *testing.T) {
 	t.Parallel()
 
+	ctx := t.Context()
+
 	logger := slog.New(slog.DiscardHandler)
 	registry := prometheus.NewRegistry()
 	mw := newRecoverMw(registry, logger)
@@ -79,7 +85,7 @@ func TestRecoverMiddleware_PanicRecovery_ErrorPanic(t *testing.T) {
 
 	wrapped := mw.recover(handler)
 
-	req := httptest.NewRequest(http.MethodGet, testPattern, http.NoBody)
+	req := httptest.NewRequestWithContext(ctx, http.MethodGet, testPattern, http.NoBody)
 	req.Pattern = testPattern
 	w := httptest.NewRecorder()
 
@@ -92,6 +98,8 @@ func TestRecoverMiddleware_PanicRecovery_ErrorPanic(t *testing.T) {
 func TestRecoverMiddleware_ErrAbortHandler_IsPanic(t *testing.T) {
 	t.Parallel()
 
+	ctx := t.Context()
+
 	logger := slog.New(slog.DiscardHandler)
 	registry := prometheus.NewRegistry()
 	mw := newRecoverMw(registry, logger)
@@ -102,7 +110,7 @@ func TestRecoverMiddleware_ErrAbortHandler_IsPanic(t *testing.T) {
 
 	wrapped := mw.recover(handler)
 
-	req := httptest.NewRequest(http.MethodGet, testPattern, http.NoBody)
+	req := httptest.NewRequestWithContext(ctx, http.MethodGet, testPattern, http.NoBody)
 	req.Pattern = testPattern
 	w := httptest.NewRecorder()
 
@@ -114,6 +122,8 @@ func TestRecoverMiddleware_ErrAbortHandler_IsPanic(t *testing.T) {
 func TestRecoverMiddleware_WithHTMXRequest(t *testing.T) {
 	t.Parallel()
 
+	ctx := t.Context()
+
 	logger := slog.New(slog.DiscardHandler)
 	registry := prometheus.NewRegistry()
 	mw := newRecoverMw(registry, logger)
@@ -124,7 +134,7 @@ func TestRecoverMiddleware_WithHTMXRequest(t *testing.T) {
 
 	wrapped := mw.recover(handler)
 
-	req := httptest.NewRequest(http.MethodGet, testPattern, http.NoBody)
+	req := httptest.NewRequestWithContext(ctx, http.MethodGet, testPattern, http.NoBody)
 	req.Pattern = testPattern
 	req.Header.Set(htmxHeader, "true")
 	w := httptest.NewRecorder()
@@ -140,6 +150,8 @@ func TestRecoverMiddleware_WithHTMXRequest(t *testing.T) {
 func TestRecoverMiddleware_WithUpgradeConnection(t *testing.T) {
 	t.Parallel()
 
+	ctx := t.Context()
+
 	logger := slog.New(slog.DiscardHandler)
 	registry := prometheus.NewRegistry()
 	mw := newRecoverMw(registry, logger)
@@ -150,7 +162,7 @@ func TestRecoverMiddleware_WithUpgradeConnection(t *testing.T) {
 
 	wrapped := mw.recover(handler)
 
-	req := httptest.NewRequest(http.MethodGet, testPattern, http.NoBody)
+	req := httptest.NewRequestWithContext(ctx, http.MethodGet, testPattern, http.NoBody)
 	req.Pattern = testPattern
 	req.Header.Set("Connection", "Upgrade")
 	w := httptest.NewRecorder()
@@ -167,6 +179,8 @@ func TestRecoverMiddleware_WithUpgradeConnection(t *testing.T) {
 
 func TestRecoverMiddleware_MultipleMetrics(t *testing.T) {
 	t.Parallel()
+
+	ctx := t.Context()
 
 	logger := slog.New(slog.DiscardHandler)
 	registry := prometheus.NewRegistry()
@@ -189,7 +203,7 @@ func TestRecoverMiddleware_MultipleMetrics(t *testing.T) {
 	wrapped := mw.recover(panicHandler)
 
 	for _, tt := range tests {
-		req := httptest.NewRequest(tt.method, tt.pattern, http.NoBody)
+		req := httptest.NewRequestWithContext(ctx, tt.method, tt.pattern, http.NoBody)
 		req.Pattern = tt.pattern
 		w := httptest.NewRecorder()
 

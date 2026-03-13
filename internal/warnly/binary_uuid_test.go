@@ -112,7 +112,6 @@ func TestUUID_String(t *testing.T) {
 func TestUUID_Scan(t *testing.T) {
 	t.Parallel()
 
-	//nolint:govet // ignore
 	tests := []struct {
 		src     any
 		name    string
@@ -166,20 +165,5 @@ func TestUUID_Value(t *testing.T) {
 	}
 	if v, ok := val.([]byte); !ok || string(v) != string(u) {
 		t.Errorf("UUID.Value() = %v, want %v", v, u)
-	}
-}
-
-func TestUUIDPtr(t *testing.T) {
-	t.Parallel()
-
-	u := warnly.UUID{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}
-	ptr := new(u)
-
-	if ptr == nil {
-		t.Errorf("UUIDPtr() returned nil")
-		return
-	}
-	if string(*ptr) != string(u) {
-		t.Errorf("UUIDPtr() dereference = %v, want %v", *ptr, u)
 	}
 }

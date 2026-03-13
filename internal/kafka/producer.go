@@ -54,15 +54,14 @@ func (l BatchWriteListener) OnProduceBatchWritten(_ kgo.BrokerMetadata,
 // ProducerConfig holds configuration for publishing events to Kafka.
 //
 // Defaults follow Franz-go library recommendations for high write throughput.
-//
-//nolint:govet // we want to align the struct fields
 type ProducerConfig struct {
-	RecordPartitioner kgo.Partitioner
-	Reg               prometheus.Registerer
-	ProduceCallback   func(*kgo.Record, error)
-	BatchListener     BatchWriteListener
-	CompressionCodec  []CompressionCodec
 	CommonConfig
+
+	RecordPartitioner      kgo.Partitioner
+	Reg                    prometheus.Registerer
+	ProduceCallback        func(*kgo.Record, error)
+	BatchListener          BatchWriteListener
+	CompressionCodec       []CompressionCodec
 	MaxBufferedRecords     int
 	ProducerBatchMaxBytes  int32
 	ManualFlushing         bool

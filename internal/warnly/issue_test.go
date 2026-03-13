@@ -39,7 +39,6 @@ func TestGetMetrics(t *testing.T) {
 		{GID: 2, TimesSeen: 20, UserCount: 10, FirstSeen: now, LastSeen: now},
 	}
 
-	//nolint:govet // ignore
 	tests := []struct {
 		name     string
 		expected warnly.IssueMetrics

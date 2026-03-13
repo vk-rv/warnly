@@ -68,7 +68,7 @@ func TestServer_HandleEventIngestion(t *testing.T) {
 		)
 		eventHandler := server.NewEventAPIHandler(svc, logger)
 
-		w, r := getIngestRequest(body)
+		w, r := getIngestRequest(ctx, body)
 
 		eventHandler.IngestEvent(w, r)
 
@@ -110,7 +110,7 @@ func TestServer_HandleEventIngestion(t *testing.T) {
 		)
 		eventHandler := server.NewEventAPIHandler(svc, logger)
 
-		w, r := getIngestRequest(body)
+		w, r := getIngestRequest(ctx, body)
 		r.Header.Set("X-Sentry-Auth", "Sentry sentry_version=7, sentry_client=sentry.go/0.30.0, sentry_key=invalidkey")
 
 		eventHandler.IngestEvent(w, r)
@@ -122,12 +122,14 @@ func TestServer_HandleEventIngestion(t *testing.T) {
 	t.Run("event ingestion with error problem from event service", func(t *testing.T) {
 		t.Parallel()
 
+		ctx := t.Context()
+
 		logger, _ := getTestLogger()
 
 		svc := NewTestEventService(assert.AnError)
 		eventHandler := server.NewEventAPIHandler(svc, logger)
 
-		w, r := getIngestRequest(body)
+		w, r := getIngestRequest(ctx, body)
 
 		eventHandler.IngestEvent(w, r)
 
