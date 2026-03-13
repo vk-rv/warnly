@@ -34,11 +34,6 @@ func NewUUID() UUID {
 	return UUID(u[:])
 }
 
-// UUIDPtr simply returns a pointer for the given value type.
-func UUIDPtr(u UUID) *UUID {
-	return &u
-}
-
 // String returns the 36 byet hexstring representation of this uuid
 // return empty string if this uuid is nil.
 func (u UUID) String() string {
