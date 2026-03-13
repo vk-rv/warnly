@@ -225,8 +225,8 @@ func projectKey(xHeaderAuth string) (string, error) {
 
 	for i := range parts {
 		parts[i] = strings.TrimSpace(parts[i])
-		if strings.HasPrefix(parts[i], "sentry_key=") {
-			projectKey = strings.TrimPrefix(parts[i], "sentry_key=")
+		if after, ok := strings.CutPrefix(parts[i], "sentry_key="); ok {
+			projectKey = after
 			break
 		}
 	}

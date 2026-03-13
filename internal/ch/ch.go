@@ -451,7 +451,8 @@ func (s *ClickhouseStore) ListEvents(ctx context.Context, criteria *warnly.Event
 	ctx, span := s.tracer.Start(ctx, "ClickhouseStore.ListEvents")
 	defer span.End()
 
-	query := `SELECT 
+	var query strings.Builder
+	query.WriteString(`SELECT 
 			  	replaceAll(toString(event_id), '-', '') AS event_id,
 				created_at,
 				title,
@@ -467,31 +468,31 @@ func (s *ClickhouseStore) ListEvents(ctx context.Context, criteria *warnly.Event
 			WHERE deleted = 0
 			AND gid = ?
 			AND created_at >= toDateTime(?, 'UTC')
-			AND created_at < toDateTime(?, 'UTC')`
+			AND created_at < toDateTime(?, 'UTC')`)
 
 	args := []any{criteria.GroupID, criteria.From, criteria.To}
 
 	if criteria.Message != "" {
-		query += " AND notEquals(positionCaseInsensitive(message, ?), 0)"
+		query.WriteString(" AND notEquals(positionCaseInsensitive(message, ?), 0)")
 		args = append(args, criteria.Message)
 	}
 
 	for key, value := range criteria.Tags {
 		if value.IsNot {
-			query += notHasTagSQL
+			query.WriteString(notHasTagSQL)
 		} else {
-			query += hasTagSQL
+			query.WriteString(hasTagSQL)
 		}
 		args = append(args, fmt.Sprintf("%s=%s", key, value.Value))
 	}
 
-	query += " AND in(pid, ?)"
+	query.WriteString(" AND in(pid, ?)")
 	args = append(args, criteria.ProjectID)
 
-	query += " ORDER BY created_at DESC LIMIT ? OFFSET ?"
+	query.WriteString(" ORDER BY created_at DESC LIMIT ? OFFSET ?")
 	args = append(args, criteria.Limit, criteria.Offset)
 
-	rows, err := s.conn.Query(ctx, query, args...)
+	rows, err := s.conn.Query(ctx, query.String(), args...)
 	if err != nil {
 		return nil, fmt.Errorf("clickhouse: list events: %w", err)
 	}
@@ -534,33 +535,34 @@ func (s *ClickhouseStore) CountEvents(ctx context.Context, criteria *warnly.Even
 	ctx, span := s.tracer.Start(ctx, "ClickhouseStore.CountEvents")
 	defer span.End()
 
-	query := `SELECT count() AS count
+	var query strings.Builder
+	query.WriteString(`SELECT count() AS count
 			  FROM event 
 			  PREWHERE gid = ?
 			  WHERE deleted = 0
 			  AND created_at >= toDateTime(?, 'UTC')
-			  AND created_at < toDateTime(?, 'UTC')`
+			  AND created_at < toDateTime(?, 'UTC')`)
 
 	args := []any{criteria.GroupID, criteria.From, criteria.To}
 
 	if criteria.Message != "" {
-		query += " AND notEquals(positionCaseInsensitive(message, ?), 0)"
+		query.WriteString(" AND notEquals(positionCaseInsensitive(message, ?), 0)")
 		args = append(args, criteria.Message)
 	}
 
 	for key, value := range criteria.Tags {
 		if value.IsNot {
-			query += " AND not has(_tags_hash_map, cityHash64(?))"
+			query.WriteString(" AND not has(_tags_hash_map, cityHash64(?))")
 		} else {
-			query += " AND has(_tags_hash_map, cityHash64(?))"
+			query.WriteString(" AND has(_tags_hash_map, cityHash64(?))")
 		}
 		args = append(args, fmt.Sprintf("%s=%s", key, value.Value))
 	}
 
-	query += " AND in(pid, ?)"
+	query.WriteString(" AND in(pid, ?)")
 	args = append(args, criteria.ProjectID)
 
-	rows, err := s.conn.Query(ctx, query, args...)
+	rows, err := s.conn.Query(ctx, query.String(), args...)
 	if err != nil {
 		return 0, fmt.Errorf("clickhouse: count events: %w", err)
 	}
@@ -1005,9 +1007,10 @@ func (s *ClickhouseStore) GetFilteredGroupIDs(
 	ctx, span := s.tracer.Start(ctx, "ClickhouseStore.GetFilteredGroupIDs")
 	defer span.End()
 
-	query := `SELECT DISTINCT gid FROM event WHERE deleted = 0 AND pid IN (?` +
+	var query strings.Builder
+	query.WriteString(`SELECT DISTINCT gid FROM event WHERE deleted = 0 AND pid IN (?` +
 		strings.Repeat(",?", len(projectIDs)-1) +
-		`) AND created_at >= toDateTime(?, 'UTC') AND created_at <= toDateTime(?, 'UTC')`
+		`) AND created_at >= toDateTime(?, 'UTC') AND created_at <= toDateTime(?, 'UTC')`)
 
 	args := make([]any, 0, len(projectIDs)+2)
 	for _, pid := range projectIDs {
@@ -1017,20 +1020,20 @@ func (s *ClickhouseStore) GetFilteredGroupIDs(
 
 	for _, token := range tokens {
 		if token.IsRawText {
-			query += " AND (notEquals(positionCaseInsensitive(message, ?), 0) OR notEquals(positionCaseInsensitive(title, ?), 0))"
+			query.WriteString(" AND (notEquals(positionCaseInsensitive(message, ?), 0) OR notEquals(positionCaseInsensitive(title, ?), 0))")
 			args = append(args, token.Value, token.Value)
 		} else {
 			hash := fmt.Sprintf("%s=%s", token.Key, token.Value)
 			if token.Operator == "is not" {
-				query += " AND not has(_tags_hash_map, cityHash64(?))"
+				query.WriteString(" AND not has(_tags_hash_map, cityHash64(?))")
 			} else {
-				query += " AND has(_tags_hash_map, cityHash64(?))"
+				query.WriteString(" AND has(_tags_hash_map, cityHash64(?))")
 			}
 			args = append(args, hash)
 		}
 	}
 
-	rows, err := s.conn.Query(ctx, query, args...)
+	rows, err := s.conn.Query(ctx, query.String(), args...)
 	if err != nil {
 		return nil, fmt.Errorf("clickhouse: get filtered group ids: %w", err)
 	}

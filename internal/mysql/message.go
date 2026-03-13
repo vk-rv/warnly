@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/vk-rv/warnly/internal/warnly"
 )
@@ -106,18 +107,19 @@ func NewMentionStore(db ExtendedDB) *MentionStore {
 
 // CreateMentions creates new mentions in issue discussion (when user was tagged using "@").
 func (s *MentionStore) CreateMentions(ctx context.Context, mentions []warnly.Mention) error {
-	query := `INSERT INTO mention (message_id, mentioned_user_id, created_at) VALUES `
+	var query strings.Builder
+	query.WriteString(`INSERT INTO mention (message_id, mentioned_user_id, created_at) VALUES `)
 	values := make([]any, 0, len(mentions)*3)
 
 	for i, mention := range mentions {
 		if i > 0 {
-			query += ", "
+			query.WriteString(", ")
 		}
-		query += "(?, ?, ?)"
+		query.WriteString("(?, ?, ?)")
 		values = append(values, mention.MessageID, mention.MentionedUserID, mention.CreatedAt)
 	}
 
-	_, err := s.db.ExecContext(ctx, query, values...)
+	_, err := s.db.ExecContext(ctx, query.String(), values...)
 	if err != nil {
 		return fmt.Errorf("mysql mention store: create mentions: %w", err)
 	}
@@ -154,18 +156,19 @@ func (s *MessageStore) CountMessagesByIDs(ctx context.Context, issueIDs []int64)
 	const baseQuery = `SELECT i.id AS issue_id, COUNT(m.id) AS message_count
 					   FROM issue i
 					   LEFT JOIN message m ON i.id = m.issue_id`
-	query := baseQuery + " WHERE i.id IN ("
+	var query strings.Builder
+	query.WriteString(baseQuery + " WHERE i.id IN (")
 	args := make([]any, len(issueIDs))
 	for i, id := range issueIDs {
 		if i > 0 {
-			query += ", "
+			query.WriteString(", ")
 		}
-		query += "?"
+		query.WriteString("?")
 		args[i] = id
 	}
-	query += ") GROUP BY i.id"
+	query.WriteString(") GROUP BY i.id")
 
-	rows, err := s.db.QueryContext(ctx, query, args...)
+	rows, err := s.db.QueryContext(ctx, query.String(), args...)
 	if err != nil {
 		return nil, fmt.Errorf("mysql message store: count messages by ids: %w", err)
 	}

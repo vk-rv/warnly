@@ -875,23 +875,24 @@ func (e EventsList) DashboardDataForPeriod(now func() time.Time, period string) 
 	}
 
 	// Format as JSON: [[timestamps...], [counts...]]
-	result := "[["
+	var result strings.Builder
+	result.WriteString("[[")
 	for i, ts := range timestamps {
 		if i > 0 {
-			result += ","
+			result.WriteString(",")
 		}
-		result += strconv.FormatInt(ts, 10)
+		result.WriteString(strconv.FormatInt(ts, 10))
 	}
-	result += "],["
+	result.WriteString("],[")
 	for i, count := range counts {
 		if i > 0 {
-			result += ","
+			result.WriteString(",")
 		}
-		result += strconv.Itoa(count)
+		result.WriteString(strconv.Itoa(count))
 	}
-	result += "]]"
+	result.WriteString("]]")
 
-	return result
+	return result.String()
 }
 
 // TotalErrors returns the total number of errors.

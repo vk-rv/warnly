@@ -163,7 +163,7 @@ func (s *SecureCookie) Encode(name string, value any) (string, error) {
 	}
 	b = encode(b)
 	// 3. Create MAC for "name|date|value". Extra pipe to be used later.
-	b = []byte(fmt.Sprintf("%s|%d|%s|", name, s.timestamp(), b))
+	b = fmt.Appendf(nil, "%s|%d|%s|", name, s.timestamp(), b)
 	mac := createMac(hmac.New(s.hashFunc, s.hashKey), b[:len(b)-1])
 	// Append mac, remove name.
 	b = append(b, mac...)[len(name)+1:]

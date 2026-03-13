@@ -116,11 +116,11 @@ type UserIdentifier struct {
 
 // UsernameFromEmail returns the username from the email.
 func UsernameFromEmail(email string) (string, error) {
-	atIndex := strings.Index(email, "@")
-	if atIndex == -1 {
+	before, _, ok := strings.Cut(email, "@")
+	if !ok {
 		return "", fmt.Errorf("invalid email format: %s", email)
 	}
-	username := email[:atIndex]
+	username := before
 	if username == "" {
 		return "", fmt.Errorf("invalid email format: %s", email)
 	}

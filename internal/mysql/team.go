@@ -3,6 +3,7 @@ package mysql
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/vk-rv/warnly/internal/warnly"
@@ -40,19 +41,19 @@ func (s *TeamStore) CreateTeam(ctx context.Context, t warnly.Team) error {
 
 // ListTeammates returns a list of teammates for the given team identifiers.
 func (s *TeamStore) ListTeammates(ctx context.Context, teamIDs []int) ([]warnly.Teammate, error) {
-	placeholders := ""
+	var placeholders strings.Builder
 	args := make([]any, len(teamIDs))
 	for i, id := range teamIDs {
 		if i > 0 {
-			placeholders += ","
+			placeholders.WriteString(",")
 		}
-		placeholders += "?"
+		placeholders.WriteString("?")
 		args[i] = id
 	}
 
 	query := fmt.Sprintf(`SELECT u.id, u.name, u.surname, u.email, u.username 
 		FROM team_relation AS tr JOIN user AS u ON tr.user_id = u.id 
-		WHERE tr.team_id IN (%s)`, placeholders)
+		WHERE tr.team_id IN (%s)`, placeholders.String())
 
 	rows, err := s.db.QueryContext(ctx, query, args...)
 	if err != nil {
