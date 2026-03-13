@@ -41,9 +41,9 @@ func TestGetMetrics(t *testing.T) {
 
 	//nolint:govet // ignore
 	tests := []struct {
+		name     string
 		expected warnly.IssueMetrics
 		id       int64
-		name     string
 		found    bool
 	}{
 		{

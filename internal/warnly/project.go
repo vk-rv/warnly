@@ -727,8 +727,8 @@ type CreateProjectRequest struct {
 type ProjectInfo struct {
 	Name     string
 	DSN      string
-	ID       int
 	Platform string
+	ID       int
 }
 
 // Team is a representation of a team in the system.

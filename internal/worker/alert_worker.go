@@ -21,12 +21,12 @@ type AlertWorker struct {
 	analyticsStore    warnly.AnalyticsStore
 	issueStore        warnly.IssueStore
 	notificationStore warnly.NotificationStore
-	webhookNotifier   *notifier.WebhookNotifier
-	logger            *slog.Logger
 	stopCh            chan struct{}
+	logger            *slog.Logger
+	webhookNotifier   *notifier.WebhookNotifier
 	now               func() time.Time
-	interval          time.Duration
 	instanceID        string
+	interval          time.Duration
 	lockDuration      time.Duration
 	mu                sync.Mutex
 	running           bool

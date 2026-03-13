@@ -141,7 +141,7 @@ type Frame struct {
 }
 
 // GetModule returns Module if set, otherwise falls back to Package (used by Rust SDK).
-func (f Frame) GetModule() string {
+func (f *Frame) GetModule() string {
 	if f.Module != "" {
 		return f.Module
 	}
@@ -162,7 +162,7 @@ type Exception struct {
 
 // ExceptionList handles both Sentry exception formats:
 // - flat array: [{"type": "Error", ...}]
-// - object with values: {"values": [{"type": "Error", ...}]}
+// - object with values: {"values": [{"type": "Error", ...}]}.
 type ExceptionList []Exception
 
 func (e *ExceptionList) UnmarshalJSON(data []byte) error {
@@ -195,13 +195,13 @@ func (e *ExceptionList) UnmarshalJSON(data []byte) error {
 type Thread struct {
 	ID         string     `json:"id"`
 	Name       string     `json:"name"`
-	Current    bool       `json:"current"`
 	StackTrace StackTrace `json:"stacktrace"`
+	Current    bool       `json:"current"`
 }
 
 // ThreadList handles both Sentry thread formats:
 // - flat array: [{"id": "1", ...}]
-// - object with values: {"values": [{"id": "1", ...}]}
+// - object with values: {"values": [{"id": "1", ...}]}.
 type ThreadList []Thread
 
 func (t *ThreadList) UnmarshalJSON(data []byte) error {

@@ -186,28 +186,7 @@ func (s *EventService) IngestEvent(ctx context.Context, req warnly.IngestRequest
 
 	// If no exception frames, try to extract from threads (e.g. Rust SDK).
 	if len(ev.ExceptionFramesFunction) == 0 {
-		if threadFrames := event.GetThreadFrames(); len(threadFrames) > 0 {
-			ev.ExceptionFramesFunction = make([]string, len(threadFrames))
-			ev.ExceptionFramesAbsPath = make([]string, len(threadFrames))
-			ev.ExceptionFramesFilename = make([]string, len(threadFrames))
-			ev.ExceptionFramesLineNo = make([]uint32, len(threadFrames))
-			ev.ExceptionFramesColNo = make([]uint32, len(threadFrames))
-			ev.ExceptionFramesInApp = make(warnly.Uint8Array, len(threadFrames))
-			for i, f := range threadFrames {
-				ev.ExceptionFramesFunction[i] = f.Function
-				ev.ExceptionFramesAbsPath[i] = f.AbsPath
-				ev.ExceptionFramesLineNo[i] = f.LineNo
-				ev.ExceptionFramesColNo[i] = f.LineNo
-				if f.InApp {
-					ev.ExceptionFramesInApp[i] = 1
-				}
-				name := f.AbsPath
-				if strings.Contains(name, "/") {
-					name = name[strings.LastIndex(name, "/")+1:]
-				}
-				ev.ExceptionFramesFilename[i] = name
-			}
-		}
+		populateThreadFrames(ev, event)
 	}
 
 	if s.queue.Enabled {
@@ -400,4 +379,32 @@ func (s *EventService) extractIP(ipaddr string) (ipv4, ipv6 string, err error) {
 	}
 
 	return ipv4, ipv6, nil
+}
+
+func populateThreadFrames(ev *warnly.EventClickhouse, event *warnly.EventBody) {
+	threadFrames := event.GetThreadFrames()
+	if len(threadFrames) == 0 {
+		return
+	}
+
+	ev.ExceptionFramesFunction = make([]string, len(threadFrames))
+	ev.ExceptionFramesAbsPath = make([]string, len(threadFrames))
+	ev.ExceptionFramesFilename = make([]string, len(threadFrames))
+	ev.ExceptionFramesLineNo = make([]uint32, len(threadFrames))
+	ev.ExceptionFramesColNo = make([]uint32, len(threadFrames))
+	ev.ExceptionFramesInApp = make(warnly.Uint8Array, len(threadFrames))
+	for i := range threadFrames {
+		ev.ExceptionFramesFunction[i] = threadFrames[i].Function
+		ev.ExceptionFramesAbsPath[i] = threadFrames[i].AbsPath
+		ev.ExceptionFramesLineNo[i] = threadFrames[i].LineNo
+		ev.ExceptionFramesColNo[i] = threadFrames[i].LineNo
+		if threadFrames[i].InApp {
+			ev.ExceptionFramesInApp[i] = 1
+		}
+		name := threadFrames[i].AbsPath
+		if strings.Contains(name, "/") {
+			name = name[strings.LastIndex(name, "/")+1:]
+		}
+		ev.ExceptionFramesFilename[i] = name
+	}
 }

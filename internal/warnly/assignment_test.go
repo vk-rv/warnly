@@ -26,10 +26,10 @@ func TestAssignments_AssignedUser(t *testing.T) {
 
 	//nolint:govet // ignore
 	tests := []struct {
-		name        string
 		assignments warnly.Assignments
-		issueID     int64
 		wantUser    *warnly.Teammate
+		name        string
+		issueID     int64
 		wantOk      bool
 	}{
 		{

@@ -114,10 +114,10 @@ func TestUUID_Scan(t *testing.T) {
 
 	//nolint:govet // ignore
 	tests := []struct {
-		wantErr bool
-		want    warnly.UUID
-		name    string
 		src     any
+		name    string
+		want    warnly.UUID
+		wantErr bool
 	}{
 		{
 			name:    "nil src",

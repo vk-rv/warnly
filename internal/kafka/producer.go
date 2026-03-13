@@ -57,13 +57,12 @@ func (l BatchWriteListener) OnProduceBatchWritten(_ kgo.BrokerMetadata,
 //
 //nolint:govet // we want to align the struct fields
 type ProducerConfig struct {
+	RecordPartitioner kgo.Partitioner
+	Reg               prometheus.Registerer
+	ProduceCallback   func(*kgo.Record, error)
+	BatchListener     BatchWriteListener
+	CompressionCodec  []CompressionCodec
 	CommonConfig
-
-	RecordPartitioner      kgo.Partitioner
-	Reg                    prometheus.Registerer
-	ProduceCallback        func(*kgo.Record, error)
-	BatchListener          BatchWriteListener
-	CompressionCodec       []CompressionCodec
 	MaxBufferedRecords     int
 	ProducerBatchMaxBytes  int32
 	ManualFlushing         bool
