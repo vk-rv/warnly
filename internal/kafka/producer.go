@@ -54,6 +54,8 @@ func (l BatchWriteListener) OnProduceBatchWritten(_ kgo.BrokerMetadata,
 // ProducerConfig holds configuration for publishing events to Kafka.
 //
 // Defaults follow Franz-go library recommendations for high write throughput.
+//
+//nolint:fieldalignment // linter contradiction
 type ProducerConfig struct {
 	CommonConfig
 
