@@ -53,8 +53,32 @@ func GettingStarted(projectInfo *warnly.ProjectInfo) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templ.Raw(`
-    <p class="mb-4">Verify Warnly captures a message:</p>
+		templ_7745c5c3_Err = templ.Raw(`<p class="mb-4">Verify Warnly captures a message:</p>`).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		if projectInfo != nil && projectInfo.Platform == "rust" {
+			templ_7745c5c3_Err = templ.Raw(`
+    <pre class="bg-gray-900 p-4 rounded text-xs text-white overflow-x-auto">
+// Cargo.toml
+// [dependencies]
+// sentry = "0.35"
+
+fn main() {
+    let _guard = sentry::init(sentry::ClientOptions {
+        dsn: Some("${SENTRY_DSN}".parse().unwrap()),
+        release: sentry::release_name!(),
+        ..Default::default()
+    });
+
+    sentry::capture_message("It works!", sentry::Level::Info);
+}
+    </pre>`).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		} else {
+			templ_7745c5c3_Err = templ.Raw(`
     <pre class="bg-gray-900 p-4 rounded text-xs text-white overflow-x-auto">
 package main
 
@@ -75,7 +99,12 @@ func main() {
     defer sentry.Flush(2 * time.Second)
     sentry.CaptureMessage("It works!")
 }
-    </pre>
+    </pre>`).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		templ_7745c5c3_Err = templ.Raw(`
     <button hx-get="/projects" hx-target="#content" hx-swap="outerHTML settle:0" class="px-4 mt-8 py-2 cursor-pointer border border-black rounded text-sm transition hover:bg-black hover:text-white flex items-center">Continue</button>
   
   

@@ -112,7 +112,7 @@ func GetHashByNormalizedStackTrace(event *EventBody) (string, error) {
 
 		for j := range framesToHash {
 			frame := framesToHash[j]
-			if _, err := h.Write([]byte(frame.Module)); err != nil {
+			if _, err := h.Write([]byte(frame.GetModule())); err != nil {
 				return "", fmt.Errorf("md5: write module: %w", err)
 			}
 			if _, err := h.Write([]byte(frame.Function)); err != nil {

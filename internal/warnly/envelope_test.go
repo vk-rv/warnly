@@ -419,7 +419,7 @@ func TestGetExceptionFramesFilename(t *testing.T) {
 					},
 				},
 			},
-			want: []string{"file1.go"},
+			want: []string{"file1.go", "file2.go"},
 		},
 	}
 

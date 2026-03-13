@@ -16,6 +16,8 @@ const PageSize = 5
 const (
 	// PlatformGolang represents the Go platform.
 	PlatformGolang Platform = iota + 1
+	// PlatformRust represents the Rust platform.
+	PlatformRust
 )
 
 // ErrProjectNotFound is an error that is returned when the project is not found.
@@ -723,9 +725,10 @@ type CreateProjectRequest struct {
 
 // ProjectInfo is a representation of a project.
 type ProjectInfo struct {
-	Name string
-	DSN  string
-	ID   int
+	Name     string
+	DSN      string
+	ID       int
+	Platform string
 }
 
 // Team is a representation of a team in the system.
@@ -756,6 +759,8 @@ func (p Platform) String() string {
 	switch p {
 	case PlatformGolang:
 		return "Go"
+	case PlatformRust:
+		return "Rust"
 	default:
 		return "unknown"
 	}
@@ -766,6 +771,8 @@ func PlatformByName(name string) Platform {
 	switch name {
 	case "go":
 		return PlatformGolang
+	case "rust":
+		return PlatformRust
 	default:
 		return 0
 	}
@@ -775,6 +782,8 @@ func GetSDKID(name string) uint8 {
 	switch name {
 	case "sentry.go":
 		return 1
+	case "sentry.rust":
+		return 2
 	default:
 		return 0
 	}

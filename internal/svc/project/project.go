@@ -118,9 +118,10 @@ func (s *ProjectService) CreateProject(
 	}
 
 	return &warnly.ProjectInfo{
-		ID:   project.ID,
-		Name: project.Name,
-		DSN:  projectDSN(project.ID, project.Key, s.publicBaseURL, s.publicScheme),
+		ID:       project.ID,
+		Name:     project.Name,
+		DSN:      projectDSN(project.ID, project.Key, s.publicBaseURL, s.publicScheme),
+		Platform: req.Platform,
 	}, nil
 }
 

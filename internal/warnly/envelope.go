@@ -131,12 +131,21 @@ type SDKPackage struct {
 type Frame struct {
 	Function    string   `json:"function"`
 	Module      string   `json:"module"`
+	Package     string   `json:"package"`
 	AbsPath     string   `json:"abs_path"`
 	ContextLine string   `json:"context_line"`
 	PreContext  []string `json:"pre_context"`
 	PostContext []string `json:"post_context"`
 	LineNo      uint32   `json:"lineno"`
 	InApp       bool     `json:"in_app"`
+}
+
+// GetModule returns Module if set, otherwise falls back to Package (used by Rust SDK).
+func (f Frame) GetModule() string {
+	if f.Module != "" {
+		return f.Module
+	}
+	return f.Package
 }
 
 // StackTrace represents the stack trace details.
@@ -149,6 +158,74 @@ type Exception struct {
 	Type       string     `json:"type"`
 	Value      string     `json:"value"`
 	StackTrace StackTrace `json:"stacktrace"`
+}
+
+// ExceptionList handles both Sentry exception formats:
+// - flat array: [{"type": "Error", ...}]
+// - object with values: {"values": [{"type": "Error", ...}]}
+type ExceptionList []Exception
+
+func (e *ExceptionList) UnmarshalJSON(data []byte) error {
+	if len(data) == 0 || string(data) == "null" {
+		return nil
+	}
+
+	// Try as array first (Go SDK format)
+	if data[0] == '[' {
+		var arr []Exception
+		if err := json.Unmarshal(data, &arr); err != nil {
+			return err
+		}
+		*e = arr
+		return nil
+	}
+
+	// Try as object with "values" key (Rust, Python, JS SDK format)
+	var obj struct {
+		Values []Exception `json:"values"`
+	}
+	if err := json.Unmarshal(data, &obj); err != nil {
+		return err
+	}
+	*e = obj.Values
+	return nil
+}
+
+// Thread represents a thread with an optional stack trace.
+type Thread struct {
+	ID         string     `json:"id"`
+	Name       string     `json:"name"`
+	Current    bool       `json:"current"`
+	StackTrace StackTrace `json:"stacktrace"`
+}
+
+// ThreadList handles both Sentry thread formats:
+// - flat array: [{"id": "1", ...}]
+// - object with values: {"values": [{"id": "1", ...}]}
+type ThreadList []Thread
+
+func (t *ThreadList) UnmarshalJSON(data []byte) error {
+	if len(data) == 0 || string(data) == "null" {
+		return nil
+	}
+
+	if data[0] == '[' {
+		var arr []Thread
+		if err := json.Unmarshal(data, &arr); err != nil {
+			return err
+		}
+		*t = arr
+		return nil
+	}
+
+	var obj struct {
+		Values []Thread `json:"values"`
+	}
+	if err := json.Unmarshal(data, &obj); err != nil {
+		return err
+	}
+	*t = obj.Values
+	return nil
 }
 
 // EventBody represents the main event structure.
@@ -166,9 +243,45 @@ type EventBody struct {
 	EventID     string            `json:"event_id"`
 	Environment string            `json:"environment"`
 	SDK         SDKBody           `json:"sdk"`
-	Exception   []Exception       `json:"exception"`
+	Exception   ExceptionList     `json:"exception"`
+	Threads     ThreadList        `json:"threads"`
 	Extra       map[string]any    `json:"extra"`
 	Contexts    Contexts          `json:"contexts"`
+}
+
+func (e *EventBody) GetThreadFrames() []Frame {
+	if len(e.Threads) == 0 {
+		return nil
+	}
+
+	var thread *Thread
+	for i := range e.Threads {
+		if e.Threads[i].Current && len(e.Threads[i].StackTrace.Frames) > 0 {
+			thread = &e.Threads[i]
+			break
+		}
+	}
+	if thread == nil {
+		for i := range e.Threads {
+			if len(e.Threads[i].StackTrace.Frames) > 0 {
+				thread = &e.Threads[i]
+				break
+			}
+		}
+	}
+	if thread == nil {
+		return nil
+	}
+
+	frames := make([]Frame, len(thread.StackTrace.Frames))
+	copy(frames, thread.StackTrace.Frames)
+	for i := range frames {
+		if frames[i].Module == "" && frames[i].Package != "" {
+			frames[i].Module = frames[i].Package
+		}
+	}
+
+	return frames
 }
 
 // EventUser represents user information associated with an event.
@@ -279,15 +392,15 @@ func GetBreaker(exceptions []Exception) string {
 
 	for i := len(frames) - 1; i >= 0; i-- {
 		frame := frames[i]
-		if _, found := ignoredModules[frame.Module]; found {
+		if _, found := ignoredModules[frame.GetModule()]; found {
 			continue
 		}
-		return frame.Module + " in " + frame.Function
+		return frame.GetModule() + " in " + frame.Function
 	}
 
 	firstFrame := frames[0]
 
-	return firstFrame.Module + " in " + firstFrame.Function
+	return firstFrame.GetModule() + " in " + firstFrame.Function
 }
 
 func GetExceptionValue(exceptions []Exception, defaultVal string) string {
@@ -338,8 +451,8 @@ func GetExceptionFramesFilename(exceptions []Exception) []string {
 			name := exceptions[i].StackTrace.Frames[j].AbsPath
 			if strings.Contains(name, "/") {
 				name = name[strings.LastIndex(name, "/")+1:]
-				filename = append(filename, name)
 			}
+			filename = append(filename, name)
 		}
 	}
 
@@ -402,7 +515,7 @@ func GetHashByStackTrace(event *EventBody) (string, error) {
 	h := md5.New() //nolint:gosec // Non-crypto use
 	for i := range event.Exception {
 		for j := range event.Exception[i].StackTrace.Frames {
-			if _, err := h.Write([]byte(event.Exception[i].StackTrace.Frames[j].Module)); err != nil {
+			if _, err := h.Write([]byte(event.Exception[i].StackTrace.Frames[j].GetModule())); err != nil {
 				return "", fmt.Errorf("md5: write module: %w", err)
 			}
 			if _, err := h.Write([]byte(event.Exception[i].StackTrace.Frames[j].Function)); err != nil {

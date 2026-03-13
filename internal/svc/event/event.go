@@ -10,6 +10,7 @@ import (
 	"net"
 	"net/netip"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/patrickmn/go-cache"
@@ -181,6 +182,32 @@ func (s *EventService) IngestEvent(ctx context.Context, req warnly.IngestRequest
 		ExceptionFramesFunction: warnly.GetExceptionFramesFunction(event.Exception),
 		ExceptionFramesLineNo:   warnly.GetExceptionFramesLineNo(event.Exception),
 		ExceptionFramesInApp:    warnly.GetExceptionFramesInApp(event.Exception),
+	}
+
+	// If no exception frames, try to extract from threads (e.g. Rust SDK).
+	if len(ev.ExceptionFramesFunction) == 0 {
+		if threadFrames := event.GetThreadFrames(); len(threadFrames) > 0 {
+			ev.ExceptionFramesFunction = make([]string, len(threadFrames))
+			ev.ExceptionFramesAbsPath = make([]string, len(threadFrames))
+			ev.ExceptionFramesFilename = make([]string, len(threadFrames))
+			ev.ExceptionFramesLineNo = make([]uint32, len(threadFrames))
+			ev.ExceptionFramesColNo = make([]uint32, len(threadFrames))
+			ev.ExceptionFramesInApp = make(warnly.Uint8Array, len(threadFrames))
+			for i, f := range threadFrames {
+				ev.ExceptionFramesFunction[i] = f.Function
+				ev.ExceptionFramesAbsPath[i] = f.AbsPath
+				ev.ExceptionFramesLineNo[i] = f.LineNo
+				ev.ExceptionFramesColNo[i] = f.LineNo
+				if f.InApp {
+					ev.ExceptionFramesInApp[i] = 1
+				}
+				name := f.AbsPath
+				if strings.Contains(name, "/") {
+					name = name[strings.LastIndex(name, "/")+1:]
+				}
+				ev.ExceptionFramesFilename[i] = name
+			}
+		}
 	}
 
 	if s.queue.Enabled {
