@@ -155,9 +155,14 @@ func (h *EventHandler) handleIngestEvent(r *http.Request) (warnly.IngestEventRes
 		return res, NewBadRequestError("invalid project identifier", err, "project_id must be an integer")
 	}
 
-	projectKey, err := projectKey(r.Header.Get("X-Sentry-Auth"))
+	xSentryAuth := r.Header.Get("X-Sentry-Auth")
+	pKey, err := projectKey(xSentryAuth)
 	if err != nil {
-		return res, err
+		if pk, err2 := projectKey(strings.TrimPrefix(xSentryAuth, "Sentry ")); err2 == nil {
+			pKey = pk
+		} else {
+			return res, err
+		}
 	}
 
 	defer func() {
@@ -197,7 +202,7 @@ func (h *EventHandler) handleIngestEvent(r *http.Request) (warnly.IngestEventRes
 
 	req := warnly.IngestRequest{
 		Event:      &event,
-		ProjectKey: projectKey,
+		ProjectKey: pKey,
 		ProjectID:  projectID,
 		IP:         r.RemoteAddr,
 	}

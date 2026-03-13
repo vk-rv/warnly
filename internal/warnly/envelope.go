@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"math"
 	"strings"
 	"time"
 )
@@ -31,6 +32,29 @@ func (a *Uint8Array) UnmarshalJSON(data []byte) error {
 		(*a)[i] = uint8(v)
 	}
 	return nil
+}
+
+// SentryTimestamp handles both RFC3339 strings and unix float timestamps.
+type SentryTimestamp struct {
+	time.Time
+}
+
+func (t *SentryTimestamp) UnmarshalJSON(data []byte) error {
+	if len(data) > 0 && data[0] == '"' {
+		return t.Time.UnmarshalJSON(data)
+	}
+	var f float64
+	if err := json.Unmarshal(data, &f); err != nil {
+		return fmt.Errorf("sentry time json unmarshal as float: %w", err)
+	}
+	sec, frac := math.Modf(f)
+	t.Time = time.Unix(int64(sec), int64(frac*1e9))
+
+	return nil
+}
+
+func (t SentryTimestamp) MarshalJSON() ([]byte, error) {
+	return t.Time.MarshalJSON()
 }
 
 const defaultExceptionType = "Error"
@@ -130,7 +154,7 @@ type Exception struct {
 // EventBody represents the main event structure.
 // This is the structure that is sent to the Warnly server.
 type EventBody struct {
-	Timestamp   time.Time         `json:"timestamp"`
+	Timestamp   SentryTimestamp   `json:"timestamp"`
 	Modules     map[string]string `json:"modules"`
 	Tags        map[string]string `json:"tags"`
 	User        EventUser         `json:"user"`
