@@ -494,8 +494,8 @@ func run(cfg *config, logger *slog.Logger) error {
 }
 
 const (
-		backendClickhouse   = "clickhouse"
-		backendMySQLDuckDB  = "mysql-duckdb"
+	backendClickhouse  = "clickhouse"
+	backendMySQLDuckDB = "mysql-duckdb"
 )
 
 func analyticsConfig(cfg *config) (backend, dsn string, err error) {
@@ -503,7 +503,7 @@ func analyticsConfig(cfg *config) (backend, dsn string, err error) {
 	if backend == "" {
 		backend = "clickhouse"
 	}
-	
+
 	switch backend {
 	case backendClickhouse:
 		if dsn == "" {
@@ -524,19 +524,19 @@ func analyticsConfig(cfg *config) (backend, dsn string, err error) {
 	default:
 		return "", "", fmt.Errorf("unsupported ANALYTICS_BACKEND %q: expected clickhouse or mysql-duckdb", backend)
 	}
-	
+
 	return backend, dsn, nil
 }
 
 func connectAnalytics(ctx context.Context, cfg *config, tracing svcotel.TracerProvider, logger *slog.Logger) (
 	warnly.AnalyticsStore, prometheus.Collector, func() error, error,
 ) {
-	
+
 	backend, dsn, err := analyticsConfig(cfg)
 	if err != nil {
 		return nil, nil, nil, err
 	}
-	
+
 	var (
 		store     warnly.AnalyticsStore
 		collector prometheus.Collector
@@ -544,7 +544,7 @@ func connectAnalytics(ctx context.Context, cfg *config, tracing svcotel.TracerPr
 		migration *migrator.Migrator
 		duckStore *duckdb.Store
 	)
-	
+
 	if backend == backendMySQLDuckDB {
 		db, closeConn, connErr := duckdb.ConnectLoop(ctx, dsn, logger)
 		if connErr != nil {
@@ -600,7 +600,6 @@ func connectAnalytics(ctx context.Context, cfg *config, tracing svcotel.TracerPr
 	}
 	return store, collector, closeDB, nil
 }
-
 
 //nolint:tagalign // later
 type config struct {

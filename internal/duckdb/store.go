@@ -30,16 +30,16 @@ func (s *Store) StoreEvent(ctx context.Context, event *warnly.EventClickhouse) e
 	if event == nil {
 		return errors.New("mysql-duckdb: nil event")
 	}
-	
+
 	if len(event.TagsKey) != len(event.TagsValue) {
 		return errors.New("mysql-duckdb: tag keys and values have different lengths")
 	}
-	
+
 	id, err := canonicalID(event.EventID)
 	if err != nil {
 		return err
 	}
-	
+
 	ev := *event
 	ev.EventID = id
 	ev.CreatedAt = ev.CreatedAt.UTC().Truncate(time.Microsecond)
@@ -47,13 +47,13 @@ func (s *Store) StoreEvent(ctx context.Context, event *warnly.EventClickhouse) e
 	if err != nil {
 		return fmt.Errorf("mysql-duckdb: marshal event: %w", err)
 	}
-	
+
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback() //nolint:errcheck // committed transactions are already closed
-	
+
 	for i := range tables {
 		if _, err := tx.ExecContext(ctx, "DELETE FROM "+tables[i]+" WHERE pid = ? AND event_id = ?", ev.ProjectID, id); err != nil {
 			return fmt.Errorf("mysql-duckdb: replace %s: %w", tables[i], err)
@@ -62,30 +62,30 @@ func (s *Store) StoreEvent(ctx context.Context, event *warnly.EventClickhouse) e
 	_, err = tx.ExecContext(ctx, `INSERT INTO event
 		(pid, event_id, gid, created_at, event_day, event_hour, expires_at, deleted, user_id, message, title, payload)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-		ev.ProjectID, 
-		id, 
-		ev.GroupID, 
-		ev.CreatedAt, 
-		ev.CreatedAt.Format(time.DateOnly), 
+		ev.ProjectID,
+		id,
+		ev.GroupID,
+		ev.CreatedAt,
+		ev.CreatedAt.Format(time.DateOnly),
 		ev.CreatedAt.Truncate(time.Hour),
-		ev.CreatedAt.AddDate(0, 0, int(ev.RetentionDays)), 
-		ev.Deleted, 
-		ev.User, 
-		ev.Message, 
-		ev.Title, 
+		ev.CreatedAt.AddDate(0, 0, int(ev.RetentionDays)),
+		ev.Deleted,
+		ev.User,
+		ev.Message,
+		ev.Title,
 		string(payload))
 	if err != nil {
 		return fmt.Errorf("mysql-duckdb: insert event: %w", err)
 	}
 	for i, key := range ev.TagsKey {
 		_, err := tx.ExecContext(
-			ctx, 
+			ctx,
 			`INSERT INTO event_tag (pid, event_id, ordinal, tag_key, tag_value)
-			VALUES (?, ?, ?, ?, ?)`, 
-			ev.ProjectID, 
-			id, 
-			i, 
-			key, 
+			VALUES (?, ?, ?, ?, ?)`,
+			ev.ProjectID,
+			id,
+			i,
+			key,
 			ev.TagsValue[i])
 		if err != nil {
 			return fmt.Errorf("mysql-duckdb: insert tag: %w", err)
@@ -95,7 +95,7 @@ func (s *Store) StoreEvent(ctx context.Context, event *warnly.EventClickhouse) e
 	if err := tx.Commit(); err != nil {
 		return fmt.Errorf("mysql-duckdb: store event, commit transaction: %w", err)
 	}
-	
+
 	return nil
 }
 
@@ -116,18 +116,18 @@ func (s *Store) PurgeExpired(ctx context.Context, now time.Time) error {
 	}
 	defer tx.Rollback() //nolint:errcheck // committed transactions are already closed
 	_, err = tx.ExecContext(
-		ctx, 
+		ctx,
 		`DELETE FROM event_tag WHERE EXISTS
-		(SELECT 1 FROM event e WHERE e.pid = event_tag.pid AND e.event_id = event_tag.event_id AND e.expires_at <= ?)`, 
+		(SELECT 1 FROM event e WHERE e.pid = event_tag.pid AND e.event_id = event_tag.event_id AND e.expires_at <= ?)`,
 		now.UTC())
 	if err != nil {
 		return fmt.Errorf("mysql-duckdb: purge tags: %w", err)
 	}
-	
+
 	if _, err := tx.ExecContext(ctx, "DELETE FROM event WHERE expires_at <= ?", now.UTC()); err != nil {
 		return fmt.Errorf("mysql-duckdb: purge events: %w", err)
 	}
-	
+
 	return tx.Commit()
 }
 
@@ -176,7 +176,7 @@ func (p *predicate) tag(key, value string, negate bool) {
 
 func eventPredicate(c *warnly.EventCriteria) predicate {
 	p := active()
-	
+
 	p.add("e.pid = ? AND e.gid = ?", c.ProjectID, c.GroupID)
 	p.period(c.From, c.To, false)
 	if c.Message != "" {
@@ -185,7 +185,7 @@ func eventPredicate(c *warnly.EventCriteria) predicate {
 	for key, value := range c.Tags {
 		p.tag(key, value.Value, value.IsNot)
 	}
-	
+
 	return p
 }
 
@@ -205,9 +205,9 @@ func collect[T any](ctx context.Context, db *sql.DB, query string, args []any, s
 		return nil, fmt.Errorf("mysql-duckdb: query: %w", err)
 	}
 	defer rows.Close()
-	
+
 	result := make([]T, 0)
-	
+
 	for rows.Next() {
 		var item T
 		if err := scan(rows, &item); err != nil {
@@ -215,7 +215,7 @@ func collect[T any](ctx context.Context, db *sql.DB, query string, args []any, s
 		}
 		result = append(result, item)
 	}
-	
+
 	return result, rows.Err()
 }
 
@@ -285,7 +285,7 @@ func (s *Store) GetIssueEvent(ctx context.Context, c *warnly.EventDefCriteria) (
 	if err := json.Unmarshal(payload, &ev); err != nil {
 		return nil, err
 	}
-	
+
 	return &warnly.IssueEvent{
 		EventID: ev.EventID, CreatedAt: ev.CreatedAt, Env: ev.Env, Release: ev.Release,
 		UserID: ev.User, UserEmail: ev.UserEmail, UserName: ev.UserName, UserUsername: ev.UserUsername,
@@ -396,11 +396,11 @@ func (s *Store) GetEventPagination(ctx context.Context, c *warnly.EventPaginatio
 	if err != nil {
 		return nil, err
 	}
-	
+
 	p := active()
 	p.period(c.From, c.To, true)
 	p.add("e.pid = ? AND e.gid = ?", c.ProjectID, c.GroupID)
-	
+
 	result := &warnly.EventPagination{}
 	for _, step := range []struct {
 		target            *string
@@ -422,7 +422,7 @@ func (s *Store) GetEventPagination(ctx context.Context, c *warnly.EventPaginatio
 			return nil, err
 		}
 	}
-	
+
 	return result, nil
 }
 

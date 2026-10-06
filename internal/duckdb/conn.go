@@ -37,7 +37,7 @@ func NormalizeDSN(dsn string) (string, error) {
 	}
 	cfg.Params["time_zone"] = "'+00:00'"
 	cfg.Params["collation_connection"] = "'utf8mb4_0900_bin'"
-	
+
 	return cfg.FormatDSN(), nil
 }
 
@@ -47,12 +47,12 @@ func ConnectLoop(ctx context.Context, dsn string, logger *slog.Logger) (*sql.DB,
 	if err != nil {
 		return nil, nil, err
 	}
-	
+
 	db, closeDB, err := mysql.ConnectLoop(ctx, mysql.DBConfig{DSN: dsn, Timeout: 30 * time.Second}, logger)
 	if err != nil {
 		return nil, nil, err
 	}
-	
+
 	var count int
 	err = db.QueryRowContext(ctx, `SELECT COUNT(*) FROM information_schema.ENGINES
 		WHERE ENGINE = 'DuckDB' AND SUPPORT IN ('YES', 'DEFAULT')`).Scan(&count)
@@ -63,6 +63,6 @@ func ConnectLoop(ctx context.Context, dsn string, logger *slog.Logger) (*sql.DB,
 		}
 		return nil, nil, errors.New("mysql-duckdb: server does not support ENGINE=DuckDB")
 	}
-	
+
 	return db, closeDB, nil
 }

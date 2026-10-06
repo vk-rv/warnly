@@ -61,32 +61,32 @@ func NewDuckDBMigrator(dsn string, logger *slog.Logger) (*Migrator, error) {
 	if err != nil {
 		return nil, fmt.Errorf("migrator: parse mysql-duckdb DSN: %w", err)
 	}
-	
+
 	cfg.MultiStatements = true
 	db, err := sql.Open("mysql", cfg.FormatDSN())
 	if err != nil {
 		return nil, err
 	}
-	
+
 	dr, err := mysql.WithInstance(db, &mysql.Config{MigrationsTable: "analytics_schema_migrations"})
 	if err != nil {
 		_ = db.Close()
 		return nil, err
 	}
-	
+
 	source, err := iofs.New(migrations.FS, "mysql-duckdb")
 	if err != nil {
 		_ = dr.Close()
 		return nil, err
 	}
-	
+
 	mm, err := migrate.NewWithInstance("iofs", source, "mysql", dr)
 	if err != nil {
 		_ = source.Close()
 		_ = dr.Close()
 		return nil, err
 	}
-	
+
 	return &Migrator{db: db, migrator: mm, logger: logger, driver: MySQLDuckDB}, nil
 }
 
