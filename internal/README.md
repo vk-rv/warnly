@@ -37,6 +37,7 @@ These are separated out into the following packages:
 
 - `server`—Implements services over HTTP transport layer.
 - `ch`—Implements services on ClickHouse storage layer.
+- `duckdb`—Implements analytics over MySQL with `ENGINE=DuckDB`.
 - `mysql`—Implements services on MySQL storage layer.
 
 ### Binary packages
@@ -61,6 +62,7 @@ cmd/
 internal/
     ch/               # ClickHouse integration (OLAP methods)
     chprometheus/     # Export ClickHouse metrics to Prometheus
+    duckdb/           # MySQL/DuckDB analytics and container integration tests
     migrator/         # SQL migration (golang-migrate wrapper)
     mysql/            # MySQL integration (OLTP methods)
     server/           # Handler entrypoints

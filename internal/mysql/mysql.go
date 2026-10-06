@@ -59,13 +59,7 @@ func ConnectLoop(ctx context.Context, cfg DBConfig, logger *slog.Logger) (db *sq
 	}
 
 	dsn := cfg.DSN
-	const driverName = "mysql"
-
-	if err = mysql.SetLogger(&SQLogger{logger.With("subsystem", driverName)}); err != nil {
-		return nil, nil, errors.New("mysql: problem setting logger")
-	}
-
-	db, err = createDBPool(ctx, driverName, dsn)
+	db, err = createDBPool(ctx, dsn, logger)
 	if err == nil {
 		configureDBPool(db, cfg.PoolConfig)
 		return db, db.Close, nil
@@ -92,7 +86,7 @@ func ConnectLoop(ctx context.Context, cfg DBConfig, logger *slog.Logger) (db *sq
 		case <-timeoutExceeded:
 			return nil, nil, fmt.Errorf("mysql: db connection failed after %s timeout", cfg.Timeout)
 		case <-ticker.C:
-			db, err := createDBPool(ctx, driverName, dsn)
+			db, err := createDBPool(ctx, dsn, logger)
 			if err == nil {
 				configureDBPool(db, cfg.PoolConfig)
 				return db, db.Close, nil
@@ -190,16 +184,21 @@ func isSyscallErrorRetryable(errno syscall.Errno) bool {
 }
 
 // createDBPool creates pool of connections to sql server and pings db under the hood.
-func createDBPool(ctx context.Context, driverName, dsn string) (*sql.DB, error) {
-	db, err := otelsql.Open(
-		driverName,
-		dsn,
-		otelsql.WithAttributes(semconv.DBSystemMySQL),
-		otelsql.WithDBName("oltp"))
+func createDBPool(ctx context.Context, dsn string, logger *slog.Logger) (*sql.DB, error) {
+	cfg, err := mysql.ParseDSN(dsn)
 	if err != nil {
-		return nil, fmt.Errorf("db: otelsql open primary db: %w", err)
+		return nil, fmt.Errorf("mysql: parse DSN: %w", err)
 	}
+	cfg.Logger = &SQLogger{logger.With("subsystem", "mysql")}
+	connector, err := mysql.NewConnector(cfg)
+	if err != nil {
+		return nil, fmt.Errorf("mysql: create connector: %w", err)
+	}
+	db := otelsql.OpenDB(connector,
+		otelsql.WithAttributes(semconv.DBSystemMySQL),
+		otelsql.WithDBName(cfg.DBName))
 	if err := db.PingContext(ctx); err != nil {
+		_ = db.Close()
 		return nil, fmt.Errorf("mysql: ping database: %w", err)
 	}
 

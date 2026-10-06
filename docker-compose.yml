@@ -123,6 +123,8 @@ services:
     environment:
       - MYSQL_DSN=${MYSQL_DSN}
       - CLICKHOUSE_DSN=${CLICKHOUSE_DSN}
+      - ANALYTICS_BACKEND=${ANALYTICS_BACKEND:-clickhouse}
+      - ANALYTICS_DSN=${ANALYTICS_DSN:-}
       - SCHEME=${SCHEME}
       - CERT_FILE=${CERT_FILE}
       - CERT_KEY=${CERT_KEY}
