@@ -17,7 +17,7 @@ func TestParseUUID(t *testing.T) {
 	}{
 		{
 			name:    "valid UUID",
-			input:   "550e8400-e29b-41d4-a716-446655440000",
+			input:   fixtureUUID,
 			wantErr: false,
 			wantLen: 16,
 		},
@@ -85,7 +85,7 @@ func TestUUID_String(t *testing.T) {
 		{
 			name: "valid UUID",
 			uuid: warnly.UUID{0x55, 0x0e, 0x84, 0x00, 0xe2, 0x9b, 0x41, 0xd4, 0xa7, 0x16, 0x44, 0x66, 0x55, 0x44, 0x00, 0x00},
-			want: "550e8400-e29b-41d4-a716-446655440000",
+			want: fixtureUUID,
 		},
 		{
 			name: "nil UUID",

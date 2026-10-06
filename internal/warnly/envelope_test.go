@@ -15,24 +15,24 @@ func TestGetExceptionStackTypes(t *testing.T) {
 		want       []string
 	}{
 		{
-			name:       "empty exceptions",
+			name:       fixtureEmptyExceptions,
 			exceptions: []warnly.Exception{},
 			want:       []string{},
 		},
 		{
-			name: "single exception",
+			name: fixtureSingleException,
 			exceptions: []warnly.Exception{
-				{Type: "TypeError"},
+				{Type: fixtureTypeError},
 			},
-			want: []string{"TypeError"},
+			want: []string{fixtureTypeError},
 		},
 		{
-			name: "multiple exceptions",
+			name: fixtureMultipleExceptions,
 			exceptions: []warnly.Exception{
-				{Type: "TypeError"},
+				{Type: fixtureTypeError},
 				{Type: "SyntaxError"},
 			},
-			want: []string{"TypeError", "SyntaxError"},
+			want: []string{fixtureTypeError, "SyntaxError"},
 		},
 	}
 
@@ -63,19 +63,19 @@ func TestGetExceptionStackValues(t *testing.T) {
 		want       []string
 	}{
 		{
-			name:       "empty exceptions",
+			name:       fixtureEmptyExceptions,
 			exceptions: []warnly.Exception{},
 			want:       []string{},
 		},
 		{
-			name: "single exception",
+			name: fixtureSingleException,
 			exceptions: []warnly.Exception{
 				{Value: "some error"},
 			},
 			want: []string{"some error"},
 		},
 		{
-			name: "multiple exceptions",
+			name: fixtureMultipleExceptions,
 			exceptions: []warnly.Exception{
 				{Value: "error1"},
 				{Value: "error2"},
@@ -111,26 +111,26 @@ func TestGetExceptionFramesAbsPath(t *testing.T) {
 		want       []string
 	}{
 		{
-			name:       "empty exceptions",
+			name:       fixtureEmptyExceptions,
 			exceptions: []warnly.Exception{},
 			want:       []string{},
 		},
 		{
-			name: "single exception with frames",
+			name: fixtureSingleExceptionWithFrames,
 			exceptions: []warnly.Exception{
 				{
 					StackTrace: warnly.StackTrace{
 						Frames: []warnly.Frame{
-							{AbsPath: "/path/to/file1.go"},
+							{AbsPath: fixtureExceptionFile},
 							{AbsPath: "/path/to/file2.go"},
 						},
 					},
 				},
 			},
-			want: []string{"/path/to/file1.go", "/path/to/file2.go"},
+			want: []string{fixtureExceptionFile, "/path/to/file2.go"},
 		},
 		{
-			name: "multiple exceptions",
+			name: fixtureMultipleExceptions,
 			exceptions: []warnly.Exception{
 				{
 					StackTrace: warnly.StackTrace{
@@ -178,14 +178,14 @@ func TestGetBreaker(t *testing.T) {
 		exceptions []warnly.Exception
 	}{
 		{
-			name:       "empty exceptions",
+			name:       fixtureEmptyExceptions,
 			exceptions: []warnly.Exception{},
 			want:       "",
 		},
 		{
 			name: "exception with no stack trace",
 			exceptions: []warnly.Exception{
-				{Type: "Error", Value: "msg"},
+				{Type: "Error", Value: fixtureMsg},
 			},
 			want: "",
 		},
@@ -252,27 +252,27 @@ func TestGetExceptionValue(t *testing.T) {
 		exceptions []warnly.Exception
 	}{
 		{
-			name:       "empty exceptions",
+			name:       fixtureEmptyExceptions,
 			exceptions: []warnly.Exception{},
-			defaultVal: "default",
-			want:       "default",
+			defaultVal: fixtureDefault,
+			want:       fixtureDefault,
 		},
 		{
-			name: "single exception",
+			name: fixtureSingleException,
 			exceptions: []warnly.Exception{
 				{Value: "error msg"},
 			},
-			defaultVal: "default",
+			defaultVal: fixtureDefault,
 			want:       "error msg",
 		},
 		{
-			name: "multiple exceptions",
+			name: fixtureMultipleExceptions,
 			exceptions: []warnly.Exception{
-				{Value: "first"},
-				{Value: "last"},
+				{Value: fixtureFirst},
+				{Value: fixtureLast},
 			},
-			defaultVal: "default",
-			want:       "last",
+			defaultVal: fixtureDefault,
+			want:       fixtureLast,
 		},
 	}
 
@@ -297,25 +297,25 @@ func TestGetExceptionType(t *testing.T) {
 		exceptions []warnly.Exception
 	}{
 		{
-			name:       "empty exceptions",
+			name:       fixtureEmptyExceptions,
 			exceptions: []warnly.Exception{},
-			defaultVal: "default",
-			want:       "default",
+			defaultVal: fixtureDefault,
+			want:       fixtureDefault,
 		},
 		{
 			name: "exception with type",
 			exceptions: []warnly.Exception{
-				{Type: "TypeError", Value: "msg"},
+				{Type: fixtureTypeError, Value: fixtureMsg},
 			},
-			defaultVal: "default",
-			want:       "TypeError",
+			defaultVal: fixtureDefault,
+			want:       fixtureTypeError,
 		},
 		{
 			name: "exception with value but no type",
 			exceptions: []warnly.Exception{
-				{Type: "", Value: "msg"},
+				{Type: "", Value: fixtureMsg},
 			},
-			defaultVal: "default",
+			defaultVal: fixtureDefault,
 			want:       "Error",
 		},
 		{
@@ -323,16 +323,16 @@ func TestGetExceptionType(t *testing.T) {
 			exceptions: []warnly.Exception{
 				{Type: "", Value: ""},
 			},
-			defaultVal: "default",
-			want:       "default",
+			defaultVal: fixtureDefault,
+			want:       fixtureDefault,
 		},
 		{
 			name: "multiple exceptions, last has type",
 			exceptions: []warnly.Exception{
-				{Type: "First", Value: "first"},
-				{Type: "Last", Value: "last"},
+				{Type: "First", Value: fixtureFirst},
+				{Type: "Last", Value: fixtureLast},
 			},
-			defaultVal: "default",
+			defaultVal: fixtureDefault,
 			want:       "Last",
 		},
 	}
@@ -357,12 +357,12 @@ func TestGetExceptionFramesColNo(t *testing.T) {
 		want       []uint32
 	}{
 		{
-			name:       "empty exceptions",
+			name:       fixtureEmptyExceptions,
 			exceptions: []warnly.Exception{},
 			want:       []uint32{},
 		},
 		{
-			name: "single exception with frames",
+			name: fixtureSingleExceptionWithFrames,
 			exceptions: []warnly.Exception{
 				{
 					StackTrace: warnly.StackTrace{
@@ -403,17 +403,17 @@ func TestGetExceptionFramesFilename(t *testing.T) {
 		want       []string
 	}{
 		{
-			name:       "empty exceptions",
+			name:       fixtureEmptyExceptions,
 			exceptions: []warnly.Exception{},
 			want:       []string{},
 		},
 		{
-			name: "single exception with frames",
+			name: fixtureSingleExceptionWithFrames,
 			exceptions: []warnly.Exception{
 				{
 					StackTrace: warnly.StackTrace{
 						Frames: []warnly.Frame{
-							{AbsPath: "/path/to/file1.go"},
+							{AbsPath: fixtureExceptionFile},
 							{AbsPath: "file2.go"},
 						},
 					},
@@ -449,12 +449,12 @@ func TestGetExceptionFramesFunction(t *testing.T) {
 		want       []string
 	}{
 		{
-			name:       "empty exceptions",
+			name:       fixtureEmptyExceptions,
 			exceptions: []warnly.Exception{},
 			want:       []string{},
 		},
 		{
-			name: "single exception with frames",
+			name: fixtureSingleExceptionWithFrames,
 			exceptions: []warnly.Exception{
 				{
 					StackTrace: warnly.StackTrace{
@@ -495,12 +495,12 @@ func TestGetExceptionFramesLineNo(t *testing.T) {
 		want       []uint32
 	}{
 		{
-			name:       "empty exceptions",
+			name:       fixtureEmptyExceptions,
 			exceptions: []warnly.Exception{},
 			want:       []uint32{},
 		},
 		{
-			name: "single exception with frames",
+			name: fixtureSingleExceptionWithFrames,
 			exceptions: []warnly.Exception{
 				{
 					StackTrace: warnly.StackTrace{
@@ -546,8 +546,8 @@ func TestGetLevel(t *testing.T) {
 			want:  warnly.LevelFatal,
 		},
 		{
-			name:  "error",
-			level: "error",
+			name:  fixtureError,
+			level: fixtureError,
 			want:  warnly.LevelError,
 		},
 		{
@@ -571,13 +571,13 @@ func TestGetLevel(t *testing.T) {
 			want:  warnly.LevelTrace,
 		},
 		{
-			name:  "unknown",
-			level: "unknown",
+			name:  fixtureUnknown,
+			level: fixtureUnknown,
 			want:  warnly.LevelUnknown,
 		},
 		{
-			name:  "invalid",
-			level: "invalid",
+			name:  fixtureInvalid,
+			level: fixtureInvalid,
 			want:  warnly.LevelUnknown,
 		},
 		{

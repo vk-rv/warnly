@@ -63,7 +63,7 @@ func TestCreateProjectSuccess(t *testing.T) {
 	teamStore := &mock.TeamStore{
 		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
 			return []warnly.Team{
-				{ID: teamID, Name: "Team A"},
+				{ID: teamID, Name: fixtureTeamA},
 			}, nil
 		},
 	}
@@ -94,7 +94,7 @@ func TestCreateProjectSuccess(t *testing.T) {
 	)
 
 	req := &warnly.CreateProjectRequest{
-		ProjectName: "Test Project",
+		ProjectName: fixtureTestProject,
 		TeamID:      teamID,
 		Platform:    "go",
 	}
@@ -103,7 +103,7 @@ func TestCreateProjectSuccess(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.NotNil(t, result)
-	assert.Equal(t, "Test Project", result.Name)
+	assert.Equal(t, fixtureTestProject, result.Name)
 	assert.Equal(t, 1, result.ID)
 	assert.NotEmpty(t, result.DSN)
 }
@@ -119,7 +119,7 @@ func TestDeleteProjectSuccess(t *testing.T) {
 	teamStore := &mock.TeamStore{
 		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
 			return []warnly.Team{
-				{ID: teamID, Name: "Team A"},
+				{ID: teamID, Name: fixtureTeamA},
 			}, nil
 		},
 	}
@@ -129,7 +129,7 @@ func TestDeleteProjectSuccess(t *testing.T) {
 			return &warnly.Project{
 				ID:     projectID,
 				TeamID: teamID,
-				Name:   "Test Project",
+				Name:   fixtureTestProject,
 			}, nil
 		},
 		DeleteProjectFn: func(_ context.Context, _ int) error {
@@ -171,7 +171,7 @@ func TestGetProjectSuccess(t *testing.T) {
 	teamStore := &mock.TeamStore{
 		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
 			return []warnly.Team{
-				{ID: teamID, Name: "Team A"},
+				{ID: teamID, Name: fixtureTeamA},
 			}, nil
 		},
 	}
@@ -181,7 +181,7 @@ func TestGetProjectSuccess(t *testing.T) {
 			return &warnly.Project{
 				ID:     projectID,
 				TeamID: teamID,
-				Name:   "Test Project",
+				Name:   fixtureTestProject,
 			}, nil
 		},
 	}
@@ -209,7 +209,7 @@ func TestGetProjectSuccess(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, projectID, result.ID)
 	assert.Equal(t, teamID, result.TeamID)
-	assert.Equal(t, "Test Project", result.Name)
+	assert.Equal(t, fixtureTestProject, result.Name)
 }
 
 func TestListProjectsSuccess(t *testing.T) {
@@ -222,7 +222,7 @@ func TestListProjectsSuccess(t *testing.T) {
 	teamStore := &mock.TeamStore{
 		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
 			return []warnly.Team{
-				{ID: teamID, Name: "Team A"},
+				{ID: teamID, Name: fixtureTeamA},
 			}, nil
 		},
 	}
@@ -284,7 +284,7 @@ func TestListProjectsNoProjects(t *testing.T) {
 	teamStore := &mock.TeamStore{
 		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
 			return []warnly.Team{
-				{ID: teamID, Name: "Team A"},
+				{ID: teamID, Name: fixtureTeamA},
 			}, nil
 		},
 	}
@@ -332,7 +332,7 @@ func TestListProjectsNoEvents(t *testing.T) {
 	teamStore := &mock.TeamStore{
 		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
 			return []warnly.Team{
-				{ID: teamID, Name: "Team A"},
+				{ID: teamID, Name: fixtureTeamA},
 			}, nil
 		},
 	}
@@ -388,7 +388,7 @@ func TestListTeamsSuccess(t *testing.T) {
 		ListTeamsFn: func(_ context.Context, userID int) ([]warnly.Team, error) {
 			assert.Equal(t, 1, userID)
 			return []warnly.Team{
-				{ID: 10, Name: "Team A"},
+				{ID: 10, Name: fixtureTeamA},
 				{ID: 20, Name: "Team B"},
 				{ID: 30, Name: "Team C"},
 			}, nil
@@ -418,7 +418,7 @@ func TestListTeamsSuccess(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotNil(t, result)
 	assert.Len(t, result, 3)
-	assert.Equal(t, "Team A", result[0].Name)
+	assert.Equal(t, fixtureTeamA, result[0].Name)
 	assert.Equal(t, "Team B", result[1].Name)
 	assert.Equal(t, "Team C", result[2].Name)
 }
@@ -475,7 +475,7 @@ func TestGetProjectDetailsSuccess(t *testing.T) {
 	teamStore := &mock.TeamStore{
 		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
 			return []warnly.Team{
-				{ID: teamID, Name: "Team A"},
+				{ID: teamID, Name: fixtureTeamA},
 			}, nil
 		},
 		ListTeammatesFn: func(_ context.Context, _ []int) ([]warnly.Teammate, error) {
@@ -488,7 +488,7 @@ func TestGetProjectDetailsSuccess(t *testing.T) {
 			return &warnly.Project{
 				ID:     projectID,
 				TeamID: teamID,
-				Name:   "Test Project",
+				Name:   fixtureTestProject,
 			}, nil
 		},
 	}
@@ -499,8 +499,8 @@ func TestGetProjectDetailsSuccess(t *testing.T) {
 				{
 					ID:        1,
 					ProjectID: projectID,
-					ErrorType: "TypeError",
-					Message:   "Test error",
+					ErrorType: fixtureTypeError,
+					Message:   fixtureTestError,
 					FirstSeen: customTime.Add(-1 * time.Hour),
 				},
 			}, nil
@@ -509,8 +509,8 @@ func TestGetProjectDetailsSuccess(t *testing.T) {
 			return &warnly.Issue{
 				ID:        1,
 				ProjectID: projectID,
-				ErrorType: "TypeError",
-				Message:   "Test error",
+				ErrorType: fixtureTypeError,
+				Message:   fixtureTestError,
 				FirstSeen: customTime.Add(-1 * time.Hour),
 			}, nil
 		},
@@ -564,7 +564,7 @@ func TestGetProjectDetailsSuccess(t *testing.T) {
 	req := &warnly.ProjectDetailsRequest{
 		ProjectID: projectID,
 		Issues:    warnly.IssuesTypeAll,
-		Period:    "24h",
+		Period:    fixtureDayPeriod,
 	}
 
 	result, err := svc.GetProjectDetails(ctx, req, user)
@@ -573,7 +573,7 @@ func TestGetProjectDetailsSuccess(t *testing.T) {
 	assert.NotNil(t, result)
 	assert.NotNil(t, result.Project)
 	assert.Equal(t, projectID, result.Project.ID)
-	assert.Equal(t, "Test Project", result.Project.Name)
+	assert.Equal(t, fixtureTestProject, result.Project.Name)
 	assert.NotEmpty(t, result.Project.Events)
 	assert.Equal(t, 1, result.Project.AllLength)
 }
@@ -589,7 +589,7 @@ func TestGetProjectDetailsNoIssues(t *testing.T) {
 	teamStore := &mock.TeamStore{
 		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
 			return []warnly.Team{
-				{ID: teamID, Name: "Team A"},
+				{ID: teamID, Name: fixtureTeamA},
 			}, nil
 		},
 		ListTeammatesFn: func(_ context.Context, _ []int) ([]warnly.Teammate, error) {
@@ -602,7 +602,7 @@ func TestGetProjectDetailsNoIssues(t *testing.T) {
 			return &warnly.Project{
 				ID:     projectID,
 				TeamID: teamID,
-				Name:   "Test Project",
+				Name:   fixtureTestProject,
 			}, nil
 		},
 	}
@@ -634,7 +634,7 @@ func TestGetProjectDetailsNoIssues(t *testing.T) {
 	req := &warnly.ProjectDetailsRequest{
 		ProjectID: projectID,
 		Issues:    warnly.IssuesTypeAll,
-		Period:    "24h",
+		Period:    fixtureDayPeriod,
 	}
 
 	result, err := svc.GetProjectDetails(ctx, req, user)
@@ -662,7 +662,7 @@ func TestGetProjectDetailsWithTeammates(t *testing.T) {
 			return &warnly.Project{
 				ID:     projectID,
 				TeamID: teamID,
-				Name:   "Test Project",
+				Name:   fixtureTestProject,
 			}, nil
 		},
 	}
@@ -673,8 +673,8 @@ func TestGetProjectDetailsWithTeammates(t *testing.T) {
 				{
 					ID:        1,
 					ProjectID: projectID,
-					ErrorType: "TypeError",
-					Message:   "Test error",
+					ErrorType: fixtureTypeError,
+					Message:   fixtureTestError,
 					FirstSeen: customTime.Add(-1 * time.Hour),
 				},
 			}, nil
@@ -722,12 +722,12 @@ func TestGetProjectDetailsWithTeammates(t *testing.T) {
 	teamStore2 := &mock.TeamStore{
 		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
 			return []warnly.Team{
-				{ID: teamID, Name: "Team A"},
+				{ID: teamID, Name: fixtureTeamA},
 			}, nil
 		},
 		ListTeammatesFn: func(_ context.Context, _ []int) ([]warnly.Teammate, error) {
 			return []warnly.Teammate{
-				{ID: 2, Name: "John Doe", Email: "john@example.com"},
+				{ID: 2, Name: fixtureJohnDoe, Email: fixtureJohnExampleCom},
 			}, nil
 		},
 	}
@@ -753,7 +753,7 @@ func TestGetProjectDetailsWithTeammates(t *testing.T) {
 	req := &warnly.ProjectDetailsRequest{
 		ProjectID: projectID,
 		Issues:    warnly.IssuesTypeAll,
-		Period:    "24h",
+		Period:    fixtureDayPeriod,
 	}
 
 	result, err := svc.GetProjectDetails(ctx, req, user)
@@ -775,12 +775,12 @@ func TestGetDiscussionSuccess(t *testing.T) {
 	teamStore := &mock.TeamStore{
 		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
 			return []warnly.Team{
-				{ID: teamID, Name: "Team A"},
+				{ID: teamID, Name: fixtureTeamA},
 			}, nil
 		},
 		ListTeammatesFn: func(_ context.Context, _ []int) ([]warnly.Teammate, error) {
 			return []warnly.Teammate{
-				{ID: 2, Name: "John Doe", Email: "john@example.com"},
+				{ID: 2, Name: fixtureJohnDoe, Email: fixtureJohnExampleCom},
 			}, nil
 		},
 	}
@@ -790,7 +790,7 @@ func TestGetDiscussionSuccess(t *testing.T) {
 			return &warnly.Project{
 				ID:     projectID,
 				TeamID: teamID,
-				Name:   "Test Project",
+				Name:   fixtureTestProject,
 			}, nil
 		},
 	}
@@ -800,8 +800,8 @@ func TestGetDiscussionSuccess(t *testing.T) {
 			return &warnly.Issue{
 				ID:        int64(issueID),
 				ProjectID: projectID,
-				ErrorType: "TypeError",
-				Message:   "Test error",
+				ErrorType: fixtureTypeError,
+				Message:   fixtureTestError,
 				FirstSeen: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
 			}, nil
 		},
@@ -849,7 +849,7 @@ func TestGetDiscussionSuccess(t *testing.T) {
 	assert.Len(t, result.Messages, 2)
 	assert.Equal(t, projectID, result.Info.ProjectID)
 	assert.Equal(t, issueID, result.Info.IssueID)
-	assert.Equal(t, "John Doe", result.Teammates[0].Name)
+	assert.Equal(t, fixtureJohnDoe, result.Teammates[0].Name)
 	assert.Equal(t, "First message", result.Messages[0].Content)
 	assert.Equal(t, "Second message", result.Messages[1].Content)
 }
@@ -866,12 +866,12 @@ func TestGetDiscussionNoMessages(t *testing.T) {
 	teamStore := &mock.TeamStore{
 		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
 			return []warnly.Team{
-				{ID: teamID, Name: "Team A"},
+				{ID: teamID, Name: fixtureTeamA},
 			}, nil
 		},
 		ListTeammatesFn: func(_ context.Context, _ []int) ([]warnly.Teammate, error) {
 			return []warnly.Teammate{
-				{ID: 2, Name: "John Doe", Email: "john@example.com"},
+				{ID: 2, Name: fixtureJohnDoe, Email: fixtureJohnExampleCom},
 			}, nil
 		},
 	}
@@ -881,7 +881,7 @@ func TestGetDiscussionNoMessages(t *testing.T) {
 			return &warnly.Project{
 				ID:     projectID,
 				TeamID: teamID,
-				Name:   "Test Project",
+				Name:   fixtureTestProject,
 			}, nil
 		},
 	}
@@ -891,8 +891,8 @@ func TestGetDiscussionNoMessages(t *testing.T) {
 			return &warnly.Issue{
 				ID:        int64(issueID),
 				ProjectID: projectID,
-				ErrorType: "TypeError",
-				Message:   "Test error",
+				ErrorType: fixtureTypeError,
+				Message:   fixtureTestError,
 				FirstSeen: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
 			}, nil
 		},
@@ -949,7 +949,7 @@ func TestListFieldsSuccess(t *testing.T) {
 	teamStore := &mock.TeamStore{
 		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
 			return []warnly.Team{
-				{ID: teamID, Name: "Team A"},
+				{ID: teamID, Name: fixtureTeamA},
 			}, nil
 		},
 	}
@@ -959,7 +959,7 @@ func TestListFieldsSuccess(t *testing.T) {
 			return &warnly.Project{
 				ID:     projectID,
 				TeamID: teamID,
-				Name:   "Test Project",
+				Name:   fixtureTestProject,
 			}, nil
 		},
 	}
@@ -969,8 +969,8 @@ func TestListFieldsSuccess(t *testing.T) {
 			return &warnly.Issue{
 				ID:        int64(issueID),
 				ProjectID: projectID,
-				ErrorType: "TypeError",
-				Message:   "Test error",
+				ErrorType: fixtureTypeError,
+				Message:   fixtureTestError,
 				FirstSeen: customTime.Add(-24 * time.Hour),
 			}, nil
 		},
@@ -979,23 +979,23 @@ func TestListFieldsSuccess(t *testing.T) {
 	analyticsStore := &mock.AnalyticsStore{
 		CalculateFieldsFn: func(_ context.Context, _ warnly.FieldsCriteria) ([]warnly.TagCount, error) {
 			return []warnly.TagCount{
-				{Tag: "browser", Count: 100},
+				{Tag: fixtureBrowser, Count: 100},
 				{Tag: "os", Count: 50},
 			}, nil
 		},
 		CountFieldsFn: func(_ context.Context, _ *warnly.EventDefCriteria) ([]warnly.FieldValueNum, error) {
 			return []warnly.FieldValueNum{
 				{
-					Tag:             "browser",
-					Value:           "Chrome",
+					Tag:             fixtureBrowser,
+					Value:           fixtureChrome,
 					Count:           60,
 					PercentsOfTotal: 0,
 					FirstSeen:       customTime.Add(-24 * time.Hour),
 					LastSeen:        customTime,
 				},
 				{
-					Tag:             "browser",
-					Value:           "Firefox",
+					Tag:             fixtureBrowser,
+					Value:           fixtureFirefox,
 					Count:           40,
 					PercentsOfTotal: 0,
 					FirstSeen:       customTime.Add(-24 * time.Hour),
@@ -1011,7 +1011,7 @@ func TestListFieldsSuccess(t *testing.T) {
 				},
 				{
 					Tag:             "os",
-					Value:           "Windows",
+					Value:           fixtureWindows,
 					Count:           20,
 					PercentsOfTotal: 0,
 					FirstSeen:       customTime.Add(-24 * time.Hour),
@@ -1049,9 +1049,9 @@ func TestListFieldsSuccess(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.NotNil(t, result)
-	assert.Equal(t, "Test Project", result.ProjectName)
+	assert.Equal(t, fixtureTestProject, result.ProjectName)
 	assert.Len(t, result.TagCount, 2)
-	assert.Equal(t, "browser", result.TagCount[0].Tag)
+	assert.Equal(t, fixtureBrowser, result.TagCount[0].Tag)
 	assert.Equal(t, uint64(100), result.TagCount[0].Count)
 	assert.Equal(t, "os", result.TagCount[1].Tag)
 	assert.Equal(t, uint64(50), result.TagCount[1].Count)
@@ -1075,7 +1075,7 @@ func TestListFieldsNoFields(t *testing.T) {
 	teamStore := &mock.TeamStore{
 		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
 			return []warnly.Team{
-				{ID: teamID, Name: "Team A"},
+				{ID: teamID, Name: fixtureTeamA},
 			}, nil
 		},
 	}
@@ -1085,7 +1085,7 @@ func TestListFieldsNoFields(t *testing.T) {
 			return &warnly.Project{
 				ID:     projectID,
 				TeamID: teamID,
-				Name:   "Test Project",
+				Name:   fixtureTestProject,
 			}, nil
 		},
 	}
@@ -1095,8 +1095,8 @@ func TestListFieldsNoFields(t *testing.T) {
 			return &warnly.Issue{
 				ID:        int64(issueID),
 				ProjectID: projectID,
-				ErrorType: "TypeError",
-				Message:   "Test error",
+				ErrorType: fixtureTypeError,
+				Message:   fixtureTestError,
 				FirstSeen: customTime.Add(-24 * time.Hour),
 			}, nil
 		},
@@ -1139,7 +1139,7 @@ func TestListFieldsNoFields(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.NotNil(t, result)
-	assert.Equal(t, "Test Project", result.ProjectName)
+	assert.Equal(t, fixtureTestProject, result.ProjectName)
 	assert.Empty(t, result.TagCount)
 	assert.Empty(t, result.FieldValueNum)
 }
@@ -1157,7 +1157,7 @@ func TestListEventsSuccess(t *testing.T) {
 	teamStore := &mock.TeamStore{
 		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
 			return []warnly.Team{
-				{ID: teamID, Name: "Team A"},
+				{ID: teamID, Name: fixtureTeamA},
 			}, nil
 		},
 	}
@@ -1167,7 +1167,7 @@ func TestListEventsSuccess(t *testing.T) {
 			return &warnly.Project{
 				ID:     projectID,
 				TeamID: teamID,
-				Name:   "Test Project",
+				Name:   fixtureTestProject,
 			}, nil
 		},
 	}
@@ -1177,8 +1177,8 @@ func TestListEventsSuccess(t *testing.T) {
 			return &warnly.Issue{
 				ID:        int64(issueID),
 				ProjectID: projectID,
-				ErrorType: "TypeError",
-				Message:   "Test error",
+				ErrorType: fixtureTypeError,
+				Message:   fixtureTestError,
 				FirstSeen: customTime.Add(-24 * time.Hour),
 			}, nil
 		},
@@ -1193,8 +1193,8 @@ func TestListEventsSuccess(t *testing.T) {
 				{
 					CreatedAt:    customTime.Add(-10 * time.Hour),
 					EventID:      "event-1",
-					Title:        "TypeError",
-					Message:      "Cannot read property 'x' of undefined",
+					Title:        fixtureTypeError,
+					Message:      fixtureCannotReadPropertyXOfUndefined,
 					Release:      "1.0.0",
 					Env:          "production",
 					UserEmail:    "user@example.com",
@@ -1203,8 +1203,8 @@ func TestListEventsSuccess(t *testing.T) {
 				{
 					CreatedAt:    customTime.Add(-5 * time.Hour),
 					EventID:      "event-2",
-					Title:        "TypeError",
-					Message:      "Cannot read property 'x' of undefined",
+					Title:        fixtureTypeError,
+					Message:      fixtureCannotReadPropertyXOfUndefined,
 					Release:      "1.0.0",
 					Env:          "staging",
 					UserEmail:    "admin@example.com",
@@ -1270,7 +1270,7 @@ func TestListEventsNoEvents(t *testing.T) {
 	teamStore := &mock.TeamStore{
 		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
 			return []warnly.Team{
-				{ID: teamID, Name: "Team A"},
+				{ID: teamID, Name: fixtureTeamA},
 			}, nil
 		},
 	}
@@ -1280,7 +1280,7 @@ func TestListEventsNoEvents(t *testing.T) {
 			return &warnly.Project{
 				ID:     projectID,
 				TeamID: teamID,
-				Name:   "Test Project",
+				Name:   fixtureTestProject,
 			}, nil
 		},
 	}
@@ -1290,8 +1290,8 @@ func TestListEventsNoEvents(t *testing.T) {
 			return &warnly.Issue{
 				ID:        int64(issueID),
 				ProjectID: projectID,
-				ErrorType: "TypeError",
-				Message:   "Test error",
+				ErrorType: fixtureTypeError,
+				Message:   fixtureTestError,
 				FirstSeen: customTime.Add(-24 * time.Hour),
 			}, nil
 		},
@@ -1355,7 +1355,7 @@ func TestListIssuesSuccess(t *testing.T) {
 	teamStore := &mock.TeamStore{
 		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
 			return []warnly.Team{
-				{ID: teamID, Name: "Team A"},
+				{ID: teamID, Name: fixtureTeamA},
 			}, nil
 		},
 	}
@@ -1363,7 +1363,7 @@ func TestListIssuesSuccess(t *testing.T) {
 	projectStore := &mock.ProjectStore{
 		ListProjectsFn: func(_ context.Context, _ []int, _ string) ([]warnly.Project, error) {
 			return []warnly.Project{
-				{ID: projectID, TeamID: teamID, Name: "Test Project"},
+				{ID: projectID, TeamID: teamID, Name: fixtureTestProject},
 				{ID: 6, TeamID: teamID, Name: "Project B"},
 			}, nil
 		},
@@ -1375,8 +1375,8 @@ func TestListIssuesSuccess(t *testing.T) {
 				{
 					ID:        1,
 					ProjectID: projectID,
-					ErrorType: "TypeError",
-					Message:   "Cannot read property 'x' of undefined",
+					ErrorType: fixtureTypeError,
+					Message:   fixtureCannotReadPropertyXOfUndefined,
 					FirstSeen: customTime.Add(-24 * time.Hour),
 					View:      "home",
 				},
@@ -1401,7 +1401,7 @@ func TestListIssuesSuccess(t *testing.T) {
 		},
 		ListPopularTagsFn: func(_ context.Context, _ *warnly.ListPopularTagsCriteria) ([]warnly.TagCount, error) {
 			return []warnly.TagCount{
-				{Tag: "browser", Count: 100},
+				{Tag: fixtureBrowser, Count: 100},
 				{Tag: "os", Count: 50},
 			}, nil
 		},
@@ -1436,7 +1436,7 @@ func TestListIssuesSuccess(t *testing.T) {
 
 	req := &warnly.ListIssuesRequest{
 		User:   user,
-		Period: "24h",
+		Period: fixtureDayPeriod,
 	}
 
 	result, err := svc.ListIssues(ctx, req)
@@ -1448,7 +1448,7 @@ func TestListIssuesSuccess(t *testing.T) {
 	assert.Len(t, result.PopularTags, 2)
 	assert.Equal(t, 2, result.TotalIssues)
 	assert.NotNil(t, result.LastProject)
-	assert.Equal(t, "Cannot read property 'x' of undefined", result.Issues[0].Message)
+	assert.Equal(t, fixtureCannotReadPropertyXOfUndefined, result.Issues[0].Message)
 	assert.Equal(t, uint64(50), result.Issues[0].TimesSeen)
 	assert.Equal(t, 5, result.Issues[0].MessagesCount)
 }
@@ -1465,7 +1465,7 @@ func TestListIssuesNoIssues(t *testing.T) {
 	teamStore := &mock.TeamStore{
 		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
 			return []warnly.Team{
-				{ID: teamID, Name: "Team A"},
+				{ID: teamID, Name: fixtureTeamA},
 			}, nil
 		},
 	}
@@ -1473,7 +1473,7 @@ func TestListIssuesNoIssues(t *testing.T) {
 	projectStore := &mock.ProjectStore{
 		ListProjectsFn: func(_ context.Context, _ []int, _ string) ([]warnly.Project, error) {
 			return []warnly.Project{
-				{ID: projectID, TeamID: teamID, Name: "Test Project"},
+				{ID: projectID, TeamID: teamID, Name: fixtureTestProject},
 			}, nil
 		},
 	}
@@ -1487,7 +1487,7 @@ func TestListIssuesNoIssues(t *testing.T) {
 	analyticsStore := &mock.AnalyticsStore{
 		ListPopularTagsFn: func(_ context.Context, _ *warnly.ListPopularTagsCriteria) ([]warnly.TagCount, error) {
 			return []warnly.TagCount{
-				{Tag: "browser", Count: 100},
+				{Tag: fixtureBrowser, Count: 100},
 			}, nil
 		},
 	}
@@ -1512,7 +1512,7 @@ func TestListIssuesNoIssues(t *testing.T) {
 
 	req := &warnly.ListIssuesRequest{
 		User:   user,
-		Period: "24h",
+		Period: fixtureDayPeriod,
 	}
 
 	result, err := svc.ListIssues(ctx, req)
@@ -1539,13 +1539,13 @@ func TestDeleteMessageSuccess(t *testing.T) {
 	teamStore := &mock.TeamStore{
 		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
 			return []warnly.Team{
-				{ID: teamID, Name: "Team A"},
+				{ID: teamID, Name: fixtureTeamA},
 			}, nil
 		},
 		ListTeammatesFn: func(_ context.Context, _ []int) ([]warnly.Teammate, error) {
 			return []warnly.Teammate{
-				{ID: 1, Name: "John Doe", Email: "john@example.com"},
-				{ID: 2, Name: "Jane Smith", Email: "jane@example.com"},
+				{ID: 1, Name: fixtureJohnDoe, Email: fixtureJohnExampleCom},
+				{ID: 2, Name: fixtureJaneSmith, Email: fixtureJaneExampleCom},
 			}, nil
 		},
 	}
@@ -1555,7 +1555,7 @@ func TestDeleteMessageSuccess(t *testing.T) {
 			return &warnly.Project{
 				ID:     projectID,
 				TeamID: teamID,
-				Name:   "Test Project",
+				Name:   fixtureTestProject,
 			}, nil
 		},
 	}
@@ -1569,14 +1569,14 @@ func TestDeleteMessageSuccess(t *testing.T) {
 				{
 					ID:        1,
 					UserID:    2,
-					Username:  "Jane Smith",
+					Username:  fixtureJaneSmith,
 					Content:   "First message",
 					CreatedAt: customTime.Add(-2 * time.Hour),
 				},
 				{
 					ID:        2,
 					UserID:    1,
-					Username:  "John Doe",
+					Username:  fixtureJohnDoe,
 					Content:   "Second message",
 					CreatedAt: customTime.Add(-1 * time.Hour),
 				},
@@ -1629,7 +1629,7 @@ func TestCreateMessageSuccess(t *testing.T) {
 	t.Parallel()
 
 	ctx := t.Context()
-	user := &warnly.User{ID: 1, Name: "John Doe"}
+	user := &warnly.User{ID: 1, Name: fixtureJohnDoe}
 	projectID := 5
 	teamID := 10
 	issueID := 100
@@ -1638,13 +1638,13 @@ func TestCreateMessageSuccess(t *testing.T) {
 	teamStore := &mock.TeamStore{
 		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
 			return []warnly.Team{
-				{ID: teamID, Name: "Team A"},
+				{ID: teamID, Name: fixtureTeamA},
 			}, nil
 		},
 		ListTeammatesFn: func(_ context.Context, _ []int) ([]warnly.Teammate, error) {
 			return []warnly.Teammate{
-				{ID: 1, Name: "John Doe", Email: "john@example.com"},
-				{ID: 2, Name: "Jane Smith", Email: "jane@example.com"},
+				{ID: 1, Name: fixtureJohnDoe, Email: fixtureJohnExampleCom},
+				{ID: 2, Name: fixtureJaneSmith, Email: fixtureJaneExampleCom},
 			}, nil
 		},
 	}
@@ -1654,7 +1654,7 @@ func TestCreateMessageSuccess(t *testing.T) {
 			return &warnly.Project{
 				ID:     projectID,
 				TeamID: teamID,
-				Name:   "Test Project",
+				Name:   fixtureTestProject,
 			}, nil
 		},
 	}
@@ -1665,7 +1665,7 @@ func TestCreateMessageSuccess(t *testing.T) {
 				{
 					ID:        1,
 					UserID:    1,
-					Username:  "John Doe",
+					Username:  fixtureJohnDoe,
 					Content:   "Test message",
 					CreatedAt: customTime,
 				},
@@ -1713,7 +1713,7 @@ func TestCreateMessageWithMentions(t *testing.T) {
 	t.Parallel()
 
 	ctx := t.Context()
-	user := &warnly.User{ID: 1, Name: "John Doe"}
+	user := &warnly.User{ID: 1, Name: fixtureJohnDoe}
 	projectID := 5
 	teamID := 10
 	issueID := 100
@@ -1722,13 +1722,13 @@ func TestCreateMessageWithMentions(t *testing.T) {
 	teamStore := &mock.TeamStore{
 		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
 			return []warnly.Team{
-				{ID: teamID, Name: "Team A"},
+				{ID: teamID, Name: fixtureTeamA},
 			}, nil
 		},
 		ListTeammatesFn: func(_ context.Context, _ []int) ([]warnly.Teammate, error) {
 			return []warnly.Teammate{
-				{ID: 1, Name: "John Doe", Email: "john@example.com"},
-				{ID: 2, Name: "Jane Smith", Email: "jane@example.com"},
+				{ID: 1, Name: fixtureJohnDoe, Email: fixtureJohnExampleCom},
+				{ID: 2, Name: fixtureJaneSmith, Email: fixtureJaneExampleCom},
 				{ID: 3, Name: "Bob Johnson", Email: "bob@example.com"},
 			}, nil
 		},
@@ -1739,7 +1739,7 @@ func TestCreateMessageWithMentions(t *testing.T) {
 			return &warnly.Project{
 				ID:     projectID,
 				TeamID: teamID,
-				Name:   "Test Project",
+				Name:   fixtureTestProject,
 			}, nil
 		},
 	}
@@ -1750,7 +1750,7 @@ func TestCreateMessageWithMentions(t *testing.T) {
 				{
 					ID:        1,
 					UserID:    1,
-					Username:  "John Doe",
+					Username:  fixtureJohnDoe,
 					Content:   "Mentioning @Jane Smith and @Bob Johnson",
 					CreatedAt: customTime,
 				},
@@ -1811,7 +1811,7 @@ func TestListTagValuesSuccess(t *testing.T) {
 	teamStore := &mock.TeamStore{
 		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
 			return []warnly.Team{
-				{ID: teamID, Name: "Team A"},
+				{ID: teamID, Name: fixtureTeamA},
 			}, nil
 		},
 	}
@@ -1819,7 +1819,7 @@ func TestListTagValuesSuccess(t *testing.T) {
 	projectStore := &mock.ProjectStore{
 		ListProjectsFn: func(_ context.Context, _ []int, _ string) ([]warnly.Project, error) {
 			return []warnly.Project{
-				{ID: 1, TeamID: teamID, Name: "Test Project"},
+				{ID: 1, TeamID: teamID, Name: fixtureTestProject},
 			}, nil
 		},
 	}
@@ -1827,8 +1827,8 @@ func TestListTagValuesSuccess(t *testing.T) {
 	analyticsStore := &mock.AnalyticsStore{
 		ListTagValuesFn: func(_ context.Context, _ *warnly.ListTagValuesCriteria) ([]warnly.TagValueCount, error) {
 			return []warnly.TagValueCount{
-				{Value: "Chrome", Count: 150},
-				{Value: "Firefox", Count: 80},
+				{Value: fixtureChrome, Count: 150},
+				{Value: fixtureFirefox, Count: 80},
 				{Value: "Safari", Count: 45},
 			}, nil
 		},
@@ -1854,8 +1854,8 @@ func TestListTagValuesSuccess(t *testing.T) {
 
 	req := &warnly.ListTagValuesRequest{
 		User:   user,
-		Tag:    "browser",
-		Period: "24h",
+		Tag:    fixtureBrowser,
+		Period: fixtureDayPeriod,
 		Limit:  10,
 	}
 
@@ -1864,9 +1864,9 @@ func TestListTagValuesSuccess(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotNil(t, result)
 	assert.Len(t, result, 3)
-	assert.Equal(t, "Chrome", result[0].Value)
+	assert.Equal(t, fixtureChrome, result[0].Value)
 	assert.Equal(t, uint64(150), result[0].Count)
-	assert.Equal(t, "Firefox", result[1].Value)
+	assert.Equal(t, fixtureFirefox, result[1].Value)
 	assert.Equal(t, uint64(80), result[1].Count)
 	assert.Equal(t, "Safari", result[2].Value)
 	assert.Equal(t, uint64(45), result[2].Count)
@@ -1883,7 +1883,7 @@ func TestListTagValuesNoResults(t *testing.T) {
 	teamStore := &mock.TeamStore{
 		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
 			return []warnly.Team{
-				{ID: teamID, Name: "Team A"},
+				{ID: teamID, Name: fixtureTeamA},
 			}, nil
 		},
 	}
@@ -1891,7 +1891,7 @@ func TestListTagValuesNoResults(t *testing.T) {
 	projectStore := &mock.ProjectStore{
 		ListProjectsFn: func(_ context.Context, _ []int, _ string) ([]warnly.Project, error) {
 			return []warnly.Project{
-				{ID: 1, TeamID: teamID, Name: "Test Project"},
+				{ID: 1, TeamID: teamID, Name: fixtureTestProject},
 			}, nil
 		},
 	}
@@ -1922,8 +1922,8 @@ func TestListTagValuesNoResults(t *testing.T) {
 
 	req := &warnly.ListTagValuesRequest{
 		User:   user,
-		Tag:    "browser",
-		Period: "24h",
+		Tag:    fixtureBrowser,
+		Period: fixtureDayPeriod,
 		Limit:  10,
 	}
 
@@ -1941,13 +1941,13 @@ func TestSearchProjectSuccess(t *testing.T) {
 	user := &warnly.User{ID: 1}
 	teamID := 10
 	projectID := 5
-	projectName := "Test Project"
+	projectName := fixtureTestProject
 
 	teamStore := &mock.TeamStore{
 		ListTeamsFn: func(_ context.Context, userID int) ([]warnly.Team, error) {
 			assert.Equal(t, 1, userID)
 			return []warnly.Team{
-				{ID: teamID, Name: "Team A"},
+				{ID: teamID, Name: fixtureTeamA},
 			}, nil
 		},
 	}
@@ -2002,7 +2002,7 @@ func TestSearchProjectMultipleProjects(t *testing.T) {
 	teamStore := &mock.TeamStore{
 		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
 			return []warnly.Team{
-				{ID: teamID, Name: "Team A"},
+				{ID: teamID, Name: fixtureTeamA},
 			}, nil
 		},
 	}
@@ -2053,7 +2053,7 @@ func TestSearchProjectNotFound(t *testing.T) {
 	teamStore := &mock.TeamStore{
 		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
 			return []warnly.Team{
-				{ID: teamID, Name: "Team A"},
+				{ID: teamID, Name: fixtureTeamA},
 			}, nil
 		},
 	}
@@ -2104,13 +2104,13 @@ func TestGetIssueSuccess(t *testing.T) {
 	teamStore := &mock.TeamStore{
 		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
 			return []warnly.Team{
-				{ID: teamID, Name: "Team A"},
+				{ID: teamID, Name: fixtureTeamA},
 			}, nil
 		},
 		ListTeammatesFn: func(_ context.Context, _ []int) ([]warnly.Teammate, error) {
 			return []warnly.Teammate{
-				{ID: 1, Name: "John Doe", Email: "john@example.com"},
-				{ID: 2, Name: "Jane Smith", Email: "jane@example.com"},
+				{ID: 1, Name: fixtureJohnDoe, Email: fixtureJohnExampleCom},
+				{ID: 2, Name: fixtureJaneSmith, Email: fixtureJaneExampleCom},
 			}, nil
 		},
 	}
@@ -2120,7 +2120,7 @@ func TestGetIssueSuccess(t *testing.T) {
 			return &warnly.Project{
 				ID:       projectID,
 				TeamID:   teamID,
-				Name:     "Test Project",
+				Name:     fixtureTestProject,
 				Platform: warnly.PlatformGolang,
 			}, nil
 		},
@@ -2160,15 +2160,15 @@ func TestGetIssueSuccess(t *testing.T) {
 		},
 		CalculateFieldsFn: func(_ context.Context, _ warnly.FieldsCriteria) ([]warnly.TagCount, error) {
 			return []warnly.TagCount{
-				{Tag: "browser", Count: 60},
+				{Tag: fixtureBrowser, Count: 60},
 				{Tag: "os", Count: 150},
 			}, nil
 		},
 		CountFieldsFn: func(_ context.Context, _ *warnly.EventDefCriteria) ([]warnly.FieldValueNum, error) {
 			return []warnly.FieldValueNum{
-				{Tag: "browser", Value: "Chrome", Count: 40, PercentsOfTotal: 66.67},
-				{Tag: "browser", Value: "Firefox", Count: 20, PercentsOfTotal: 33.33},
-				{Tag: "os", Value: "Windows", Count: 90, PercentsOfTotal: 60},
+				{Tag: fixtureBrowser, Value: fixtureChrome, Count: 40, PercentsOfTotal: 66.67},
+				{Tag: fixtureBrowser, Value: fixtureFirefox, Count: 20, PercentsOfTotal: 33.33},
+				{Tag: "os", Value: fixtureWindows, Count: 90, PercentsOfTotal: 60},
 				{Tag: "os", Value: "macOS", Count: 60, PercentsOfTotal: 40},
 			}, nil
 		},
@@ -2179,8 +2179,8 @@ func TestGetIssueSuccess(t *testing.T) {
 				UserEmail: "test@example.com",
 				UserName:  "Test User",
 				Message:   "Division by zero at line 42",
-				TagsKey:   []string{"browser", "os"},
-				TagsValue: []string{"Chrome", "Windows"},
+				TagsKey:   []string{fixtureBrowser, "os"},
+				TagsValue: []string{fixtureChrome, fixtureWindows},
 			}, nil
 		},
 	}
@@ -2224,7 +2224,7 @@ func TestGetIssueSuccess(t *testing.T) {
 		User:      user,
 		ProjectID: projectID,
 		IssueID:   issueID,
-		Period:    "24h",
+		Period:    fixtureDayPeriod,
 		EventID:   "event-123",
 	}
 
@@ -2234,7 +2234,7 @@ func TestGetIssueSuccess(t *testing.T) {
 	assert.NotNil(t, result)
 	assert.Equal(t, int64(issueID), result.IssueID)
 	assert.Equal(t, projectID, result.ProjectID)
-	assert.Equal(t, "Test Project", result.ProjectName)
+	assert.Equal(t, fixtureTestProject, result.ProjectName)
 	assert.Equal(t, "RuntimeError", result.ErrorType)
 	assert.Equal(t, "Division by zero", result.ErrorValue)
 	assert.Equal(t, "main.go:42", result.View)
@@ -2267,13 +2267,13 @@ func TestAssignIssueSuccess(t *testing.T) {
 	teamStore := &mock.TeamStore{
 		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
 			return []warnly.Team{
-				{ID: 10, Name: "Team A"},
+				{ID: 10, Name: fixtureTeamA},
 			}, nil
 		},
 		ListTeammatesFn: func(_ context.Context, _ []int) ([]warnly.Teammate, error) {
 			return []warnly.Teammate{
-				{ID: 1, Name: "John Doe", Email: "john@example.com"},
-				{ID: 2, Name: "Jane Smith", Email: "jane@example.com"},
+				{ID: 1, Name: fixtureJohnDoe, Email: fixtureJohnExampleCom},
+				{ID: 2, Name: fixtureJaneSmith, Email: fixtureJaneExampleCom},
 			}, nil
 		},
 	}
@@ -2328,13 +2328,13 @@ func TestDeleteAssignmentSuccess(t *testing.T) {
 	teamStore := &mock.TeamStore{
 		ListTeamsFn: func(_ context.Context, _ int) ([]warnly.Team, error) {
 			return []warnly.Team{
-				{ID: 10, Name: "Team A"},
+				{ID: 10, Name: fixtureTeamA},
 			}, nil
 		},
 		ListTeammatesFn: func(_ context.Context, _ []int) ([]warnly.Teammate, error) {
 			return []warnly.Teammate{
-				{ID: 1, Name: "John Doe", Email: "john@example.com"},
-				{ID: 2, Name: "Jane Smith", Email: "jane@example.com"},
+				{ID: 1, Name: fixtureJohnDoe, Email: fixtureJohnExampleCom},
+				{ID: 2, Name: fixtureJaneSmith, Email: fixtureJaneExampleCom},
 			}, nil
 		},
 	}

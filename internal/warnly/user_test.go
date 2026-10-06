@@ -11,8 +11,8 @@ func TestUser_AvatarInitials(t *testing.T) {
 	t.Parallel()
 
 	user := &warnly.User{
-		Name:    "John",
-		Surname: "Doe",
+		Name:    fixtureJohn,
+		Surname: fixtureDoe,
 	}
 
 	result := user.AvatarInitials()
@@ -23,8 +23,8 @@ func TestUser_FullName(t *testing.T) {
 	t.Parallel()
 
 	user := &warnly.User{
-		Name:    "John",
-		Surname: "Doe",
+		Name:    fixtureJohn,
+		Surname: fixtureDoe,
 	}
 
 	result := user.FullName()
@@ -49,7 +49,7 @@ func TestUsernameFromEmail(t *testing.T) {
 		{
 			name:    "email without subdomain",
 			email:   "test@gmail.com",
-			want:    "test",
+			want:    fixtureTest,
 			wantErr: false,
 		},
 		{

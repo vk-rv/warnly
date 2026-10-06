@@ -16,7 +16,7 @@ func TestProjectKey(t *testing.T) {
 		{
 			name:    "happy path",
 			header:  "sentry_version=7, sentry_client=sentry.go/0.30.0, sentry_key=urzovxt",
-			wantKey: "urzovxt",
+			wantKey: fixtureUrzovxt,
 			wantErr: false,
 		},
 		{
@@ -40,13 +40,13 @@ func TestProjectKey(t *testing.T) {
 		{
 			name:    "sentry_key at start",
 			header:  "sentry_key=urzovxt, sentry_version=7, sentry_client=sentry.go/0.30.0",
-			wantKey: "urzovxt",
+			wantKey: fixtureUrzovxt,
 			wantErr: false,
 		},
 		{
 			name:    "sentry_key at end",
 			header:  "sentry_version=7, sentry_client=sentry.go/0.30.0, sentry_key=urzovxt",
-			wantKey: "urzovxt",
+			wantKey: fixtureUrzovxt,
 			wantErr: false,
 		},
 		{

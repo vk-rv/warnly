@@ -22,6 +22,10 @@ import (
 )
 
 const (
+	testDSNQuery = "parseTime=true&charset=utf8mb4"
+)
+
+const (
 	// databaseName is the name of the template database to clone.
 	databaseName = "test-db-template"
 
@@ -151,7 +155,7 @@ func NewTestInstance() (*TestInstance, error) {
 		User:     url.UserPassword(databaseUser, databasePassword),
 		Host:     hostPort,
 		Path:     databaseName,
-		RawQuery: "parseTime=true&charset=utf8mb4",
+		RawQuery: testDSNQuery,
 	}
 
 	dsn := urlToMySQLDSN(connectionURL)
@@ -242,7 +246,7 @@ func (i *TestInstance) NewDatabase(tb testing.TB) (*sql.DB, DBConfig) {
 	// dropped with ResolveReference, so we have to re-add disabling SSL over
 	// localhost.
 	connectionURL := i.url.ResolveReference(&url.URL{Path: newDatabaseName})
-	connectionURL.RawQuery = "parseTime=true&charset=utf8mb4"
+	connectionURL.RawQuery = testDSNQuery
 
 	dsn := urlToMySQLDSN(connectionURL)
 
@@ -272,7 +276,7 @@ func (i *TestInstance) NewDatabase(tb testing.TB) (*sql.DB, DBConfig) {
 		}
 
 		// Drop the database to keep the container from running out of resources.
-		q := fmt.Sprintf("DROP DATABASE IF EXISTS `%s`;", newDatabaseName)
+		q := fmt.Sprintf("DROP DATABASE IF EXISTS %#q;", newDatabaseName)
 
 		i.dbLock.Lock()
 		defer i.dbLock.Unlock()
@@ -295,7 +299,7 @@ func (i *TestInstance) clone() (string, error) {
 	}
 
 	ctx := context.Background()
-	q := fmt.Sprintf("CREATE DATABASE `%s`;", name)
+	q := fmt.Sprintf("CREATE DATABASE %#q;", name)
 
 	i.dbLock.Lock()
 	defer i.dbLock.Unlock()
@@ -308,7 +312,7 @@ func (i *TestInstance) clone() (string, error) {
 	// Build connection URL for the new database.
 	connectionURL := *i.url
 	connectionURL.Path = name
-	connectionURL.RawQuery = "parseTime=true&charset=utf8mb4"
+	connectionURL.RawQuery = testDSNQuery
 
 	dsn := urlToMySQLDSN(&connectionURL)
 

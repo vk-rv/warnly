@@ -32,7 +32,7 @@ func TestGetProject(t *testing.T) {
 			mockExpect: func(mock sqlmock.Sqlmock) {
 				mock.ExpectQuery(query).
 					WithArgs(1).
-					WillReturnRows(sqlmock.NewRows([]string{"id", "created_at", "name", "user_id", "team_id", "platform", "project_key"}).
+					WillReturnRows(sqlmock.NewRows([]string{"id", fixtureCreatedAt, fixtureName, "user_id", "team_id", "platform", "project_key"}).
 						AddRow(63, date, "go-project", 1, 1, 1, "t3g88uo"))
 			},
 			expectedError: nil,
@@ -51,7 +51,7 @@ func TestGetProject(t *testing.T) {
 			mockExpect: func(mock sqlmock.Sqlmock) {
 				mock.ExpectQuery(query).
 					WithArgs(1).
-					WillReturnRows(sqlmock.NewRows([]string{"id", "created_at", "name", "user_id", "team_id", "platform", "project_key"}))
+					WillReturnRows(sqlmock.NewRows([]string{"id", fixtureCreatedAt, fixtureName, "user_id", "team_id", "platform", "project_key"}))
 			},
 			expectedError:   fmt.Errorf("mysql project store: get project with id 1: %w", warnly.ErrProjectNotFound),
 			expectedProject: nil,

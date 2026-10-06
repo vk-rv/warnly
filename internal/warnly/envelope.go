@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"slices"
 	"strings"
 	"time"
 )
@@ -390,8 +391,8 @@ func GetBreaker(exceptions []Exception) string {
 
 	frames := e.StackTrace.Frames
 
-	for i := len(frames) - 1; i >= 0; i-- {
-		frame := frames[i]
+	for i := range slices.Backward(frames) {
+		frame := &frames[i]
 		if _, found := ignoredModules[frame.GetModule()]; found {
 			continue
 		}

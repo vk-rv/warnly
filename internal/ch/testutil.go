@@ -213,7 +213,7 @@ func (i *ClickHouseTestInstance) NewDatabase(tb testing.TB) (driver.Conn, string
 		}
 
 		// Drop the database. Execute the DROP statement directly on the main DB connection.
-		q := fmt.Sprintf("DROP DATABASE IF EXISTS `%s`;", newDatabaseName)
+		q := fmt.Sprintf("DROP DATABASE IF EXISTS %#q;", newDatabaseName)
 
 		i.dbLock.Lock()
 		defer i.dbLock.Unlock()
@@ -236,7 +236,7 @@ func (i *ClickHouseTestInstance) createAndMigrate() (string, error) {
 	}
 
 	ctx := context.Background()
-	q := fmt.Sprintf("CREATE DATABASE `%s`;", name)
+	q := fmt.Sprintf("CREATE DATABASE %#q;", name)
 
 	i.dbLock.Lock()
 	defer i.dbLock.Unlock()
@@ -256,7 +256,7 @@ func (i *ClickHouseTestInstance) createAndMigrate() (string, error) {
 	// Run migrations on the fresh database.
 	if err := dbMigrate(dsn, i.logger); err != nil {
 		// Attempt to drop the partially migrated database.
-		dropQuery := fmt.Sprintf("DROP DATABASE IF EXISTS `%s`;", name)
+		dropQuery := fmt.Sprintf("DROP DATABASE IF EXISTS %#q;", name)
 		if err := i.db.Exec(ctx, dropQuery, nil); err != nil {
 			return "", fmt.Errorf("failed to drop database: %w", err)
 		}

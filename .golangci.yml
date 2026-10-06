@@ -2,13 +2,15 @@ version: "2"
 linters:
   default: all
   disable:
+    - gomodguard
     - contextcheck
     - depguard
     - wsl_v5
     - noinlineerr
     - dupl
     - err113
-    - exhaustruct 
+    - exhaustruct
+    - exhaustruct_v5
     - funlen
     - gochecknoglobals
     - gocognit
@@ -101,4 +103,3 @@ formatters:
       - builtin$
       - examples$
       - internal/web$
-

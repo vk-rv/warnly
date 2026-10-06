@@ -112,13 +112,11 @@ func isRetryableError(err error) bool {
 		return true
 	}
 
-	var errno syscall.Errno
-	if errors.As(err, &errno) {
+	if errno, ok := errors.AsType[syscall.Errno](err); ok {
 		return isSyscallErrorRetryable(errno)
 	}
 
-	var mysqlErr *mysql.MySQLError
-	if errors.As(err, &mysqlErr) {
+	if mysqlErr, ok := errors.AsType[*mysql.MySQLError](err); ok {
 		return isMySQLErrorRetryable(mysqlErr)
 	}
 

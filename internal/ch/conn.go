@@ -81,14 +81,12 @@ func isRetryableError(err error) bool {
 		return true
 	}
 
-	var errno syscall.Errno
-	if errors.As(err, &errno) {
+	if errno, ok := errors.AsType[syscall.Errno](err); ok {
 		return isSyscallErrorRetryable(errno)
 	}
 
 	// Check ClickHouse specific errors
-	var chErr *clickhouse.Exception
-	if errors.As(err, &chErr) {
+	if chErr, ok := errors.AsType[*clickhouse.Exception](err); ok {
 		return isClickHouseErrorRetryable(chErr)
 	}
 

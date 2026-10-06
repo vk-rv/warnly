@@ -78,8 +78,8 @@ func TestAnalyticsIntegration(t *testing.T) {
 			EventID: fmt.Sprintf("%032x", n), ProjectID: 1, GroupID: 10,
 			CreatedAt: now.Add(time.Duration(n) * time.Minute), RetentionDays: 30,
 			User: "alice", UserEmail: "alice@example.com", UserName: "Alice", UserUsername: "alice",
-			Message: "Database FAILURE 100%_", Title: "Timeout", Env: "prod", Release: "v1",
-			TagsKey: []string{"os", "env", "special='\\"}, TagsValue: []string{"linux", "prod", "quote'\\🙂"},
+			Message: "Database FAILURE 100%_", Title: "Timeout", Env: fixtureProd, Release: "v1",
+			TagsKey: []string{"os", fixtureEnv, fixtureSpecial}, TagsValue: []string{"linux", fixtureProd, fixtureQuote},
 			ContextsKey: []string{"runtime"}, ContextsValue: []string{`{"name":"go"}`},
 			ExceptionFramesAbsPath: []string{"/app/main.go"}, ExceptionFramesFunction: []string{"main"},
 			ExceptionFramesLineNo: []uint32{42}, ExceptionFramesColNo: []uint32{7}, ExceptionFramesInApp: warnly.Uint8Array{1},
@@ -143,14 +143,14 @@ func TestAnalyticsIntegration(t *testing.T) {
 			message string
 			count   uint64
 		}{
-			{"positive", map[string]warnly.QueryValue{"env": {Value: "prod"}}, "", 1},
-			{"negative includes missing", map[string]warnly.QueryValue{"env": {Value: "prod", IsNot: true}}, "", 2},
-			{"case sensitive tags", map[string]warnly.QueryValue{"env": {Value: "PROD"}}, "", 0},
-			{"trailing spaces are significant", map[string]warnly.QueryValue{"env": {Value: "prod "}}, "", 0},
-			{"escaped", map[string]warnly.QueryValue{"special='\\": {Value: "quote'\\🙂"}}, "", 2},
+			{"positive", map[string]warnly.QueryValue{fixtureEnv: {Value: fixtureProd}}, "", 1},
+			{"negative includes missing", map[string]warnly.QueryValue{fixtureEnv: {Value: fixtureProd, IsNot: true}}, "", 2},
+			{"case sensitive tags", map[string]warnly.QueryValue{fixtureEnv: {Value: "PROD"}}, "", 0},
+			{"trailing spaces are significant", map[string]warnly.QueryValue{fixtureEnv: {Value: "prod "}}, "", 0},
+			{"escaped", map[string]warnly.QueryValue{fixtureSpecial: {Value: fixtureQuote}}, "", 2},
 			{"case insensitive literal", nil, "failure 100%_", 3},
 			{"SQL injection", nil, "' OR 1=1 --", 0},
-			{"combined", map[string]warnly.QueryValue{"env": {Value: "prod"}}, "failure", 1},
+			{"combined", map[string]warnly.QueryValue{fixtureEnv: {Value: fixtureProd}}, "failure", 1},
 		} {
 			t.Run(test.name, func(t *testing.T) {
 				criteria := *ec
@@ -169,13 +169,13 @@ func TestAnalyticsIntegration(t *testing.T) {
 		require.NoError(t, err)
 		require.Len(t, entries, 1)
 		require.Equal(t, b.EventID, entries[0].EventID)
-		ids, err := store.GetFilteredGroupIDs(ctx, []warnly.QueryToken{{IsRawText: true, Value: "TIMEOUT"}, {Key: "env", Value: "prod"}}, from, to.Add(-time.Second), []int{1})
+		ids, err := store.GetFilteredGroupIDs(ctx, []warnly.QueryToken{{IsRawText: true, Value: "TIMEOUT"}, {Key: fixtureEnv, Value: fixtureProd}}, from, to.Add(-time.Second), []int{1})
 		require.NoError(t, err)
 		require.Equal(t, []int64{10}, ids)
 		ids, err = store.GetFilteredGroupIDs(ctx, nil, from, to, nil)
 		require.NoError(t, err)
 		require.Empty(t, ids)
-		ids, err = store.GetFilteredGroupIDs(ctx, []warnly.QueryToken{{Key: "env", Value: "prod", Operator: "is not"}}, from, to, []int{1})
+		ids, err = store.GetFilteredGroupIDs(ctx, []warnly.QueryToken{{Key: fixtureEnv, Value: fixtureProd, Operator: "is not"}}, from, to, []int{1})
 		require.NoError(t, err)
 		require.Equal(t, []int64{10}, ids)
 	})
@@ -224,12 +224,12 @@ func TestAnalyticsIntegration(t *testing.T) {
 		tags, err := store.ListPopularTags(ctx, &warnly.ListPopularTagsCriteria{From: from, To: to.Add(-time.Second), ProjectIDs: []int{1}, Limit: 2})
 		require.NoError(t, err)
 		require.Len(t, tags, 2)
-		tagValues, err := store.ListTagValues(ctx, &warnly.ListTagValuesCriteria{From: from, To: to.Add(-time.Second), ProjectIDs: []int{1}, Tag: "env", Limit: 10})
+		tagValues, err := store.ListTagValues(ctx, &warnly.ListTagValuesCriteria{From: from, To: to.Add(-time.Second), ProjectIDs: []int{1}, Tag: fixtureEnv, Limit: 10})
 		require.NoError(t, err)
-		require.Equal(t, []warnly.TagValueCount{{Value: "prod", Count: 1}, {Value: "stage", Count: 1}}, tagValues)
-		tagValues, err = store.ListTagValues(ctx, &warnly.ListTagValuesCriteria{From: from, To: to.Add(-time.Second), ProjectIDs: []int{1}, Tag: "special='\\", Limit: 10})
+		require.Equal(t, []warnly.TagValueCount{{Value: fixtureProd, Count: 1}, {Value: "stage", Count: 1}}, tagValues)
+		tagValues, err = store.ListTagValues(ctx, &warnly.ListTagValuesCriteria{From: from, To: to.Add(-time.Second), ProjectIDs: []int{1}, Tag: fixtureSpecial, Limit: 10})
 		require.NoError(t, err)
-		require.Equal(t, []warnly.TagValueCount{{Value: "quote'\\🙂", Count: 2}}, tagValues)
+		require.Equal(t, []warnly.TagValueCount{{Value: fixtureQuote, Count: 2}}, tagValues)
 	})
 
 	t.Run("inclusive and exclusive upper bounds", func(t *testing.T) {
