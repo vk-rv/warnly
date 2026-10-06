@@ -13,10 +13,7 @@ import (
 	capoidc "github.com/hashicorp/cap/oidc"
 	"github.com/vk-rv/warnly/internal/session"
 	"github.com/vk-rv/warnly/internal/warnly"
-	"github.com/vk-rv/warnly/internal/web"
 )
-
-const body = "body"
 
 const (
 	oidcStateTimeout = 2 * time.Minute
@@ -181,7 +178,7 @@ func (h *rootHandler) oidcCallback(w http.ResponseWriter, r *http.Request) {
 	sess.Values.OIDCState = warnly.OIDCState{}
 
 	opts := []capoidc.Option{capoidc.WithState(cookieState.State), capoidc.WithNonce(cookieState.Nonce)}
-	if len(sess.Values.OIDCState.Scopes) > 0 {
+	if len(cookieState.Scopes) > 0 {
 		opts = append(opts, capoidc.WithScopes(cookieState.Scopes...))
 	}
 	if cookieState.CodeVerifier != "" {
@@ -248,14 +245,14 @@ func (h *rootHandler) oidcCallback(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusFound)
 }
 
-// index handles the HTTP request to render the main page with a list of issues.
+// index handles the HTTP request to return the main page with a list of issues.
 func (h *rootHandler) index(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	user := getUser(ctx)
 
 	period := r.URL.Query().Get("period")
-	if period == "" {
+	if period == "" && r.URL.Query().Get("start") == "" && r.URL.Query().Get("end") == "" {
 		period = defaultPeriod
 	}
 
@@ -282,7 +279,7 @@ func (h *rootHandler) index(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.writeIndex(w, r, result, &user)
+	writeJSON(w, http.StatusOK, result)
 }
 
 // listTagValues handles the request to list values for a tag.
@@ -328,50 +325,13 @@ func (h *rootHandler) listTagValues(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// writeIndex writes the index page to the response writer.
-func (h *rootHandler) writeIndex(w http.ResponseWriter, r *http.Request, res *warnly.ListIssuesResult, user *warnly.User) {
-	ctx := r.Context()
-
-	target := r.Header.Get("Hx-Target")
-	partial := r.URL.Query().Get("partial")
-
-	if partial == body {
-		query := r.URL.Query()
-		query.Del("partial")
-		w.Header().Set("Hx-Push-Url", "/?"+query.Encode())
-	}
-
-	switch {
-	case partial == body:
-		if err := web.IssuesBody(res).Render(ctx, w); err != nil {
-			h.logger.Error("print index body web render", slog.Any("error", err))
-		}
-	case partial == "filters" || (target == "issues-container" && partial != ""):
-		if err := web.IssuesFiltersAndBody(res).Render(ctx, w); err != nil {
-			h.logger.Error("print index filters web render", slog.Any("error", err))
-		}
-	case target == "content":
-		if err := web.IssuesHtmx(res).Render(ctx, w); err != nil {
-			h.logger.Error("print index htmx web render", slog.Any("error", err))
-		}
-	default:
-		if err := web.Index(res, user).Render(ctx, w); err != nil {
-			h.logger.Error("print index web render", slog.Any("error", err))
-		}
-	}
-}
-
 // destroy handles the HTTP request to destroy the current session (log out).
 func (h *rootHandler) destroy(w http.ResponseWriter, r *http.Request) {
 	if err := destroySession(w, r, h.cookieStore); err != nil {
-		h.logger.Error("destroy session: destroy", slog.Any("error", err))
-		if err = web.Login("", "", h.oidc.ProviderName, h.isDemo).Render(r.Context(), w); err != nil {
-			h.logger.Error("destroy session: login web render", slog.Any("error", err))
-		}
+		h.writeError(r.Context(), w, http.StatusInternalServerError, "destroy session", err)
 		return
 	}
-
-	w.Header().Add("Hx-Redirect", "/")
+	w.WriteHeader(http.StatusNoContent)
 }
 
 // destroySession removes the session cookie.
@@ -387,7 +347,7 @@ func destroySession(w http.ResponseWriter, r *http.Request, cookieStore *session
 	return nil
 }
 
-// login handles the HTTP request to render the login page.
+// login handles the HTTP request to return the login page.
 func (h *rootHandler) login(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -417,66 +377,38 @@ func (h *rootHandler) login(w http.ResponseWriter, r *http.Request) {
 		authURL = url
 	}
 
-	if err := web.Login("", authURL, h.oidc.ProviderName, h.isDemo).Render(ctx, w); err != nil {
-		h.logger.Error("get session: hello web render", slog.Any("error", err))
-	}
+	writeJSON(w, http.StatusOK, map[string]any{"AuthURL": authURL, "ProviderName": h.oidc.ProviderName, "IsDemo": h.isDemo})
 }
 
 // create handles the HTTP request to create a new session.
 // It authenticates the user and sets the session cookie.
-// If the authentication fails, it renders an error page.
-// If the authentication succeeds, it redirects to the main page.
+// If the authentication fails, it returns an error page.
+// If authentication succeeds, it returns the signed-in user.
 func (h *rootHandler) create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-
 	credentials := &warnly.Credentials{
 		Identifier: r.PostFormValue("identifier"),
 		Password:   r.PostFormValue("password"),
 		RememberMe: r.PostFormValue("remember-me") == "on",
 	}
-
 	result, err := h.svc.SignIn(ctx, credentials)
 	if err != nil {
-		switch {
-		case errors.Is(err, warnly.ErrInvalidLoginCredentials):
-			h.logger.Error("create new session: invalid login credentials",
-				slog.Any("error", err),
-				slog.String("identifier", credentials.Identifier))
-			if err = web.Login(msgInvalidLoginCredentials, "", h.oidc.ProviderName, h.isDemo).Render(ctx, w); err != nil {
-				h.logger.Error("create new session: login web render", slog.Any("error", err))
-			}
-			return
-		case errors.Is(err, warnly.ErrInvalidAuthMethod):
-			h.logger.Error("create new session: invalid auth method",
-				slog.Any("error", err),
-				slog.String("identifier", credentials.Identifier))
-			if err = web.Login(msgInvalidAuthMethod, "", h.oidc.ProviderName, h.isDemo).Render(ctx, w); err != nil {
-				h.logger.Error("create new session: login web render", slog.Any("error", err))
-			}
-		default:
-			h.logger.Error("create new session: sign in", slog.Any("error", err))
-			if err = web.Login(msgSomethingWentWrong, "", h.oidc.ProviderName, h.isDemo).Render(ctx, w); err != nil {
-				h.logger.Error("create new session: login web render", slog.Any("error", err))
-			}
-			return
+		code, message := http.StatusInternalServerError, msgSomethingWentWrong
+		if errors.Is(err, warnly.ErrInvalidLoginCredentials) {
+			code, message = http.StatusUnauthorized, msgInvalidLoginCredentials
 		}
-	}
-
-	if err := saveCookie(
-		w,
-		r,
-		h.cookieStore,
-		*result.User,
-		credentials.RememberMe,
-		h.rememberDays); err != nil {
-		h.logger.Error("create new session: save cookie", slog.Any("error", err))
-		if err = web.Login(msgSomethingWentWrong, "", h.oidc.ProviderName, h.isDemo).Render(ctx, w); err != nil {
-			h.logger.Error("create new session: login web render", slog.Any("error", err))
+		if errors.Is(err, warnly.ErrInvalidAuthMethod) {
+			code, message = http.StatusUnauthorized, msgInvalidAuthMethod
 		}
+		h.logger.Error("sign in", slog.Any("error", err))
+		writeJSON(w, code, map[string]string{"error": message})
 		return
 	}
-
-	http.Redirect(w, r, "/", http.StatusFound)
+	if err := saveCookie(w, r, h.cookieStore, *result.User, credentials.RememberMe, h.rememberDays); err != nil {
+		h.writeError(ctx, w, http.StatusInternalServerError, "save session", err)
+		return
+	}
+	writeJSON(w, http.StatusOK, result.User)
 }
 
 // saveCookie saves the user information in a session cookie.

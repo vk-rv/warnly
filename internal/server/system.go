@@ -7,7 +7,6 @@ import (
 
 	"github.com/vk-rv/warnly/internal/session"
 	"github.com/vk-rv/warnly/internal/warnly"
-	"github.com/vk-rv/warnly/internal/web"
 )
 
 // systemHandler reports resource usage.
@@ -32,25 +31,18 @@ func newSystemHandler(
 func (h *systemHandler) listSlowQueries(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	user := getUser(ctx)
-
 	result, err := h.svc.ListSlowQueries(ctx)
 	if err != nil {
 		h.writeError(ctx, w, http.StatusInternalServerError, "list slow queries", err)
 		return
 	}
 
-	partial := r.URL.Query().Get("partial")
-	isPartial := partial == "1"
-
-	h.writeQueriesResponse(w, r, result, isPartial, &user)
+	writeJSON(w, http.StatusOK, result)
 }
 
 // listSchemas lists olap database schemas from largest to smallest.
 func (h *systemHandler) listSchemas(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-
-	user := getUser(ctx)
 
 	result, err := h.svc.ListSchemas(ctx)
 	if err != nil {
@@ -58,14 +50,12 @@ func (h *systemHandler) listSchemas(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.writeSchemas(w, r, result, &user)
+	writeJSON(w, http.StatusOK, result)
 }
 
 // listErrors lists recent errors from olap system for the last 24 hours.
 func (h *systemHandler) listErrors(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-
-	user := getUser(ctx)
 
 	result, err := h.svc.ListErrors(ctx)
 	if err != nil {
@@ -73,55 +63,5 @@ func (h *systemHandler) listErrors(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.writeErrors(w, r, result, &user)
-}
-
-// writeQueriesResponse writes slow queries response.
-func (h *systemHandler) writeQueriesResponse(
-	w http.ResponseWriter,
-	r *http.Request,
-	result []warnly.SQLQuery,
-	isPartial bool,
-	user *warnly.User,
-) {
-	if r.Header.Get(htmxHeader) != "" {
-		if err := web.SystemHtmx(result, isPartial).Render(r.Context(), w); err != nil {
-			h.logger.Error("print queries htmx response", slog.Any("error", err))
-		}
-	} else {
-		if err := web.System(result, isPartial, user).Render(r.Context(), w); err != nil {
-			h.logger.Error("print queries response", slog.Any("error", err))
-		}
-	}
-}
-
-// writeErrors writes errors response.
-func (h *systemHandler) writeErrors(
-	w http.ResponseWriter,
-	r *http.Request,
-	result []warnly.AnalyticsStoreErr,
-	user *warnly.User,
-) {
-	if r.Header.Get(htmxHeader) != "" {
-		if err := web.ErrorsHtmx(result).Render(r.Context(), w); err != nil {
-			h.logger.Error("print errors htmx response", slog.Any("error", err))
-		}
-	} else {
-		if err := web.AnalyticStoreErrors(result, user).Render(r.Context(), w); err != nil {
-			h.logger.Error("print errors response", slog.Any("error", err))
-		}
-	}
-}
-
-// writeSchemas writes schemas response.
-func (h *systemHandler) writeSchemas(w http.ResponseWriter, r *http.Request, result []warnly.Schema, user *warnly.User) {
-	if r.Header.Get(htmxHeader) != "" {
-		if err := web.SchemaHtmx(result).Render(r.Context(), w); err != nil {
-			h.logger.Error("print schema htmx response", slog.Any("error", err))
-		}
-	} else {
-		if err := web.Schema(result, user).Render(r.Context(), w); err != nil {
-			h.logger.Error("print schema response", slog.Any("error", err))
-		}
-	}
+	writeJSON(w, http.StatusOK, result)
 }

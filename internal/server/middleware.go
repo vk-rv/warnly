@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -122,8 +123,8 @@ func (mw *emailMatcherMW) emailMatch(handler http.HandlerFunc) http.HandlerFunc 
 			mw.logger.Error("authenticate: email matcher, email is not allowed",
 				slog.String(httpMethodLabel, r.Method),
 				slog.String("url", r.URL.String()))
-			if r.Header.Get(htmxHeader) != "" {
-				w.Header().Add("Hx-Redirect", "/login")
+			if strings.HasPrefix(r.URL.Path, "/api/") {
+				writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "Authentication required"})
 			} else {
 				http.Redirect(w, r, "/login", http.StatusSeeOther)
 			}

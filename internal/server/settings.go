@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/vk-rv/warnly/internal/warnly"
-	"github.com/vk-rv/warnly/internal/web"
 )
 
 // settingsHandler handles HTTP requests related to Warnly settings.
@@ -37,23 +36,10 @@ func (h *settingsHandler) listSettings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := &web.SettingsData{
-		User:    &user,
-		Webhook: webhook,
+	data := map[string]any{
+		"User":    &user,
+		"Webhook": webhook,
 	}
 
-	h.writeSettings(w, r, data)
-}
-
-// writeSettings writes the settings page to the response writer.
-func (h *settingsHandler) writeSettings(w http.ResponseWriter, r *http.Request, data *web.SettingsData) {
-	if r.Header.Get(htmxHeader) != "" {
-		if err := web.SettingsHtmx(data).Render(r.Context(), w); err != nil {
-			h.logger.Error("print settings htmx response", slog.Any("error", err))
-		}
-	} else {
-		if err := web.Settings(data).Render(r.Context(), w); err != nil {
-			h.logger.Error("print settings response", slog.Any("error", err))
-		}
-	}
+	writeJSON(w, http.StatusOK, data)
 }

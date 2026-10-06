@@ -119,7 +119,7 @@ func TestRecoverMiddleware_ErrAbortHandler_IsPanic(t *testing.T) {
 	})
 }
 
-func TestRecoverMiddleware_WithHTMXRequest(t *testing.T) {
+func TestRecoverMiddleware_JSONError(t *testing.T) {
 	t.Parallel()
 
 	ctx := t.Context()
@@ -136,12 +136,13 @@ func TestRecoverMiddleware_WithHTMXRequest(t *testing.T) {
 
 	req := httptest.NewRequestWithContext(ctx, http.MethodGet, testPattern, http.NoBody)
 	req.Pattern = testPattern
-	req.Header.Set(htmxHeader, "true")
+	req.URL.Path = "/api/test"
 	w := httptest.NewRecorder()
 
 	wrapped(w, req)
 
-	assert.Equal(t, "/error", w.Header().Get("Hx-Redirect"), "should redirect HTMX requests to /error")
+	assert.Equal(t, http.StatusInternalServerError, w.Code)
+	assert.JSONEq(t, `{"error":"Internal Server Error"}`, w.Body.String())
 
 	metricValue := testutil.ToFloat64(mw.metrics.panicRecoversTotal.WithLabelValues(testPattern, http.MethodGet))
 	assert.InEpsilon(t, 1.0, 0.1, metricValue, "panic should be recovered and counted")
@@ -168,8 +169,6 @@ func TestRecoverMiddleware_WithUpgradeConnection(t *testing.T) {
 	w := httptest.NewRecorder()
 
 	wrapped(w, req)
-
-	assert.Empty(t, w.Header().Get("Hx-Redirect"), "should not add Hx-Redirect for Upgrade connections")
 
 	assert.Empty(t, w.Body.String(), "should not write response for Upgrade connections")
 

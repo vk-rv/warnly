@@ -6,11 +6,9 @@ import (
 	"log/slog"
 	"net/http"
 	"runtime"
-	"strconv"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
-	"github.com/vk-rv/warnly/internal/web"
 )
 
 // recoverMw is a middleware for recovering from golang panics in HTTP handlers.
@@ -59,16 +57,7 @@ func (mw *recoverMw) recover(handler http.HandlerFunc) http.HandlerFunc {
 				mw.logger.Error(err.Error(), "event", "panic", "stack", "...\n"+string(buf))
 
 				if r.Header.Get("Connection") != "Upgrade" {
-					if r.Header.Get(htmxHeader) != "" {
-						w.Header().Add("Hx-Redirect", "/error")
-					} else {
-						if err = web.ServerError(
-							strconv.Itoa(http.StatusInternalServerError),
-							http.StatusText(http.StatusInternalServerError),
-						).Render(r.Context(), w); err != nil {
-							mw.logger.Error("server error web render", slog.Any("error", err))
-						}
-					}
+					writeJSON(w, http.StatusInternalServerError, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
 				}
 				return
 			}

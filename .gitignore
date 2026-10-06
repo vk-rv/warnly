@@ -8,3 +8,10 @@ tmp
 *.db
 .trunk
 cmd/simulate_load.sh
+
+.tools/
+.svelte-kit/
+bin/
+internal/server/frontend/dist/
+test-results/
+playwright-report/

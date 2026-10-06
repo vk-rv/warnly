@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"strings"
 
 	"github.com/vk-rv/warnly/internal/session"
 	"github.com/vk-rv/warnly/internal/warnly"
@@ -41,8 +42,8 @@ func (mw *authMw) authenticate(handler http.HandlerFunc) http.HandlerFunc {
 				slog.Any("error", err),
 				slog.String("method", r.Method),
 				slog.String("url", r.URL.String()))
-			if r.Header.Get(htmxHeader) != "" {
-				w.Header().Add("Hx-Redirect", "/login")
+			if strings.HasPrefix(r.URL.Path, "/api/") {
+				writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "Authentication required"})
 			} else {
 				http.Redirect(w, r, "/login", http.StatusSeeOther)
 			}

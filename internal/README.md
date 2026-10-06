@@ -72,7 +72,8 @@ internal/
     svcotel/          # OpenTelemetry convenience wrapper
     uow/              # Unit of work DB transactions abstraction
     warnly/           # Root package (models, interfaces)
-    web/              # HTML templates rendered by templ library
+
+frontend/src/         # SvelteKit pages and components (adapter-static)
 ```
 
 ## Architecture Overview

@@ -9,13 +9,6 @@ import (
 	"github.com/vk-rv/warnly/internal/warnly"
 )
 
-const (
-	// htmxHeader is the HTTP header used by HTMX to indicate an HTMX request.
-	htmxHeader = "Hx-Request"
-	// htmxTarget is the HTTP header used by HTMX to indicate the target element for the response.
-	htmxTarget = "Hx-Target"
-)
-
 func decodeProject(r *http.Request) (*warnly.CreateProjectRequest, error) {
 	if err := r.ParseForm(); err != nil {
 		return nil, fmt.Errorf("project decode: parse form: %w", err)

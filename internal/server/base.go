@@ -2,11 +2,9 @@ package server
 
 import (
 	"context"
+	"encoding/json"
 	"log/slog"
 	"net/http"
-	"strconv"
-
-	"github.com/vk-rv/warnly/internal/web"
 )
 
 type BaseHandler struct {
@@ -19,10 +17,20 @@ func NewBaseHandler(logger *slog.Logger) *BaseHandler {
 	}
 }
 
-func (h *BaseHandler) writeError(ctx context.Context, w http.ResponseWriter, code int, msg string, err error) {
+func (h *BaseHandler) writeError(_ context.Context, w http.ResponseWriter, code int, msg string, err error) {
 	h.logger.Error(msg, slog.Any("error", err))
-	w.WriteHeader(code)
-	if err = web.ServerError(strconv.Itoa(code), http.StatusText(code)).Render(ctx, w); err != nil {
-		h.logger.Error(msg+" server error web render", slog.Any("error", err))
+	writeJSON(w, code, map[string]string{"error": http.StatusText(code)})
+}
+
+// writeJSON buffers encoding before committing headers, so encoding failures return 500.
+func writeJSON(w http.ResponseWriter, status int, value any) {
+	data, err := json.Marshal(value)
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
 	}
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Cache-Control", "no-store")
+	w.WriteHeader(status)
+	_, _ = w.Write(append(data, '\n'))
 }

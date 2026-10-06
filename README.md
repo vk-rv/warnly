@@ -80,6 +80,67 @@ The tests also run in the existing `INTEGRATION=1 go test ./...` CI job. They ve
 the actual table engines, migrations, event round trips, filters, metrics, tags,
 pagination, retention, and the engine's query-pushdown counter.
 
+## Development and builds (Linux / macOS)
+
+The UI uses Svelte 5 and SvelteKit with `@sveltejs/adapter-static` in SPA mode.
+Go serves the compiled HTML, CSS and JavaScript embedded in the binary, including
+fallbacks for direct links to projects and issues. Node.js is only a build tool;
+there is no Node server in production. The authenticated JSON API lives under
+`/api`; Sentry ingestion and OIDC callback URLs are unchanged.
+
+For the complete development stack, install Docker Engine with Compose v2 on
+Linux or Docker Desktop on macOS, then run:
+
+```sh
+make dev
+```
+
+This creates `.env` from `.env.sample` if absent, installs the build dependencies
+in Docker, starts MySQL and ClickHouse, builds the frontend and runs Go with Air.
+Open <http://localhost:8080>. The sample login is `admin` / `admin`.
+Air rebuilds the static frontend and Go binary when source files change; refresh
+the browser after rebuilding. `make dev-down` stops the stack without deleting data.
+Use `COMPOSE="docker-compose"` if your installation uses that command.
+Existing `.env` files are preserved. For the default direct-ingestion setup,
+leave `KAFKA_BROKERS` empty; Kafka requires the optional `queue` Compose profile.
+
+For a native build (amd64 / arm64):
+
+```sh
+make install
+make build
+```
+
+`make install` requires `make`, `curl` and `tar`. It installs the Go version from
+`go.mod` and Node 22 locally in `.tools` when suitable tools are missing, then
+installs the locked npm dependencies and Go modules. It requires no sudo and does
+not modify shell startup files. Make targets automatically use these local tools.
+`make setup` is an alias; pre-commit installation is available as `make hooks`.
+
+The result is `bin/warnly`, which includes the static UI. `make run` builds and
+starts it, reading `.env` (environment variables take precedence). For native
+execution, set database DSNs to reachable addresses: Compose exposes MySQL at
+`localhost:3326` and ClickHouse at `localhost:9030`. The sample DSNs use Docker
+service names and are intended for `make dev`.
+
+For Svelte hot reload, run `make frontend-dev` alongside the Go server. Open the
+Vite URL printed in the terminal; `/api`, `/oidc` and `/ingest` are proxied to
+`http://127.0.0.1:8080`. Override this with `WARNLY_API_URL` if needed. Production
+and `make dev` serve the UI directly from Go at port 8080.
+
+```sh
+make frontend-check # Svelte diagnostics
+make frontend-build # Install and compile static assets
+make frontend-test  # Browser scenarios (installs Chromium)
+make test-unit      # Go tests without container integration
+make test           # Go integration tests; requires Docker
+```
+
+Always build the frontend before a direct `go build` or release. Generated files
+in `internal/server/frontend/dist` are ignored by Git. Docker and GoReleaser do
+this automatically. A Go binary built without these files returns a clear 503
+for UI requests; API and unit tests can still run without Node.
+
 ## Roadmap and Status
 
 The high-level plan for `warnly`, in order:

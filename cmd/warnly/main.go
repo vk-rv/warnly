@@ -20,6 +20,7 @@ import (
 	"github.com/coreos/go-oidc/v3/oidc"
 	capoidc "github.com/hashicorp/cap/oidc"
 	"github.com/ilyakaznacheev/cleanenv"
+	"github.com/joho/godotenv"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/patrickmn/go-cache"
 	"github.com/prometheus/client_golang/prometheus"
@@ -56,6 +57,10 @@ func main() {
 		stdout = "stdout"
 	)
 
+	if err := godotenv.Load(".env"); err != nil && !errors.Is(err, os.ErrNotExist) {
+		slog.Error("failed to load .env", slog.Any("error", err))
+		os.Exit(failed)
+	}
 	cfg := config{}
 	if err := cleanenv.ReadEnv(&cfg); err != nil {
 		slog.Error("failed to create config", slog.Any("error", err))
