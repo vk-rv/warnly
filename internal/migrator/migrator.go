@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/ClickHouse/clickhouse-go/v2"
+	mysqlconnector "github.com/go-sql-driver/mysql"
 	"github.com/golang-migrate/migrate/v4"
 	clickhouseMigrate "github.com/golang-migrate/migrate/v4/database/clickhouse"
 	"github.com/golang-migrate/migrate/v4/database/mysql"
@@ -23,16 +24,19 @@ const (
 	_ Driver = iota
 	MySQL
 	Clickhouse
+	MySQLDuckDB
 )
 
 var expectedVersions = map[Driver]uint{
-	MySQL:      0,
-	Clickhouse: 0,
+	MySQL:       0,
+	Clickhouse:  0,
+	MySQLDuckDB: 0,
 }
 
 var driverToString = map[Driver]string{
-	MySQL:      "mysql",
-	Clickhouse: "clickhouse",
+	MySQL:       "mysql",
+	Clickhouse:  "clickhouse",
+	MySQLDuckDB: "mysql-duckdb",
 }
 
 // Driver represents a database driver.
@@ -49,6 +53,41 @@ type Migrator struct {
 	migrator *migrate.Migrate
 	logger   *slog.Logger
 	driver   Driver
+}
+
+// NewDuckDBMigrator uses MySQL migrations with a separate analytics schema history.
+func NewDuckDBMigrator(dsn string, logger *slog.Logger) (*Migrator, error) {
+	cfg, err := mysqlconnector.ParseDSN(dsn)
+	if err != nil {
+		return nil, fmt.Errorf("migrator: parse mysql-duckdb DSN: %w", err)
+	}
+	
+	cfg.MultiStatements = true
+	db, err := sql.Open("mysql", cfg.FormatDSN())
+	if err != nil {
+		return nil, err
+	}
+	
+	dr, err := mysql.WithInstance(db, &mysql.Config{MigrationsTable: "analytics_schema_migrations"})
+	if err != nil {
+		_ = db.Close()
+		return nil, err
+	}
+	
+	source, err := iofs.New(migrations.FS, "mysql-duckdb")
+	if err != nil {
+		_ = dr.Close()
+		return nil, err
+	}
+	
+	mm, err := migrate.NewWithInstance("iofs", source, "mysql", dr)
+	if err != nil {
+		_ = source.Close()
+		_ = dr.Close()
+		return nil, err
+	}
+	
+	return &Migrator{db: db, migrator: mm, logger: logger, driver: MySQLDuckDB}, nil
 }
 
 // NewMigrator creates a new Migrator instance.

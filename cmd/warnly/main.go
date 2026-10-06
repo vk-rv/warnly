@@ -27,6 +27,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/vk-rv/warnly/internal/ch"
 	"github.com/vk-rv/warnly/internal/chprometheus"
+	"github.com/vk-rv/warnly/internal/duckdb"
 	"github.com/vk-rv/warnly/internal/kafka"
 	"github.com/vk-rv/warnly/internal/migrator"
 	"github.com/vk-rv/warnly/internal/mysql"
@@ -77,6 +78,9 @@ func main() {
 
 //nolint:gocyclo,cyclop // boring initialization.
 func run(cfg *config, logger *slog.Logger) error {
+	if _, _, err := analyticsConfig(cfg); err != nil {
+		return err
+	}
 	l := func(format string, a ...any) {
 		logger.Info(fmt.Sprintf(strings.TrimPrefix(format, "maxprocs: "), a...))
 	}
@@ -120,13 +124,13 @@ func run(cfg *config, logger *slog.Logger) error {
 		}
 	}()
 
-	clickConn, clickClose, err := ch.ConnectLoop(termCtx, cfg.ClickHouse.DSN, ch.DefaultTimeout, logger)
+	olap, olapCollector, closeOLAP, err := connectAnalytics(termCtx, cfg, tracingProvider, logger)
 	if err != nil {
 		return err
 	}
 	defer func() {
-		if err = clickClose(); err != nil {
-			logger.Error("close clickhouse connection pool on server shutdown", slog.Any("error", err))
+		if err = closeOLAP(); err != nil {
+			logger.Error("close analytics connection pool on server shutdown", slog.Any("error", err))
 		}
 	}()
 
@@ -181,16 +185,6 @@ func run(cfg *config, logger *slog.Logger) error {
 	if sourceErr, err := dbm.Close(); sourceErr != nil || err != nil {
 		return fmt.Errorf("close oltp migrator: %w, %w", sourceErr, err)
 	}
-	olapm, err := migrator.NewAnalyticsMigrator(cfg.ClickHouse.DSN, logger)
-	if err != nil {
-		return err
-	}
-	if err = olapm.Up(cfg.ForceMigrate); err != nil {
-		return fmt.Errorf("migrate up: %w", err)
-	}
-	if sourceErr, err := olapm.Close(); sourceErr != nil || err != nil {
-		return fmt.Errorf("close olap migrator: %w, %w", sourceErr, err)
-	}
 
 	userStore := mysql.NewUserStore(db)
 	sessionStore := mysql.NewSessionStore(db)
@@ -203,12 +197,10 @@ func run(cfg *config, logger *slog.Logger) error {
 	alertStore := mysql.NewAlertStore(db)
 	notificationStore := mysql.NewNotificationStore(db)
 
-	olap := ch.NewClickhouseStore(clickConn, tracingProvider)
-
 	regCollectors := []prometheus.Collector{
 		collectors.NewGoCollector(),
 		collectors.NewDBStatsCollector(db, "oltp"),
-		chprometheus.NewClickhouseCollector(clickConn, "olap"),
+		olapCollector,
 	}
 	for i := range regCollectors {
 		if err = reg.Register(regCollectors[i]); err != nil {
@@ -501,6 +493,115 @@ func run(cfg *config, logger *slog.Logger) error {
 	return nil
 }
 
+const (
+		backendClickhouse   = "clickhouse"
+		backendMySQLDuckDB  = "mysql-duckdb"
+)
+
+func analyticsConfig(cfg *config) (backend, dsn string, err error) {
+	backend, dsn = cfg.Analytics.Backend, cfg.Analytics.DSN
+	if backend == "" {
+		backend = "clickhouse"
+	}
+	
+	switch backend {
+	case backendClickhouse:
+		if dsn == "" {
+			dsn = cfg.ClickHouse.DSN
+		}
+		if dsn == "" {
+			return "", "", errors.New("CLICKHOUSE_DSN or ANALYTICS_DSN is required for clickhouse")
+		}
+	case backendMySQLDuckDB:
+		if len(cfg.Kafka.Brokers) > 0 {
+			return "", "", errors.New("mysql-duckdb requires direct ingestion: unset KAFKA_BROKERS " +
+				"(Kafka ingestion uses ClickHouse's Kafka engine)")
+		}
+		dsn, err = duckdb.NormalizeDSN(dsn)
+		if err != nil {
+			return "", "", err
+		}
+	default:
+		return "", "", fmt.Errorf("unsupported ANALYTICS_BACKEND %q: expected clickhouse or mysql-duckdb", backend)
+	}
+	
+	return backend, dsn, nil
+}
+
+func connectAnalytics(ctx context.Context, cfg *config, tracing svcotel.TracerProvider, logger *slog.Logger) (
+	warnly.AnalyticsStore, prometheus.Collector, func() error, error,
+) {
+	
+	backend, dsn, err := analyticsConfig(cfg)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	
+	var (
+		store     warnly.AnalyticsStore
+		collector prometheus.Collector
+		closeDB   func() error
+		migration *migrator.Migrator
+		duckStore *duckdb.Store
+	)
+	
+	if backend == backendMySQLDuckDB {
+		db, closeConn, connErr := duckdb.ConnectLoop(ctx, dsn, logger)
+		if connErr != nil {
+			return nil, nil, nil, connErr
+		}
+		closeDB = closeConn
+		duckStore = duckdb.NewStore(db)
+		store = duckStore
+		collector = collectors.NewDBStatsCollector(db, "olap")
+		migration, err = migrator.NewDuckDBMigrator(dsn, logger)
+	} else {
+		conn, closeConn, connErr := ch.ConnectLoop(ctx, dsn, ch.DefaultTimeout, logger)
+		if connErr != nil {
+			return nil, nil, nil, connErr
+		}
+		closeDB = closeConn
+		store = ch.NewClickhouseStore(conn, tracing)
+		collector = chprometheus.NewClickhouseCollector(conn, "olap")
+		migration, err = migrator.NewAnalyticsMigrator(dsn, logger)
+	}
+	if err != nil {
+		_ = closeDB()
+		return nil, nil, nil, err
+	}
+	upErr := migration.Up(cfg.ForceMigrate)
+	sourceErr, dbErr := migration.Close()
+	if err := errors.Join(upErr, sourceErr, dbErr); err != nil {
+		_ = closeDB()
+		return nil, nil, nil, fmt.Errorf("migrate analytics: %w", err)
+	}
+	if duckStore != nil {
+		cleanupCtx, cancel := context.WithCancel(ctx)
+		done := make(chan struct{})
+		go func() {
+			defer close(done)
+			ticker := time.NewTicker(time.Hour)
+			defer ticker.Stop()
+			for {
+				purgeCtx, stop := context.WithTimeout(cleanupCtx, 5*time.Minute)
+				if err := duckStore.PurgeExpired(purgeCtx, time.Now()); err != nil && cleanupCtx.Err() == nil {
+					logger.Error("purge expired analytics events", slog.Any("error", err))
+				}
+				stop()
+				select {
+				case <-cleanupCtx.Done():
+					return
+				case <-ticker.C:
+				}
+			}
+		}()
+		closeConn := closeDB
+		closeDB = func() error { cancel(); <-done; return closeConn() }
+	}
+	return store, collector, closeDB, nil
+}
+
+
 //nolint:tagalign // later
 type config struct {
 	OIDCProvider struct {
@@ -518,7 +619,11 @@ type config struct {
 		Password string `env:"ADMIN_PASSWORD" env-required:"true"`
 	}
 	ClickHouse struct {
-		DSN string `env:"CLICKHOUSE_DSN" env-required:"true"`
+		DSN string `env:"CLICKHOUSE_DSN"`
+	}
+	Analytics struct {
+		Backend string `env:"ANALYTICS_BACKEND" env-default:"clickhouse"`
+		DSN     string `env:"ANALYTICS_DSN"`
 	}
 	Server struct {
 		Host         string        `env:"SERVER_HOST"   env-default:"localhost"`

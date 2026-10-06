@@ -40,6 +40,10 @@ tailwindcss:
 test:
 	INTEGRATION=1 go test -count=1 ./... -v
 
+.PHONY: test-duckdb
+test-duckdb:
+	INTEGRATION=1 go test -count=1 -race -v ./internal/duckdb ./cmd/warnly
+
 .PHONY: bench
 bench:
 	@which drill > /dev/null 2>&1 || (echo "drill not installed. Install with: cargo install drill" && false)

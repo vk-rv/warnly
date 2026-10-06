@@ -1,0 +1,63 @@
+# Requires Docker Compose 2.24.4+ for !override.
+# docker compose -f docker-compose.yml -f docker-compose.duckdb.yml up --build
+services:
+  mysql:
+    image: evgeniypatlan/test-images:mysql-9.7-duckdb-v0.2.0
+    healthcheck:
+      test: ["CMD", "/usr/local/mysql/bin/mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
+
+  clickhouse:
+    profiles: ["clickhouse"]
+
+  mysql-duckdb:
+    image: evgeniypatlan/test-images:mysql-9.7-duckdb-v0.2.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    ports:
+      - "3336:3306"
+    volumes:
+      - mysql_duckdb_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "/usr/local/mysql/bin/mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
+      interval: 5s
+      timeout: 5s
+      start_period: 30s
+      retries: 30
+
+  # This image only initializes root; MYSQL_DATABASE and MYSQL_USER are not supported.
+  mysql-duckdb-init:
+    image: evgeniypatlan/test-images:mysql-9.7-duckdb-v0.2.0
+    entrypoint: ["/bin/sh", "-ec"]
+    command:
+      - |
+        case "$${MYSQL_DATABASE}" in
+          ''|*[!a-zA-Z0-9_]*) echo 'MYSQL_DATABASE must contain only letters, digits and underscores' >&2; exit 1 ;;
+        esac
+        /usr/local/mysql/bin/mysql -h mysql -uroot -e "CREATE DATABASE IF NOT EXISTS \`$${MYSQL_DATABASE}\`;"
+        /usr/local/mysql/bin/mysql -h mysql-duckdb -uroot -e 'CREATE DATABASE IF NOT EXISTS warnly_analytics;'
+    environment:
+      MYSQL_PWD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    depends_on:
+      mysql:
+        condition: service_healthy
+      mysql-duckdb:
+        condition: service_healthy
+
+  warnly:
+    environment:
+      SERVER_HOST: 0.0.0.0
+      SERVER_PORT: "8080"
+      MYSQL_DSN: root:${MYSQL_ROOT_PASSWORD}@tcp(mysql:3306)/${MYSQL_DATABASE}?parseTime=true&interpolateParams=true&loc=UTC
+      ANALYTICS_BACKEND: mysql-duckdb
+      ANALYTICS_DSN: root:${MYSQL_ROOT_PASSWORD}@tcp(mysql-duckdb:3306)/warnly_analytics?parseTime=true&interpolateParams=true
+      KAFKA_BROKERS: ""
+    depends_on: !override
+      mysql:
+        condition: service_healthy
+      mysql-duckdb-init:
+        condition: service_completed_successfully
+
+volumes:
+  mysql_duckdb_data:
