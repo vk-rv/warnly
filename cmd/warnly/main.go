@@ -531,7 +531,6 @@ func analyticsConfig(cfg *config) (backend, dsn string, err error) {
 func connectAnalytics(ctx context.Context, cfg *config, tracing svcotel.TracerProvider, logger *slog.Logger) (
 	warnly.AnalyticsStore, prometheus.Collector, func() error, error,
 ) {
-
 	backend, dsn, err := analyticsConfig(cfg)
 	if err != nil {
 		return nil, nil, nil, err
