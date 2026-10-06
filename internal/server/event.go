@@ -111,8 +111,7 @@ func NewEventAPIHandler(svc warnly.EventService, logger *slog.Logger) *EventHand
 func (h *EventHandler) IngestEvent(w http.ResponseWriter, r *http.Request) {
 	res, err := h.handleIngestEvent(r)
 	if err != nil {
-		var clientErr ClientError
-		if errors.As(err, &clientErr) {
+		if clientErr, ok := errors.AsType[ClientError](err); ok {
 			h.logger.Error("ingest client error", slog.Any("error", clientErr), slog.Int("status", clientErr.HTTPStatus()))
 
 			w.Header().Set("Content-Type", "application/json")

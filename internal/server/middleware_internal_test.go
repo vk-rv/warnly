@@ -135,7 +135,7 @@ func TestRecordLatency(t *testing.T) {
 				assert.NoError(t, err)
 			},
 			expectedCode:   http.StatusOK,
-			expectedMetric: "http_requests_total",
+			expectedMetric: fixtureHTTPRequestsTotal,
 		},
 		{
 			name: "request with custom status code",
@@ -143,7 +143,7 @@ func TestRecordLatency(t *testing.T) {
 				w.WriteHeader(http.StatusNotFound)
 			},
 			expectedCode:   http.StatusNotFound,
-			expectedMetric: "http_requests_total",
+			expectedMetric: fixtureHTTPRequestsTotal,
 		},
 		{
 			name: "request without explicit WriteHeader",
@@ -152,7 +152,7 @@ func TestRecordLatency(t *testing.T) {
 				assert.NoError(t, err)
 			},
 			expectedCode:   http.StatusOK,
-			expectedMetric: "http_requests_total",
+			expectedMetric: fixtureHTTPRequestsTotal,
 		},
 	}
 

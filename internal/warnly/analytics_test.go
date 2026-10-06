@@ -16,13 +16,13 @@ func TestEventEntry_DisplayUser(t *testing.T) {
 	}{
 		{
 			name:  "with email",
-			entry: warnly.EventEntry{UserEmail: "test@example.com"},
-			want:  "test@example.com",
+			entry: warnly.EventEntry{UserEmail: fixtureTestExampleCom},
+			want:  fixtureTestExampleCom,
 		},
 		{
 			name:  "with username",
-			entry: warnly.EventEntry{UserUsername: "testuser"},
-			want:  "testuser",
+			entry: warnly.EventEntry{UserUsername: fixtureTestuser},
+			want:  fixtureTestuser,
 		},
 		{
 			name:  "with user id",
@@ -31,8 +31,8 @@ func TestEventEntry_DisplayUser(t *testing.T) {
 		},
 		{
 			name:  "with name",
-			entry: warnly.EventEntry{UserName: "Test User"},
-			want:  "Test User",
+			entry: warnly.EventEntry{UserName: fixtureTestUser},
+			want:  fixtureTestUser,
 		},
 		{
 			name:  "no value",
@@ -41,17 +41,17 @@ func TestEventEntry_DisplayUser(t *testing.T) {
 		},
 		{
 			name:  "email takes precedence over username",
-			entry: warnly.EventEntry{UserEmail: "test@example.com", UserUsername: "testuser"},
-			want:  "test@example.com",
+			entry: warnly.EventEntry{UserEmail: fixtureTestExampleCom, UserUsername: fixtureTestuser},
+			want:  fixtureTestExampleCom,
 		},
 		{
 			name:  "username takes precedence over user id",
-			entry: warnly.EventEntry{UserUsername: "testuser", User: "123"},
-			want:  "testuser",
+			entry: warnly.EventEntry{UserUsername: fixtureTestuser, User: "123"},
+			want:  fixtureTestuser,
 		},
 		{
 			name:  "user id takes precedence over name",
-			entry: warnly.EventEntry{User: "123", UserName: "Test User"},
+			entry: warnly.EventEntry{User: "123", UserName: fixtureTestUser},
 			want:  "123",
 		},
 	}

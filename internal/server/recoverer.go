@@ -32,7 +32,7 @@ func newRecoverMw(r prometheus.Registerer, logger *slog.Logger) *recoverMw {
 			panicRecoversTotal: promauto.With(r).NewCounterVec(prometheus.CounterOpts{
 				Name: "http_panic_recovers_total",
 				Help: "Total number of HTTP panics recovered.",
-			}, []string{"path", "method"}),
+			}, []string{httpPathLabel, httpMethodLabel}),
 		},
 	}
 }

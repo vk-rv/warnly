@@ -150,20 +150,18 @@ func run(cfg *config, logger *slog.Logger) error {
 		}
 
 		kafkaProducer, err = kafka.NewProducer(&kafka.ProducerConfig{
-			CommonConfig: kafka.CommonConfig{
-				TracerProvider:        tracingProvider,
-				Namespace:             cfg.Kafka.Namespace,
-				Brokers:               cfg.Kafka.Brokers,
-				ClientID:              cfg.Kafka.ClientID,
-				Logger:                logger.With(slog.String("service", "kafka_producer")),
-				DisableTelemetry:      cfg.Kafka.DisableTelemetry,
-				MetadataMaxAge:        cfg.Kafka.MetadataMaxAge,
-				EnableKafkaHistograms: true,
-				TLS:                   kafkaTLS,
-				SASL:                  kafkaSASL,
-			},
-			Reg:  reg,
-			Sync: cfg.Kafka.ProducerSync,
+			TracerProvider:        tracingProvider,
+			Namespace:             cfg.Kafka.Namespace,
+			Brokers:               cfg.Kafka.Brokers,
+			ClientID:              cfg.Kafka.ClientID,
+			Logger:                logger.With(slog.String("service", "kafka_producer")),
+			DisableTelemetry:      cfg.Kafka.DisableTelemetry,
+			MetadataMaxAge:        cfg.Kafka.MetadataMaxAge,
+			EnableKafkaHistograms: true,
+			TLS:                   kafkaTLS,
+			SASL:                  kafkaSASL,
+			Reg:                   reg,
+			Sync:                  cfg.Kafka.ProducerSync,
 		})
 		if err != nil {
 			return fmt.Errorf("failed creating kafka producer: %w", err)

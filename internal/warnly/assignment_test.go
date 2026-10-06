@@ -11,8 +11,8 @@ func TestAssignments_AssignedUser(t *testing.T) {
 
 	teammate1 := &warnly.Teammate{
 		ID:       1,
-		Name:     "John",
-		Surname:  "Doe",
+		Name:     fixtureJohn,
+		Surname:  fixtureDoe,
 		Username: "johndoe",
 		Email:    "john@example.com",
 	}

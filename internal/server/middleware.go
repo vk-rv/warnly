@@ -13,6 +13,11 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
+const (
+	httpMethodLabel = "method"
+	httpPathLabel   = "path"
+)
+
 // prometheusMW is a middleware for Prometheus metrics.
 type prometheusMW struct {
 	metrics *mwMetrics
@@ -32,12 +37,12 @@ func newPrometheusMW(r prometheus.Registerer, now func() time.Time) *prometheusM
 			requestsTotal: promauto.With(r).NewCounterVec(prometheus.CounterOpts{
 				Name: "http_requests_total",
 				Help: "Total number of HTTP requests processed.",
-			}, []string{"path", "method", "code"}),
+			}, []string{httpPathLabel, httpMethodLabel, "code"}),
 			requestDuration: promauto.With(r).NewHistogramVec(prometheus.HistogramOpts{
 				Name:    "http_request_duration_seconds",
 				Help:    "Duration of HTTP requests in seconds.",
 				Buckets: prometheus.DefBuckets,
-			}, []string{"path", "method", "code"}),
+			}, []string{httpPathLabel, httpMethodLabel, "code"}),
 		},
 		now: now,
 	}
@@ -115,7 +120,7 @@ func (mw *emailMatcherMW) emailMatch(handler http.HandlerFunc) http.HandlerFunc 
 		}
 		if !matched {
 			mw.logger.Error("authenticate: email matcher, email is not allowed",
-				slog.String("method", r.Method),
+				slog.String(httpMethodLabel, r.Method),
 				slog.String("url", r.URL.String()))
 			if r.Header.Get(htmxHeader) != "" {
 				w.Header().Add("Hx-Redirect", "/login")

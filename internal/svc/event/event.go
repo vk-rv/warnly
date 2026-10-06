@@ -82,7 +82,7 @@ func (s *EventService) IngestEvent(ctx context.Context, req warnly.IngestRequest
 	exceptionValue := warnly.GetExceptionValue(event.Exception, warnly.DefaultMessage)
 	view := warnly.GetBreaker(event.Exception)
 
-	issueInfo := warnly.IssueInfo{}
+	var issueInfo warnly.IssueInfo
 	var ok bool
 	iss, found := s.cache.Get(cacheKey)
 	if found {

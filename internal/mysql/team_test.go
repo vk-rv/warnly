@@ -24,7 +24,7 @@ func TestListTeams(t *testing.T) {
 
 		date := time.Date(2025, 1, 29, 6, 47, 9, 0, time.UTC)
 
-		rows := sqlmock.NewRows([]string{"id", "created_at", "name", "owner_id"}).
+		rows := sqlmock.NewRows([]string{"id", fixtureCreatedAt, fixtureName, "owner_id"}).
 			AddRow(1, date, "Team A", 1).
 			AddRow(2, date, "Team B", 2)
 

@@ -69,7 +69,7 @@ func TestProjectDetailsAllLength(t *testing.T) {
 					AllLength: 1001,
 				},
 			},
-			want: "1.0k",
+			want: fixtureOneThousand,
 		},
 		{
 			name: "exactly 1000000",
@@ -78,7 +78,7 @@ func TestProjectDetailsAllLength(t *testing.T) {
 					AllLength: 1000000,
 				},
 			},
-			want: "1000.0k",
+			want: fixtureThousandThousands,
 		},
 		{
 			name: "just over 1000000",
@@ -87,7 +87,7 @@ func TestProjectDetailsAllLength(t *testing.T) {
 					AllLength: 1000001,
 				},
 			},
-			want: "1.0m",
+			want: fixtureOneMillion,
 		},
 		{
 			name: "large number",
@@ -171,7 +171,7 @@ func TestProjectDetailsNewLength(t *testing.T) {
 					NewLength: 1001,
 				},
 			},
-			want: "1.0k",
+			want: fixtureOneThousand,
 		},
 		{
 			name: "exactly 1000000",
@@ -180,7 +180,7 @@ func TestProjectDetailsNewLength(t *testing.T) {
 					NewLength: 1000000,
 				},
 			},
-			want: "1000.0k",
+			want: fixtureThousandThousands,
 		},
 		{
 			name: "just over 1000000",
@@ -189,7 +189,7 @@ func TestProjectDetailsNewLength(t *testing.T) {
 					NewLength: 1000001,
 				},
 			},
-			want: "1.0m",
+			want: fixtureOneMillion,
 		},
 		{
 			name: "number just under 1000",
@@ -224,8 +224,8 @@ func TestFieldValueNumPercentsFormatted(t *testing.T) {
 		{
 			name: "whole number",
 			fvn: &warnly.FieldValueNum{
-				Tag:             "browser",
-				Value:           "Chrome",
+				Tag:             fixtureBrowser,
+				Value:           fixtureChrome,
 				PercentsOfTotal: 50,
 			},
 			wantStr: "50",
@@ -233,8 +233,8 @@ func TestFieldValueNumPercentsFormatted(t *testing.T) {
 		{
 			name: "decimal value floors down",
 			fvn: &warnly.FieldValueNum{
-				Tag:             "browser",
-				Value:           "Firefox",
+				Tag:             fixtureBrowser,
+				Value:           fixtureFirefox,
 				PercentsOfTotal: 50.9,
 			},
 			wantStr: "50",
@@ -242,8 +242,8 @@ func TestFieldValueNumPercentsFormatted(t *testing.T) {
 		{
 			name: "very small value",
 			fvn: &warnly.FieldValueNum{
-				Tag:             "device",
-				Value:           "unknown",
+				Tag:             fixtureDevice,
+				Value:           fixtureUnknown,
 				PercentsOfTotal: 0.1,
 			},
 			wantStr: "0",
@@ -251,8 +251,8 @@ func TestFieldValueNumPercentsFormatted(t *testing.T) {
 		{
 			name: "zero percent",
 			fvn: &warnly.FieldValueNum{
-				Tag:             "env",
-				Value:           "dev",
+				Tag:             fixtureEnv,
+				Value:           fixtureDev,
 				PercentsOfTotal: 0,
 			},
 			wantStr: "0",
@@ -270,7 +270,7 @@ func TestFieldValueNumPercentsFormatted(t *testing.T) {
 			name: "decimal close to whole number",
 			fvn: &warnly.FieldValueNum{
 				Tag:             "platform",
-				Value:           "iOS",
+				Value:           fixtureIOS,
 				PercentsOfTotal: 75.99999,
 			},
 			wantStr: "75",
@@ -278,7 +278,7 @@ func TestFieldValueNumPercentsFormatted(t *testing.T) {
 		{
 			name: "single decimal place",
 			fvn: &warnly.FieldValueNum{
-				Tag:             "version",
+				Tag:             fixtureVersion,
 				Value:           "1.0",
 				PercentsOfTotal: 33.3,
 			},
@@ -287,7 +287,7 @@ func TestFieldValueNumPercentsFormatted(t *testing.T) {
 		{
 			name: "large decimal",
 			fvn: &warnly.FieldValueNum{
-				Tag:             "error",
+				Tag:             fixtureError,
 				Value:           "timeout",
 				PercentsOfTotal: 99.99,
 			},
@@ -326,53 +326,53 @@ func TestListTagValues(t *testing.T) {
 	}{
 		{
 			name: "tag with multiple values",
-			tag:  "browser",
+			tag:  fixtureBrowser,
 			tv: []warnly.FieldValueNum{
-				{Tag: "browser", Value: "Chrome", PercentsOfTotal: 50},
-				{Tag: "browser", Value: "Firefox", PercentsOfTotal: 30},
-				{Tag: "browser", Value: "Safari", PercentsOfTotal: 20},
-				{Tag: "os", Value: "Windows", PercentsOfTotal: 60},
-				{Tag: "os", Value: "macOS", PercentsOfTotal: 40},
+				{Tag: fixtureBrowser, Value: fixtureChrome, PercentsOfTotal: 50},
+				{Tag: fixtureBrowser, Value: fixtureFirefox, PercentsOfTotal: 30},
+				{Tag: fixtureBrowser, Value: fixtureSafari, PercentsOfTotal: 20},
+				{Tag: "os", Value: fixtureWindows, PercentsOfTotal: 60},
+				{Tag: "os", Value: fixtureMacOS, PercentsOfTotal: 40},
 			},
 			wantLen: 3,
 		},
 		{
 			name: "tag with single value",
-			tag:  "version",
+			tag:  fixtureVersion,
 			tv: []warnly.FieldValueNum{
-				{Tag: "version", Value: "1.0.0", PercentsOfTotal: 100},
-				{Tag: "environment", Value: "production", PercentsOfTotal: 100},
+				{Tag: fixtureVersion, Value: fixtureReleaseVersion, PercentsOfTotal: 100},
+				{Tag: "environment", Value: fixtureProduction, PercentsOfTotal: 100},
 			},
 			wantLen: 1,
 		},
 		{
-			name: "tag not found",
-			tag:  "device",
+			name: fixtureTagNotFound,
+			tag:  fixtureDevice,
 			tv: []warnly.FieldValueNum{
-				{Tag: "browser", Value: "Chrome", PercentsOfTotal: 50},
-				{Tag: "os", Value: "Windows", PercentsOfTotal: 100},
+				{Tag: fixtureBrowser, Value: fixtureChrome, PercentsOfTotal: 50},
+				{Tag: "os", Value: fixtureWindows, PercentsOfTotal: 100},
 			},
 			wantLen: 0,
 		},
 		{
 			name:    "empty slice",
-			tag:     "browser",
+			tag:     fixtureBrowser,
 			tv:      []warnly.FieldValueNum{},
 			wantLen: 0,
 		},
 		{
 			name:    "nil slice",
-			tag:     "browser",
+			tag:     fixtureBrowser,
 			tv:      nil,
 			wantLen: 0,
 		},
 		{
 			name: "all tags match",
-			tag:  "env",
+			tag:  fixtureEnv,
 			tv: []warnly.FieldValueNum{
-				{Tag: "env", Value: "prod", PercentsOfTotal: 50},
-				{Tag: "env", Value: "staging", PercentsOfTotal: 30},
-				{Tag: "env", Value: "dev", PercentsOfTotal: 20},
+				{Tag: fixtureEnv, Value: "prod", PercentsOfTotal: 50},
+				{Tag: fixtureEnv, Value: "staging", PercentsOfTotal: 30},
+				{Tag: fixtureEnv, Value: fixtureDev, PercentsOfTotal: 20},
 			},
 			wantLen: 3,
 		},
@@ -380,28 +380,28 @@ func TestListTagValues(t *testing.T) {
 			name: "case sensitive tag matching",
 			tag:  "Browser",
 			tv: []warnly.FieldValueNum{
-				{Tag: "browser", Value: "Chrome", PercentsOfTotal: 50},
-				{Tag: "Browser", Value: "Firefox", PercentsOfTotal: 50},
+				{Tag: fixtureBrowser, Value: fixtureChrome, PercentsOfTotal: 50},
+				{Tag: "Browser", Value: fixtureFirefox, PercentsOfTotal: 50},
 			},
 			wantLen: 1,
 		},
 		{
 			name: "tag at beginning",
-			tag:  "first",
+			tag:  fixtureFirst,
 			tv: []warnly.FieldValueNum{
-				{Tag: "first", Value: "value1", PercentsOfTotal: 40},
-				{Tag: "second", Value: "value2", PercentsOfTotal: 30},
+				{Tag: fixtureFirst, Value: "value1", PercentsOfTotal: 40},
+				{Tag: "second", Value: fixtureValue2, PercentsOfTotal: 30},
 				{Tag: "third", Value: "value3", PercentsOfTotal: 30},
 			},
 			wantLen: 1,
 		},
 		{
 			name: "tag at end",
-			tag:  "last",
+			tag:  fixtureLast,
 			tv: []warnly.FieldValueNum{
-				{Tag: "first", Value: "value1", PercentsOfTotal: 40},
-				{Tag: "second", Value: "value2", PercentsOfTotal: 30},
-				{Tag: "last", Value: "value3", PercentsOfTotal: 30},
+				{Tag: fixtureFirst, Value: "value1", PercentsOfTotal: 40},
+				{Tag: "second", Value: fixtureValue2, PercentsOfTotal: 30},
+				{Tag: fixtureLast, Value: "value3", PercentsOfTotal: 30},
 			},
 			wantLen: 1,
 		},
@@ -437,36 +437,36 @@ func TestIssueDetailsListTagValues(t *testing.T) {
 			name: "tag with multiple values",
 			details: &warnly.IssueDetails{
 				TagValueNum: []warnly.FieldValueNum{
-					{Tag: "browser", Value: "Chrome", PercentsOfTotal: 50},
-					{Tag: "browser", Value: "Firefox", PercentsOfTotal: 30},
-					{Tag: "browser", Value: "Safari", PercentsOfTotal: 20},
-					{Tag: "os", Value: "Windows", PercentsOfTotal: 60},
-					{Tag: "os", Value: "macOS", PercentsOfTotal: 40},
+					{Tag: fixtureBrowser, Value: fixtureChrome, PercentsOfTotal: 50},
+					{Tag: fixtureBrowser, Value: fixtureFirefox, PercentsOfTotal: 30},
+					{Tag: fixtureBrowser, Value: fixtureSafari, PercentsOfTotal: 20},
+					{Tag: "os", Value: fixtureWindows, PercentsOfTotal: 60},
+					{Tag: "os", Value: fixtureMacOS, PercentsOfTotal: 40},
 				},
 			},
-			tag:     "browser",
+			tag:     fixtureBrowser,
 			wantLen: 3,
 		},
 		{
 			name: "tag with single value",
 			details: &warnly.IssueDetails{
 				TagValueNum: []warnly.FieldValueNum{
-					{Tag: "version", Value: "1.0.0", PercentsOfTotal: 100},
-					{Tag: "environment", Value: "production", PercentsOfTotal: 100},
+					{Tag: fixtureVersion, Value: fixtureReleaseVersion, PercentsOfTotal: 100},
+					{Tag: "environment", Value: fixtureProduction, PercentsOfTotal: 100},
 				},
 			},
-			tag:     "version",
+			tag:     fixtureVersion,
 			wantLen: 1,
 		},
 		{
-			name: "tag not found",
+			name: fixtureTagNotFound,
 			details: &warnly.IssueDetails{
 				TagValueNum: []warnly.FieldValueNum{
-					{Tag: "browser", Value: "Chrome", PercentsOfTotal: 50},
-					{Tag: "os", Value: "Windows", PercentsOfTotal: 100},
+					{Tag: fixtureBrowser, Value: fixtureChrome, PercentsOfTotal: 50},
+					{Tag: "os", Value: fixtureWindows, PercentsOfTotal: 100},
 				},
 			},
-			tag:     "device",
+			tag:     fixtureDevice,
 			wantLen: 0,
 		},
 		{
@@ -474,7 +474,7 @@ func TestIssueDetailsListTagValues(t *testing.T) {
 			details: &warnly.IssueDetails{
 				TagValueNum: []warnly.FieldValueNum{},
 			},
-			tag:     "browser",
+			tag:     fixtureBrowser,
 			wantLen: 0,
 		},
 		{
@@ -482,19 +482,19 @@ func TestIssueDetailsListTagValues(t *testing.T) {
 			details: &warnly.IssueDetails{
 				TagValueNum: nil,
 			},
-			tag:     "browser",
+			tag:     fixtureBrowser,
 			wantLen: 0,
 		},
 		{
 			name: "all tags match",
 			details: &warnly.IssueDetails{
 				TagValueNum: []warnly.FieldValueNum{
-					{Tag: "env", Value: "prod", PercentsOfTotal: 50},
-					{Tag: "env", Value: "staging", PercentsOfTotal: 30},
-					{Tag: "env", Value: "dev", PercentsOfTotal: 20},
+					{Tag: fixtureEnv, Value: "prod", PercentsOfTotal: 50},
+					{Tag: fixtureEnv, Value: "staging", PercentsOfTotal: 30},
+					{Tag: fixtureEnv, Value: fixtureDev, PercentsOfTotal: 20},
 				},
 			},
-			tag:     "env",
+			tag:     fixtureEnv,
 			wantLen: 3,
 		},
 	}
@@ -528,8 +528,8 @@ func TestGetStackDetails(t *testing.T) {
 		{
 			name: "single frame",
 			event: &warnly.IssueEvent{
-				ExceptionFramesAbsPath:  []string{"/app/main.go"},
-				ExceptionFramesFunction: []string{"main"},
+				ExceptionFramesAbsPath:  []string{fixtureMainFile},
+				ExceptionFramesFunction: []string{fixtureMain},
 				ExceptionFramesLineno:   []int{42},
 				ExceptionFramesInApp:    []int{1},
 			},
@@ -539,8 +539,8 @@ func TestGetStackDetails(t *testing.T) {
 		{
 			name: "multiple frames",
 			event: &warnly.IssueEvent{
-				ExceptionFramesAbsPath:  []string{"/app/main.go", "/app/handler.go", "/lib/util.go"},
-				ExceptionFramesFunction: []string{"main", "handleRequest", "process"},
+				ExceptionFramesAbsPath:  []string{fixtureMainFile, fixtureHandlerFile, fixtureLibUtilGo},
+				ExceptionFramesFunction: []string{fixtureMain, "handleRequest", "process"},
 				ExceptionFramesLineno:   []int{42, 100, 25},
 				ExceptionFramesInApp:    []int{1, 1, 0},
 			},
@@ -572,8 +572,8 @@ func TestGetStackDetails(t *testing.T) {
 		{
 			name: "frames with mixed InApp values",
 			event: &warnly.IssueEvent{
-				ExceptionFramesAbsPath:  []string{"/app/main.go", "/vendor/lib.go", "/app/handler.go"},
-				ExceptionFramesFunction: []string{"main", "vendorFunc", "handleRequest"},
+				ExceptionFramesAbsPath:  []string{fixtureMainFile, fixtureVendorLibraryFile, fixtureHandlerFile},
+				ExceptionFramesFunction: []string{fixtureMain, "vendorFunc", "handleRequest"},
 				ExceptionFramesLineno:   []int{42, 100, 25},
 				ExceptionFramesInApp:    []int{1, 0, 1},
 			},
@@ -637,13 +637,13 @@ func TestIssueDetailsStackHidden(t *testing.T) {
 			name: "more than 5 stack details",
 			details: &warnly.IssueDetails{
 				StackDetails: []warnly.StackDetail{
-					{Filepath: "/app/main.go", LineNo: 1},
-					{Filepath: "/app/handler.go", LineNo: 2},
-					{Filepath: "/app/service.go", LineNo: 3},
-					{Filepath: "/lib/util.go", LineNo: 4},
-					{Filepath: "/lib/helper.go", LineNo: 5},
-					{Filepath: "/vendor/pkg.go", LineNo: 6},
-					{Filepath: "/vendor/lib.go", LineNo: 7},
+					{Filepath: fixtureMainFile, LineNo: 1},
+					{Filepath: fixtureHandlerFile, LineNo: 2},
+					{Filepath: fixtureServiceFile, LineNo: 3},
+					{Filepath: fixtureLibUtilGo, LineNo: 4},
+					{Filepath: fixtureHelperFile, LineNo: 5},
+					{Filepath: fixtureVendorPackageFile, LineNo: 6},
+					{Filepath: fixtureVendorLibraryFile, LineNo: 7},
 					{Filepath: "/vendor/other.go", LineNo: 8},
 				},
 			},
@@ -654,12 +654,12 @@ func TestIssueDetailsStackHidden(t *testing.T) {
 			name: "exactly 6 stack details",
 			details: &warnly.IssueDetails{
 				StackDetails: []warnly.StackDetail{
-					{Filepath: "/app/main.go", LineNo: 1},
-					{Filepath: "/app/handler.go", LineNo: 2},
-					{Filepath: "/app/service.go", LineNo: 3},
-					{Filepath: "/lib/util.go", LineNo: 4},
-					{Filepath: "/lib/helper.go", LineNo: 5},
-					{Filepath: "/vendor/pkg.go", LineNo: 6},
+					{Filepath: fixtureMainFile, LineNo: 1},
+					{Filepath: fixtureHandlerFile, LineNo: 2},
+					{Filepath: fixtureServiceFile, LineNo: 3},
+					{Filepath: fixtureLibUtilGo, LineNo: 4},
+					{Filepath: fixtureHelperFile, LineNo: 5},
+					{Filepath: fixtureVendorPackageFile, LineNo: 6},
 				},
 			},
 			want:    1,
@@ -669,11 +669,11 @@ func TestIssueDetailsStackHidden(t *testing.T) {
 			name: "exactly 5 stack details",
 			details: &warnly.IssueDetails{
 				StackDetails: []warnly.StackDetail{
-					{Filepath: "/app/main.go", LineNo: 1},
-					{Filepath: "/app/handler.go", LineNo: 2},
-					{Filepath: "/app/service.go", LineNo: 3},
-					{Filepath: "/lib/util.go", LineNo: 4},
-					{Filepath: "/lib/helper.go", LineNo: 5},
+					{Filepath: fixtureMainFile, LineNo: 1},
+					{Filepath: fixtureHandlerFile, LineNo: 2},
+					{Filepath: fixtureServiceFile, LineNo: 3},
+					{Filepath: fixtureLibUtilGo, LineNo: 4},
+					{Filepath: fixtureHelperFile, LineNo: 5},
 				},
 			},
 			want:    0,
@@ -683,9 +683,9 @@ func TestIssueDetailsStackHidden(t *testing.T) {
 			name: "less than 5 stack details",
 			details: &warnly.IssueDetails{
 				StackDetails: []warnly.StackDetail{
-					{Filepath: "/app/main.go", LineNo: 1},
-					{Filepath: "/app/handler.go", LineNo: 2},
-					{Filepath: "/app/service.go", LineNo: 3},
+					{Filepath: fixtureMainFile, LineNo: 1},
+					{Filepath: fixtureHandlerFile, LineNo: 2},
+					{Filepath: fixtureServiceFile, LineNo: 3},
 				},
 			},
 			want:    0,
@@ -695,14 +695,14 @@ func TestIssueDetailsStackHidden(t *testing.T) {
 			name: "single stack detail",
 			details: &warnly.IssueDetails{
 				StackDetails: []warnly.StackDetail{
-					{Filepath: "/app/main.go", LineNo: 1},
+					{Filepath: fixtureMainFile, LineNo: 1},
 				},
 			},
 			want:    0,
 			wantNil: true,
 		},
 		{
-			name: "empty stack details",
+			name: fixtureEmptyStackDetails,
 			details: &warnly.IssueDetails{
 				StackDetails: []warnly.StackDetail{},
 			},
@@ -710,7 +710,7 @@ func TestIssueDetailsStackHidden(t *testing.T) {
 			wantNil: true,
 		},
 		{
-			name: "nil stack details",
+			name: fixtureNilStackDetails,
 			details: &warnly.IssueDetails{
 				StackDetails: nil,
 			},
@@ -760,13 +760,13 @@ func TestIssueDetailsStackVisible(t *testing.T) {
 			name: "more than 5 stack details",
 			details: &warnly.IssueDetails{
 				StackDetails: []warnly.StackDetail{
-					{Filepath: "/app/main.go", LineNo: 1},
-					{Filepath: "/app/handler.go", LineNo: 2},
-					{Filepath: "/app/service.go", LineNo: 3},
-					{Filepath: "/lib/util.go", LineNo: 4},
-					{Filepath: "/lib/helper.go", LineNo: 5},
-					{Filepath: "/vendor/pkg.go", LineNo: 6},
-					{Filepath: "/vendor/lib.go", LineNo: 7},
+					{Filepath: fixtureMainFile, LineNo: 1},
+					{Filepath: fixtureHandlerFile, LineNo: 2},
+					{Filepath: fixtureServiceFile, LineNo: 3},
+					{Filepath: fixtureLibUtilGo, LineNo: 4},
+					{Filepath: fixtureHelperFile, LineNo: 5},
+					{Filepath: fixtureVendorPackageFile, LineNo: 6},
+					{Filepath: fixtureVendorLibraryFile, LineNo: 7},
 				},
 			},
 			want: 5,
@@ -775,11 +775,11 @@ func TestIssueDetailsStackVisible(t *testing.T) {
 			name: "exactly 5 stack details",
 			details: &warnly.IssueDetails{
 				StackDetails: []warnly.StackDetail{
-					{Filepath: "/app/main.go", LineNo: 1},
-					{Filepath: "/app/handler.go", LineNo: 2},
-					{Filepath: "/app/service.go", LineNo: 3},
-					{Filepath: "/lib/util.go", LineNo: 4},
-					{Filepath: "/lib/helper.go", LineNo: 5},
+					{Filepath: fixtureMainFile, LineNo: 1},
+					{Filepath: fixtureHandlerFile, LineNo: 2},
+					{Filepath: fixtureServiceFile, LineNo: 3},
+					{Filepath: fixtureLibUtilGo, LineNo: 4},
+					{Filepath: fixtureHelperFile, LineNo: 5},
 				},
 			},
 			want: 5,
@@ -788,9 +788,9 @@ func TestIssueDetailsStackVisible(t *testing.T) {
 			name: "less than 5 stack details",
 			details: &warnly.IssueDetails{
 				StackDetails: []warnly.StackDetail{
-					{Filepath: "/app/main.go", LineNo: 1},
-					{Filepath: "/app/handler.go", LineNo: 2},
-					{Filepath: "/app/service.go", LineNo: 3},
+					{Filepath: fixtureMainFile, LineNo: 1},
+					{Filepath: fixtureHandlerFile, LineNo: 2},
+					{Filepath: fixtureServiceFile, LineNo: 3},
 				},
 			},
 			want: 3,
@@ -799,20 +799,20 @@ func TestIssueDetailsStackVisible(t *testing.T) {
 			name: "single stack detail",
 			details: &warnly.IssueDetails{
 				StackDetails: []warnly.StackDetail{
-					{Filepath: "/app/main.go", LineNo: 1},
+					{Filepath: fixtureMainFile, LineNo: 1},
 				},
 			},
 			want: 1,
 		},
 		{
-			name: "empty stack details",
+			name: fixtureEmptyStackDetails,
 			details: &warnly.IssueDetails{
 				StackDetails: []warnly.StackDetail{},
 			},
 			want: 0,
 		},
 		{
-			name: "nil stack details",
+			name: fixtureNilStackDetails,
 			details: &warnly.IssueDetails{
 				StackDetails: nil,
 			},
@@ -852,8 +852,8 @@ func TestIssueDetailsHasStackDetails(t *testing.T) {
 			details: &warnly.IssueDetails{
 				StackDetails: []warnly.StackDetail{
 					{
-						Filepath:     "/app/main.go",
-						FunctionName: "main",
+						Filepath:     fixtureMainFile,
+						FunctionName: fixtureMain,
 						LineNo:       42,
 						InApp:        true,
 					},
@@ -865,22 +865,22 @@ func TestIssueDetailsHasStackDetails(t *testing.T) {
 			name: "has multiple stack details",
 			details: &warnly.IssueDetails{
 				StackDetails: []warnly.StackDetail{
-					{Filepath: "/app/main.go", LineNo: 42},
-					{Filepath: "/app/handler.go", LineNo: 100},
-					{Filepath: "/lib/util.go", LineNo: 25},
+					{Filepath: fixtureMainFile, LineNo: 42},
+					{Filepath: fixtureHandlerFile, LineNo: 100},
+					{Filepath: fixtureLibUtilGo, LineNo: 25},
 				},
 			},
 			want: true,
 		},
 		{
-			name: "empty stack details",
+			name: fixtureEmptyStackDetails,
 			details: &warnly.IssueDetails{
 				StackDetails: []warnly.StackDetail{},
 			},
 			want: false,
 		},
 		{
-			name: "nil stack details",
+			name: fixtureNilStackDetails,
 			details: &warnly.IssueDetails{
 				StackDetails: nil,
 			},
@@ -910,8 +910,8 @@ func TestStackDetailInAppStr(t *testing.T) {
 		{
 			name: "InApp is true",
 			detail: &warnly.StackDetail{
-				Filepath:     "/app/main.go",
-				FunctionName: "main",
+				Filepath:     fixtureMainFile,
+				FunctionName: fixtureMain,
 				LineNo:       42,
 				InApp:        true,
 			},
@@ -920,7 +920,7 @@ func TestStackDetailInAppStr(t *testing.T) {
 		{
 			name: "InApp is false",
 			detail: &warnly.StackDetail{
-				Filepath:     "/vendor/lib.go",
+				Filepath:     fixtureVendorLibraryFile,
 				FunctionName: "someFunc",
 				LineNo:       100,
 				InApp:        false,
@@ -966,10 +966,10 @@ func TestIssueDetailsEventID(t *testing.T) {
 			name: "valid event id",
 			details: &warnly.IssueDetails{
 				LastEvent: &warnly.IssueEvent{
-					EventID: "550e8400-e29b-41d4-a716-446655440000",
+					EventID: fixtureUUID,
 				},
 			},
-			want: "550e8400-e29b-41d4-a716-446655440000",
+			want: fixtureUUID,
 		},
 		{
 			name: "empty event id",
@@ -1015,33 +1015,33 @@ func TestIssueDetailsProgressLen(t *testing.T) {
 			name: "percent >= 100",
 			details: &warnly.IssueDetails{
 				TagValueNum: []warnly.FieldValueNum{
-					{Value: "Chrome", PercentsOfTotal: 100},
-					{Value: "Firefox", PercentsOfTotal: 50},
+					{Value: fixtureChrome, PercentsOfTotal: 100},
+					{Value: fixtureFirefox, PercentsOfTotal: 50},
 				},
 			},
-			val:  "Chrome",
+			val:  fixtureChrome,
 			want: "w-full",
 		},
 		{
 			name: "percent >= 75",
 			details: &warnly.IssueDetails{
 				TagValueNum: []warnly.FieldValueNum{
-					{Value: "iOS", PercentsOfTotal: 80},
+					{Value: fixtureIOS, PercentsOfTotal: 80},
 					{Value: "Android", PercentsOfTotal: 20},
 				},
 			},
-			val:  "iOS",
+			val:  fixtureIOS,
 			want: "w-3/4",
 		},
 		{
 			name: "percent >= 50",
 			details: &warnly.IssueDetails{
 				TagValueNum: []warnly.FieldValueNum{
-					{Value: "Linux", PercentsOfTotal: 60},
-					{Value: "Windows", PercentsOfTotal: 40},
+					{Value: fixtureLinux, PercentsOfTotal: 60},
+					{Value: fixtureWindows, PercentsOfTotal: 40},
 				},
 			},
-			val:  "Linux",
+			val:  fixtureLinux,
 			want: "w-1/2",
 		},
 		{
@@ -1049,7 +1049,7 @@ func TestIssueDetailsProgressLen(t *testing.T) {
 			details: &warnly.IssueDetails{
 				TagValueNum: []warnly.FieldValueNum{
 					{Value: "Edge", PercentsOfTotal: 30},
-					{Value: "Safari", PercentsOfTotal: 70},
+					{Value: fixtureSafari, PercentsOfTotal: 70},
 				},
 			},
 			val:  "Edge",
@@ -1060,7 +1060,7 @@ func TestIssueDetailsProgressLen(t *testing.T) {
 			details: &warnly.IssueDetails{
 				TagValueNum: []warnly.FieldValueNum{
 					{Value: "Opera", PercentsOfTotal: 10},
-					{Value: "Chrome", PercentsOfTotal: 90},
+					{Value: fixtureChrome, PercentsOfTotal: 90},
 				},
 			},
 			val:  "Opera",
@@ -1070,11 +1070,11 @@ func TestIssueDetailsProgressLen(t *testing.T) {
 			name: "value not found",
 			details: &warnly.IssueDetails{
 				TagValueNum: []warnly.FieldValueNum{
-					{Value: "Chrome", PercentsOfTotal: 50},
-					{Value: "Firefox", PercentsOfTotal: 50},
+					{Value: fixtureChrome, PercentsOfTotal: 50},
+					{Value: fixtureFirefox, PercentsOfTotal: 50},
 				},
 			},
-			val:  "Safari",
+			val:  fixtureSafari,
 			want: "",
 		},
 		{
@@ -1082,47 +1082,47 @@ func TestIssueDetailsProgressLen(t *testing.T) {
 			details: &warnly.IssueDetails{
 				TagValueNum: []warnly.FieldValueNum{},
 			},
-			val:  "Chrome",
+			val:  fixtureChrome,
 			want: "",
 		},
 		{
 			name: "exact boundary 75",
 			details: &warnly.IssueDetails{
 				TagValueNum: []warnly.FieldValueNum{
-					{Value: "test", PercentsOfTotal: 75},
+					{Value: fixtureTest, PercentsOfTotal: 75},
 				},
 			},
-			val:  "test",
+			val:  fixtureTest,
 			want: "w-3/4",
 		},
 		{
 			name: "exact boundary 50",
 			details: &warnly.IssueDetails{
 				TagValueNum: []warnly.FieldValueNum{
-					{Value: "test", PercentsOfTotal: 50},
+					{Value: fixtureTest, PercentsOfTotal: 50},
 				},
 			},
-			val:  "test",
+			val:  fixtureTest,
 			want: "w-1/2",
 		},
 		{
 			name: "exact boundary 25",
 			details: &warnly.IssueDetails{
 				TagValueNum: []warnly.FieldValueNum{
-					{Value: "test", PercentsOfTotal: 25},
+					{Value: fixtureTest, PercentsOfTotal: 25},
 				},
 			},
-			val:  "test",
+			val:  fixtureTest,
 			want: "w-1/4",
 		},
 		{
 			name: "zero percent",
 			details: &warnly.IssueDetails{
 				TagValueNum: []warnly.FieldValueNum{
-					{Value: "test", PercentsOfTotal: 0},
+					{Value: fixtureTest, PercentsOfTotal: 0},
 				},
 			},
-			val:  "test",
+			val:  fixtureTest,
 			want: "w-1/5",
 		},
 	}
@@ -1151,22 +1151,22 @@ func TestIssueDetailsTag(t *testing.T) {
 			name: "tag found",
 			details: &warnly.IssueDetails{
 				LastEvent: &warnly.IssueEvent{
-					TagsKey:   []string{"browser", "os", "version"},
-					TagsValue: []string{"Chrome", "Windows", "1.0"},
+					TagsKey:   []string{fixtureBrowser, "os", fixtureVersion},
+					TagsValue: []string{fixtureChrome, fixtureWindows, "1.0"},
 				},
 			},
 			tag:  "os",
-			want: "Windows",
+			want: fixtureWindows,
 		},
 		{
-			name: "tag not found",
+			name: fixtureTagNotFound,
 			details: &warnly.IssueDetails{
 				LastEvent: &warnly.IssueEvent{
-					TagsKey:   []string{"browser", "os"},
-					TagsValue: []string{"Chrome", "Windows"},
+					TagsKey:   []string{fixtureBrowser, "os"},
+					TagsValue: []string{fixtureChrome, fixtureWindows},
 				},
 			},
-			tag:  "device",
+			tag:  fixtureDevice,
 			want: "",
 		},
 		{
@@ -1177,52 +1177,52 @@ func TestIssueDetailsTag(t *testing.T) {
 					TagsValue: []string{},
 				},
 			},
-			tag:  "browser",
+			tag:  fixtureBrowser,
 			want: "",
 		},
 		{
 			name: "first tag matches",
 			details: &warnly.IssueDetails{
 				LastEvent: &warnly.IssueEvent{
-					TagsKey:   []string{"browser", "os", "version"},
-					TagsValue: []string{"Firefox", "Linux", "2.0"},
+					TagsKey:   []string{fixtureBrowser, "os", fixtureVersion},
+					TagsValue: []string{fixtureFirefox, fixtureLinux, "2.0"},
 				},
 			},
-			tag:  "browser",
-			want: "Firefox",
+			tag:  fixtureBrowser,
+			want: fixtureFirefox,
 		},
 		{
 			name: "last tag matches",
 			details: &warnly.IssueDetails{
 				LastEvent: &warnly.IssueEvent{
-					TagsKey:   []string{"browser", "os", "version"},
-					TagsValue: []string{"Safari", "macOS", "3.0"},
+					TagsKey:   []string{fixtureBrowser, "os", fixtureVersion},
+					TagsValue: []string{fixtureSafari, fixtureMacOS, "3.0"},
 				},
 			},
-			tag:  "version",
+			tag:  fixtureVersion,
 			want: "3.0",
 		},
 		{
 			name: "tag with empty value",
 			details: &warnly.IssueDetails{
 				LastEvent: &warnly.IssueEvent{
-					TagsKey:   []string{"browser", "device"},
-					TagsValue: []string{"Chrome", ""},
+					TagsKey:   []string{fixtureBrowser, fixtureDevice},
+					TagsValue: []string{fixtureChrome, ""},
 				},
 			},
-			tag:  "device",
+			tag:  fixtureDevice,
 			want: "",
 		},
 		{
 			name: "single tag found",
 			details: &warnly.IssueDetails{
 				LastEvent: &warnly.IssueEvent{
-					TagsKey:   []string{"env"},
-					TagsValue: []string{"production"},
+					TagsKey:   []string{fixtureEnv},
+					TagsValue: []string{fixtureProduction},
 				},
 			},
-			tag:  "env",
-			want: "production",
+			tag:  fixtureEnv,
+			want: fixtureProduction,
 		},
 	}
 
@@ -1259,25 +1259,25 @@ func TestIssueDetailsContexts(t *testing.T) {
 			name: "single context",
 			details: &warnly.IssueDetails{
 				LastEvent: &warnly.IssueEvent{
-					ContextsKey:   []string{"device"},
+					ContextsKey:   []string{fixtureDevice},
 					ContextsValue: []string{"iPhone 14"},
 				},
 			},
 			want: map[string]string{
-				"device": "iPhone 14",
+				fixtureDevice: "iPhone 14",
 			},
 		},
 		{
 			name: "multiple contexts",
 			details: &warnly.IssueDetails{
 				LastEvent: &warnly.IssueEvent{
-					ContextsKey:   []string{"os", "device", "app_version"},
+					ContextsKey:   []string{"os", fixtureDevice, "app_version"},
 					ContextsValue: []string{"iOS 17.0", "iPad Pro", "2.5.1"},
 				},
 			},
 			want: map[string]string{
 				"os":          "iOS 17.0",
-				"device":      "iPad Pro",
+				fixtureDevice: "iPad Pro",
 				"app_version": "2.5.1",
 			},
 		},
@@ -1285,13 +1285,13 @@ func TestIssueDetailsContexts(t *testing.T) {
 			name: "contexts with empty values",
 			details: &warnly.IssueDetails{
 				LastEvent: &warnly.IssueEvent{
-					ContextsKey:   []string{"key1", "key2"},
-					ContextsValue: []string{"", "value2"},
+					ContextsKey:   []string{fixtureKey1, fixtureKey2},
+					ContextsValue: []string{"", fixtureValue2},
 				},
 			},
 			want: map[string]string{
-				"key1": "",
-				"key2": "value2",
+				fixtureKey1: "",
+				fixtureKey2: fixtureValue2,
 			},
 		},
 	}
@@ -1340,39 +1340,39 @@ func TestIssueDetailsTagKeyValue(t *testing.T) {
 			name: "single tag",
 			details: &warnly.IssueDetails{
 				LastEvent: &warnly.IssueEvent{
-					TagsKey:   []string{"browser"},
-					TagsValue: []string{"Chrome"},
+					TagsKey:   []string{fixtureBrowser},
+					TagsValue: []string{fixtureChrome},
 				},
 			},
 			want: []warnly.TagKeyValue{
-				{Key: "browser", Value: "Chrome"},
+				{Key: fixtureBrowser, Value: fixtureChrome},
 			},
 		},
 		{
 			name: "multiple tags",
 			details: &warnly.IssueDetails{
 				LastEvent: &warnly.IssueEvent{
-					TagsKey:   []string{"browser", "os", "version"},
-					TagsValue: []string{"Firefox", "macOS", "1.0.0"},
+					TagsKey:   []string{fixtureBrowser, "os", fixtureVersion},
+					TagsValue: []string{fixtureFirefox, fixtureMacOS, fixtureReleaseVersion},
 				},
 			},
 			want: []warnly.TagKeyValue{
-				{Key: "browser", Value: "Firefox"},
-				{Key: "os", Value: "macOS"},
-				{Key: "version", Value: "1.0.0"},
+				{Key: fixtureBrowser, Value: fixtureFirefox},
+				{Key: "os", Value: fixtureMacOS},
+				{Key: fixtureVersion, Value: fixtureReleaseVersion},
 			},
 		},
 		{
 			name: "tags with empty values",
 			details: &warnly.IssueDetails{
 				LastEvent: &warnly.IssueEvent{
-					TagsKey:   []string{"key1", "key2"},
-					TagsValue: []string{"", "value2"},
+					TagsKey:   []string{fixtureKey1, fixtureKey2},
+					TagsValue: []string{"", fixtureValue2},
 				},
 			},
 			want: []warnly.TagKeyValue{
-				{Key: "key1", Value: ""},
-				{Key: "key2", Value: "value2"},
+				{Key: fixtureKey1, Value: ""},
+				{Key: fixtureKey2, Value: fixtureValue2},
 			},
 		},
 	}
@@ -1405,15 +1405,15 @@ func TestCut(t *testing.T) {
 	}{
 		{
 			name: "string shorter than limit",
-			s:    "hello",
+			s:    fixtureHello,
 			n:    10,
-			want: "hello",
+			want: fixtureHello,
 		},
 		{
 			name: "string equal to limit",
-			s:    "hello",
+			s:    fixtureHello,
 			n:    5,
-			want: "hello",
+			want: fixtureHello,
 		},
 		{
 			name: "string longer than limit",
@@ -1429,13 +1429,13 @@ func TestCut(t *testing.T) {
 		},
 		{
 			name: "limit is 0",
-			s:    "hello",
+			s:    fixtureHello,
 			n:    0,
 			want: "...",
 		},
 		{
 			name: "limit is 1",
-			s:    "hello",
+			s:    fixtureHello,
 			n:    1,
 			want: "h...",
 		},
@@ -1484,14 +1484,14 @@ func TestIssueDetailsGetPlatform(t *testing.T) {
 			details: &warnly.IssueDetails{
 				Platform: 0,
 			},
-			want: "unknown",
+			want: fixtureUnknown,
 		},
 		{
 			name: "invalid platform",
 			details: &warnly.IssueDetails{
 				Platform: 99,
 			},
-			want: "unknown",
+			want: fixtureUnknown,
 		},
 	}
 
@@ -1564,13 +1564,13 @@ func TestParseTimeRange(t *testing.T) {
 			wantErr:   false,
 		},
 		{
-			start:   "invalid",
+			start:   fixtureInvalid,
 			end:     "2025-06-26T23:59:59",
 			wantErr: true,
 		},
 		{
 			start:   "2025-06-20T00:00:00",
-			end:     "invalid",
+			end:     fixtureInvalid,
 			wantErr: true,
 		},
 		{
@@ -1616,14 +1616,14 @@ func TestParseQuery(t *testing.T) {
 			name:  "tag with not",
 			query: "server_name:!Olegs-MacBook-Pro.local",
 			expected: []warnly.QueryToken{
-				{Key: "server_name", Operator: "is not", Value: "Olegs-MacBook-Pro.local"},
+				{Key: fixtureServerName, Operator: "is not", Value: "Olegs-MacBook-Pro.local"},
 			},
 		},
 		{
 			name:  "tag with quoted value",
 			query: `server_name:"delein computer"`,
 			expected: []warnly.QueryToken{
-				{Key: "server_name", Operator: "is", Value: "delein computer"},
+				{Key: fixtureServerName, Operator: "is", Value: "delein computer"},
 			},
 		},
 		{
@@ -1638,11 +1638,11 @@ func TestParseQuery(t *testing.T) {
 			query: `release:nordland@0.1.0 level:error server_name:!Olegs-MacBook-Pro.local "pro error" "div error" server_name:"delein computer"`,
 			expected: []warnly.QueryToken{
 				{Key: "release", Operator: "is", Value: "nordland@0.1.0"},
-				{Key: "level", Operator: "is", Value: "error"},
-				{Key: "server_name", Operator: "is not", Value: "Olegs-MacBook-Pro.local"},
+				{Key: "level", Operator: "is", Value: fixtureError},
+				{Key: fixtureServerName, Operator: "is not", Value: "Olegs-MacBook-Pro.local"},
 				{Value: "pro error", IsRawText: true},
 				{Value: "div error", IsRawText: true},
-				{Key: "server_name", Operator: "is", Value: "delein computer"},
+				{Key: fixtureServerName, Operator: "is", Value: "delein computer"},
 			},
 		},
 		{
@@ -1691,8 +1691,8 @@ func TestTeammateAvatarInitials(t *testing.T) {
 		{
 			name: "normal case",
 			teammate: &warnly.Teammate{
-				Name:    "John",
-				Surname: "Doe",
+				Name:    fixtureJohn,
+				Surname: fixtureDoe,
 			},
 			want: "JD",
 		},
@@ -1795,8 +1795,8 @@ func TestTeammateFullName(t *testing.T) {
 		{
 			name: "normal case",
 			teammate: &warnly.Teammate{
-				Name:    "John",
-				Surname: "Doe",
+				Name:    fixtureJohn,
+				Surname: fixtureDoe,
 			},
 			want: "John Doe",
 		},
@@ -1828,14 +1828,14 @@ func TestTeammateFullName(t *testing.T) {
 			name: "empty name",
 			teammate: &warnly.Teammate{
 				Name:    "",
-				Surname: "Doe",
+				Surname: fixtureDoe,
 			},
 			want: " Doe",
 		},
 		{
 			name: "empty surname",
 			teammate: &warnly.Teammate{
-				Name:    "John",
+				Name:    fixtureJohn,
 				Surname: "",
 			},
 			want: "John ",
@@ -2068,7 +2068,7 @@ func TestGetSDKID(t *testing.T) {
 		},
 		{
 			name:  "unknown sdk",
-			input: "unknown",
+			input: fixtureUnknown,
 			want:  0,
 		},
 	}
@@ -2247,7 +2247,7 @@ func TestEventListTotalErrors(t *testing.T) {
 			events: warnly.EventsList{
 				{Count: 1001},
 			},
-			want: "1.0k",
+			want: fixtureOneThousand,
 		},
 		{
 			name: "single event with count of 5000",
@@ -2268,7 +2268,7 @@ func TestEventListTotalErrors(t *testing.T) {
 			events: warnly.EventsList{
 				{Count: 999999},
 			},
-			want: "1000.0k",
+			want: fixtureThousandThousands,
 		},
 		{
 			name: "single event with count of 1000000",
@@ -2282,7 +2282,7 @@ func TestEventListTotalErrors(t *testing.T) {
 			events: warnly.EventsList{
 				{Count: 1000001},
 			},
-			want: "1.0m",
+			want: fixtureOneMillion,
 		},
 		{
 			name: "single event with count of 1500000",

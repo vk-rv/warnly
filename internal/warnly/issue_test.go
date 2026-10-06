@@ -88,7 +88,7 @@ func TestIssuePriority_String(t *testing.T) {
 		{"low", "Low", warnly.PriorityLow},
 		{"medium", "Med", warnly.PriorityMedium},
 		{"high", "High", warnly.PriorityHigh},
-		{"unknown", "Unknown", warnly.IssuePriority(999)},
+		{fixtureUnknown, "Unknown", warnly.IssuePriority(999)},
 	}
 
 	for _, tt := range tests {

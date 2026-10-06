@@ -6,6 +6,10 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
+const (
+	databaseNameLabel = "db_name"
+)
+
 // StatGetter provides a method to get pool statistics.
 type StatGetter interface {
 	Stats() driver.Stats
@@ -35,22 +39,22 @@ func NewClickhouseCollector(getter StatGetter, dbName string) *Collector {
 		idleDesc: prometheus.NewDesc(
 			fqName("conn_idle_current"),
 			"Current number of idle connections in the pool",
-			nil, prometheus.Labels{"db_name": dbName},
+			nil, prometheus.Labels{databaseNameLabel: dbName},
 		),
 		openDesc: prometheus.NewDesc(
 			fqName("conn_open_current"),
 			"Current number of open connections in the pool",
-			nil, prometheus.Labels{"db_name": dbName},
+			nil, prometheus.Labels{databaseNameLabel: dbName},
 		),
 		maxIdleDesc: prometheus.NewDesc(
 			fqName("conn_max_idle_current"),
 			"Max number of idle connections in the pool",
-			nil, prometheus.Labels{"db_name": dbName},
+			nil, prometheus.Labels{databaseNameLabel: dbName},
 		),
 		maxOpenDesc: prometheus.NewDesc(
 			fqName("conn_max_open_current"),
 			"Max number of open connections in the pool",
-			nil, prometheus.Labels{"db_name": dbName},
+			nil, prometheus.Labels{databaseNameLabel: dbName},
 		),
 	}
 }
