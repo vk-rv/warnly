@@ -5,7 +5,9 @@
   import IssueTable from '$lib/IssueTable.svelte';
   import Pagination from '$lib/Pagination.svelte';
   import AlertForm from '$lib/AlertForm.svelte';
-  import SystemTable from '$lib/SystemTable.svelte';
+  import IssueFields from '$lib/IssueFields.svelte';
+  import DeleteDialog from '$lib/DeleteDialog.svelte';
+  let deletion = $state(null);
   import SystemView from '$lib/SystemView.svelte';
   import Discussion from '$lib/Discussion.svelte';
   import Icon from '$lib/Icon.svelte';
@@ -108,8 +110,20 @@
       if (!actionError) form.reset();
     }
   }
-  function remove(endpoint, destination) {
-    if (window.confirm('Delete permanently?')) return mutate(endpoint, 'DELETE', null, destination);
+  function remove(endpoint, destination, name = '') {
+    const kind = endpoint.includes('/discussions/')
+      ? 'comment'
+      : endpoint.startsWith('/alerts/')
+        ? 'alert'
+        : 'project';
+    deletion = { endpoint, destination, kind, name };
+  }
+  async function confirmDeletion() {
+    const target = deletion;
+    await api(target.endpoint, { method: 'DELETE' });
+    if (target.destination) await goto(target.destination, { invalidateAll: true });
+    else await invalidateAll();
+    notify('Deleted');
   }
   function query(event) {
     event.preventDefault();
@@ -392,7 +406,8 @@
       {#if parts[0] === 'settings'}<button
           class="danger"
           disabled={busy}
-          onclick={() => remove(`/projects/${result.ID}`, '/projects')}>Delete project</button
+          onclick={() => remove(`/projects/${result.ID}`, '/projects', result.Name)}
+          >Delete project</button
         >{/if}
     </section>
   {:else if isIssue}
@@ -417,7 +432,7 @@
         {busy}
         error={actionError}
       />
-    {:else if parts[4] === 'fields'}<SystemTable rows={result.FieldValueNum || []} />
+    {:else if parts[4] === 'fields'}<IssueFields {result} />
     {:else if parts[4] === 'events'}
       <form class="filters" onsubmit={query}>
         <label>Search<input name="query" value={page.url.searchParams.get('query') || ''} /></label
@@ -491,7 +506,7 @@
                 ><button
                   class="danger small"
                   disabled={busy}
-                  onclick={() => remove(`/alerts/${alert.ID}`)}>Delete</button
+                  onclick={() => remove(`/alerts/${alert.ID}`, null, alert.RuleName)}>Delete</button
                 ></td
               ></tr
             >{:else}<tr><td colspan="5" class="empty-state">No alert rules.</td></tr>{/each}</tbody
@@ -531,3 +546,9 @@
     <a href="/">Back to issues</a>
   </section>
 {/if}
+
+{#if deletion}<DeleteDialog
+    target={deletion}
+    onclose={() => (deletion = null)}
+    onconfirm={confirmDeletion}
+  />{/if}

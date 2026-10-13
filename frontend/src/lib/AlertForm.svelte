@@ -46,5 +46,8 @@
         ><option>Active</option><option>Inactive</option><option>Triggered</option></select
       ></label
     >{/if}
-  <div><button class="primary" disabled={busy}>Save rule</button> <a href="/alerts">Cancel</a></div>
+  <div class="alert-form-actions">
+    <button class="primary" disabled={busy}>Save rule</button>
+    <a class="button" href="/alerts">Cancel</a>
+  </div>
 </form>

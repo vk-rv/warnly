@@ -3,6 +3,7 @@
   import { afterNavigate } from '$app/navigation';
   import { api } from '$lib/api';
   import Logo from '$lib/Logo.svelte';
+  import favicon from '$lib/favicon.svg';
   import Icon from '$lib/Icon.svelte';
   import './app.css';
   let { children } = $props();
@@ -29,7 +30,11 @@
   }
 </script>
 
-<svelte:head><title>Warnly — Exception monitoring</title></svelte:head>
+<svelte:head
+  ><link rel="icon" type="image/svg+xml" href={favicon} /><title
+    >Warnly — Exception monitoring</title
+  ></svelte:head
+>
 <svelte:window
   onkeydown={(e) => {
     if (e.key === 'Escape') menuOpen = false;

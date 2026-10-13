@@ -428,3 +428,76 @@ test('issue sidebar restores expandable field percentages from API', async ({ pa
   await fields.locator('details').nth(1).locator('summary').click();
   await expect(fields.locator('details').nth(1).locator('.field-percent')).toHaveText('100%');
 });
+
+test('fields render grouped cards with issue filter links', async ({ page }) => {
+  await page.route('**/api/projects/2/issues/10', (route) =>
+    route.fulfill({ json: { IssueID: 10, ErrorType: 'Failure' } })
+  );
+  await page.route('**/api/projects/2/issues/10/fields', (route) =>
+    route.fulfill({
+      json: {
+        ProjectName: 'Order API',
+        TagCount: [{ Tag: 'environment' }, { Tag: 'release' }],
+        FieldValueNum: [
+          { Tag: 'environment', Value: 'production eu', Count: 12 },
+          { Tag: 'release', Value: 'v2', Count: 5 }
+        ]
+      }
+    })
+  );
+  await page.goto('/projects/2/issues/10/fields');
+  const cards = page.locator('.issue-field-card');
+  await expect(cards).toHaveCount(2);
+  await expect(cards.first().getByRole('heading')).toHaveText('environment');
+  await expect(cards.first().locator('.field-count')).toHaveText('12');
+  const href = await cards.first().getByRole('link').getAttribute('href');
+  const params = new URL(href, 'http://localhost').searchParams;
+  expect(params.get('project_name')).toBe('Order API');
+  expect(params.get('query')).toBe('environment:"production eu"');
+  expect(params.get('period')).toBe('14d');
+  const first = await cards.nth(0).boundingBox();
+  const second = await cards.nth(1).boundingBox();
+  expect(first.y).toBe(second.y);
+  await page.setViewportSize({ width: 390, height: 844 });
+  const mobileFirst = await cards.nth(0).boundingBox();
+  const mobileSecond = await cards.nth(1).boundingBox();
+  expect(mobileSecond.y).toBeGreaterThan(mobileFirst.y + mobileFirst.height);
+});
+
+test('delete dialog handles cancel, failure and retry with favicon present', async ({ page }) => {
+  let calls = 0;
+  await page.route('**/api/alerts', (route) =>
+    route.fulfill({
+      json: {
+        Alerts: [{ ID: 1, RuleName: 'Production errors', Status: 'Active' }],
+        Projects: [],
+        TotalAlerts: 1
+      }
+    })
+  );
+  await page.route('**/api/alerts/1', (route) => {
+    calls++;
+    return route.fulfill(
+      calls === 1 ? { status: 500, json: { error: 'Could not delete alert' } } : { status: 204 }
+    );
+  });
+  await page.goto('/alerts');
+  await expect(page.locator('link[rel=icon]')).toHaveAttribute('href', /\.svg|data:image\/svg/);
+  const trigger = page.getByRole('button', { name: 'Delete', exact: true });
+  await trigger.click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toContainText('Production errors');
+  await expect(dialog.getByRole('button', { name: 'Cancel', exact: true })).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+  expect(calls).toBe(0);
+  await expect(trigger).toBeFocused();
+  await trigger.click();
+  await page.screenshot({ path: 'test-results/delete-dialog.png', animations: 'disabled' });
+  await dialog.getByRole('button', { name: 'Delete alert', exact: true }).click();
+  await expect(dialog.getByRole('alert')).toHaveText('Could not delete alert');
+  await dialog.getByRole('button', { name: 'Delete alert', exact: true }).click();
+  await expect(dialog).toHaveCount(0);
+  expect(calls).toBe(2);
+});
