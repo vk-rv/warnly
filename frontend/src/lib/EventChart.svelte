@@ -71,7 +71,10 @@
       >{/each}
   </svg>
   <div class="chart-hitarea" onpointerleave={() => (selected = -1)} aria-hidden="true">
-    {#each chart.buckets as bucket, i}<div role="presentation" onpointerenter={() => (selected = i)}></div>{/each}
+    {#each chart.buckets as bucket, i}<div
+        role="presentation"
+        onpointerenter={() => (selected = i)}
+      ></div>{/each}
   </div>
   <div class="chart-legend">
     <span class="chart-swatch"></span> Errors

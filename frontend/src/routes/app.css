@@ -1452,3 +1452,403 @@ summary {
     transition: none !important;
   }
 }
+
+/* Match the original login, discussion, system and toast layouts. */
+.login-intro {
+  background: #fff;
+  border-color: #f3f4f6;
+  align-items: stretch;
+}
+.login-intro > div {
+  max-width: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+}
+.login-brand {
+  font-size: 24px;
+  margin: 32px 0 56px 12px;
+}
+.login-feature {
+  position: relative;
+  display: block;
+  padding-left: 24px;
+  margin: 0 0 24px;
+}
+.login-feature::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+}
+.login-feature:nth-of-type(3)::before {
+  background: #3b82f6;
+}
+.login-feature:nth-of-type(4)::before {
+  background: #a855f7;
+}
+.login-feature h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 8px;
+}
+.login-feature p {
+  font-size: 14px;
+  line-height: 1.625;
+  margin: 0;
+}
+.login-callout {
+  margin-top: 48px;
+  padding: 24px;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  background: linear-gradient(to right, #eff6ff, #eef2ff);
+  font-size: 14px;
+}
+.login-callout p {
+  color: #111827;
+  margin: 0 0 4px;
+  font-weight: 500;
+}
+.login-callout a {
+  color: #2563eb;
+  font-weight: 500;
+}
+.login-help {
+  margin-top: 32px;
+  color: #6b7280;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.login-help a {
+  text-decoration: underline;
+  color: #374151;
+}
+.login-fields h1 {
+  text-align: center;
+  font-weight: 600;
+}
+.login-form .primary {
+  width: 100%;
+  background: #18181b;
+  justify-content: center;
+}
+.login-form input {
+  background: #fff;
+}
+.login-form input:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 1px;
+}
+.login-form input[aria-invalid='true'] {
+  border-color: #f87171;
+}
+.login-error {
+  background: #fef2f2;
+  border-left: 4px solid #f87171;
+  padding: 16px;
+  color: #b91c1c;
+  font-size: 14px;
+  margin: 0 0 24px;
+}
+.oidc-button {
+  width: 100%;
+  justify-content: center;
+  padding: 12px 16px;
+  background: #fff;
+}
+.toast-container {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  pointer-events: none;
+}
+.toast-message {
+  background: rgba(35, 39, 47, 0.92);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  box-shadow:
+    0 4px 16px #1018281f,
+    0 1px 2px #00000014;
+  min-width: 160px;
+  max-width: 90vw;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  border: 1px solid #23272f;
+  backdrop-filter: blur(3px);
+}
+.discussion {
+  width: 66.6667%;
+  max-width: 768px;
+  margin-top: 24px;
+}
+.discussion-composer,
+.discussion-message {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  margin-bottom: 16px;
+  overflow: visible;
+}
+.discussion-composer {
+  display: block;
+}
+.composer-tabs {
+  display: flex;
+  border-bottom: 1px solid #e5e7eb;
+}
+.composer-tabs button {
+  border: 0;
+  border-radius: 0;
+  padding: 8px 16px;
+  border-bottom: 2px solid transparent;
+}
+.composer-tabs button[aria-selected='true'] {
+  border-color: #000;
+  color: #000;
+}
+.composer-body {
+  padding: 16px;
+  position: relative;
+}
+.composer-body textarea {
+  width: 100%;
+  min-height: 250px;
+  resize: vertical;
+  padding: 8px;
+  font-size: 14px;
+}
+.composer-body textarea:focus {
+  outline: 2px solid #000;
+  outline-offset: 1px;
+}
+.mention-menu {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  z-index: 10;
+  max-width: 256px;
+  max-height: 220px;
+  overflow: auto;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  box-shadow: 0 8px 16px #0002;
+}
+.mention-menu button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: 0;
+}
+.discussion-composer footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid #e5e7eb;
+  padding: 16px;
+}
+.discussion-composer footer span {
+  font-size: 12px;
+}
+.discussion-message {
+  padding: 16px;
+  border-color: #d1d5db;
+  box-shadow: 0 1px 2px #0000000d;
+}
+.discussion-message header {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 4px;
+  border-bottom: 1px solid #d1d5db;
+  font-size: 14px;
+}
+.comment-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  background: #000;
+  color: #fff;
+  flex-shrink: 0;
+}
+.discussion-message time {
+  margin-left: auto;
+  font-size: 12px;
+  color: #6b7280;
+}
+.comment-content {
+  min-height: 100px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  padding: 12px;
+  font-size: 14px;
+}
+.discussion-message .comment-content {
+  margin-top: 16px;
+}
+.comment-actions {
+  position: relative;
+  margin: 0;
+}
+.comment-actions summary {
+  list-style: none;
+  padding: 8px;
+}
+.comment-actions button {
+  position: absolute;
+  right: 0;
+  z-index: 1;
+  background: #fff;
+  color: #dc2626;
+  width: 140px;
+  box-shadow: 0 4px 8px #0002;
+}
+.system-view .tabs {
+  margin-top: 0;
+  gap: 24px;
+}
+.system-table {
+  border: 0;
+}
+.system-table th {
+  background: #fff;
+  font-size: 13px;
+}
+.system-table td {
+  font-size: 13px;
+}
+.system-table th:not(:first-child),
+.system-table td:not(:first-child) {
+  text-align: right;
+}
+.system-table th button {
+  padding: 0;
+  border: 0;
+  text-transform: uppercase;
+  font-size: inherit;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.query-detail {
+  margin: 0;
+}
+.query-detail summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  list-style: none;
+  border-radius: 4px;
+}
+.query-detail summary::-webkit-details-marker {
+  display: none;
+}
+.query-detail summary:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 4px;
+}
+.query-chevron {
+  display: inline-flex;
+  flex-shrink: 0;
+  padding: 3px;
+  border-radius: 4px;
+  color: #6b7280;
+  transition:
+    transform 150ms ease,
+    background-color 150ms ease;
+}
+.query-detail summary:hover .query-chevron {
+  background: #e5e7eb;
+  color: #111827;
+}
+.query-detail[open] .query-chevron {
+  transform: rotate(90deg);
+}
+@media (prefers-reduced-motion: reduce) {
+  .query-chevron {
+    transition: none;
+  }
+}
+.query-detail summary code {
+  display: inline-block;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+.query-sql {
+  position: relative;
+  margin-top: 8px;
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px #0000001a;
+}
+.query-sql .query-copy {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 4px;
+  color: #6b7280;
+}
+.query-sql .query-copy:hover {
+  color: #374151;
+}
+.query-detail pre {
+  margin: 0;
+  padding: 16px 44px 16px 16px;
+  background: transparent;
+  white-space: pre-wrap;
+  min-width: 260px;
+  max-width: 500px;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
+.read-progress {
+  height: 8px;
+  width: 80px;
+  margin: 4px 0 0 auto;
+  background: #f3f4f6;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.read-progress span {
+  display: block;
+  height: 100%;
+  background: #d1d5db;
+}
+@media (max-width: 767px) {
+  .discussion {
+    width: 100%;
+  }
+  .composer-tabs button {
+    flex: 1;
+    padding: 12px;
+  }
+  .composer-body {
+    padding: 12px;
+  }
+  .composer-body textarea {
+    min-height: 200px;
+  }
+  .discussion-message {
+    padding: 12px;
+  }
+  .toast-container {
+    bottom: 76px;
+  }
+}

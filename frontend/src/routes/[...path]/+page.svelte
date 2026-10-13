@@ -6,6 +6,8 @@
   import Pagination from '$lib/Pagination.svelte';
   import AlertForm from '$lib/AlertForm.svelte';
   import SystemTable from '$lib/SystemTable.svelte';
+  import SystemView from '$lib/SystemView.svelte';
+  import Discussion from '$lib/Discussion.svelte';
   import Icon from '$lib/Icon.svelte';
   import Logo from '$lib/Logo.svelte';
   import EventChart from '$lib/EventChart.svelte';
@@ -18,6 +20,15 @@
   let actionError = $state('');
   let saved = $state('');
   let created = $state(null);
+  function notify(message) {
+    saved = message;
+  }
+  $effect(() => {
+    if (saved) {
+      const timer = setTimeout(() => (saved = ''), 3000);
+      return () => clearTimeout(timer);
+    }
+  });
   let path = $derived(data.path);
   let result = $derived(data.result);
   let issue = $derived(data.issue || result);
@@ -72,7 +83,7 @@
       if (destination) await goto(destination, { invalidateAll: true });
       else {
         await invalidateAll();
-        saved = 'Saved';
+        if (!endpoint.includes('/discussions')) notify('Saved');
       }
       return response;
     } catch (error) {
@@ -124,7 +135,7 @@
 </script>
 
 <svelte:head><title>{title} · Warnly</title></svelte:head>
-{#if path !== '/login'}
+{#if path !== '/login' && parts[0] !== 'system'}
   {#if result?.Project}<div class="breadcrumbs">
       <a href="/projects">Projects</a><span>/</span><span>Project Details</span>
     </div>{/if}
@@ -166,42 +177,87 @@
       <a class="active" href={path}>{path === '/' ? 'All Issues' : 'All Alerts'}</a>
     </nav>{/if}
 {/if}
-{#if data.error || actionError}<p class="error" role="alert">{actionError || data.error}</p>{/if}
-{#if saved}<p class="success" role="status">{saved}</p>{/if}
+{#if (path !== '/login' || result === null) && (data.error || actionError)}<p
+    class="error"
+    role="alert"
+  >
+    {actionError || data.error}
+  </p>{/if}
+{#if saved}<div class="toast-container">
+    <div class="toast-message" role="status">{saved}</div>
+  </div>{/if}
 {#if result !== null}
   {#if path === '/login'}
     <div class="login-layout">
       <section class="login-fields">
         <div>
-          <h1>Sign in</h1>
-          <form class="login-form" onsubmit={submit}>
-            <label
-              >Email or username<input name="identifier" autocomplete="username" required /></label
-            >
-            <label
-              >Password<input
-                name="password"
-                type="password"
-                autocomplete="current-password"
-                required
-              /></label
-            >
-            <label class="check"><input type="checkbox" name="remember-me" /> Remember me</label>
-            <button class="primary" disabled={busy}>Sign in</button>
-            {#if result.AuthURL}<a class="button" href={result.AuthURL} data-sveltekit-reload
-                >Continue with {result.ProviderName}</a
-              >{/if}
-            {#if result.IsDemo}<p class="muted">Demo credentials: admin / admin</p>{/if}
-          </form>
+          {#if result.AuthURL}<h1>Sign in</h1>{/if}
+          {#if actionError || data.error}<p id="login-error" class="login-error" role="alert">
+              {actionError || data.error}
+            </p>{/if}
+          {#if !result.AuthURL}<form class="login-form" onsubmit={submit} aria-busy={busy}>
+              <label
+                >Email or username<input
+                  name="identifier"
+                  autocomplete="username"
+                  aria-describedby={actionError ? 'login-error' : undefined}
+                  aria-invalid={!!actionError}
+                  required
+                /></label
+              >
+              <label
+                >Password<input
+                  name="password"
+                  type="password"
+                  autocomplete="current-password"
+                  aria-describedby={actionError ? 'login-error' : undefined}
+                  aria-invalid={!!actionError}
+                  required
+                /></label
+              >
+              <label class="check"><input type="checkbox" name="remember-me" /> Remember me</label>
+              <button class="primary" disabled={busy}>{busy ? 'Signing in…' : 'Sign in'}</button>
+            </form>{:else}<a class="button oidc-button" href={result.AuthURL} data-sveltekit-reload
+              ><Icon name="user" />Sign in with {result.ProviderName}</a
+            >{/if}
+          <p class="login-help">
+            Running into trouble? 😊 Check out our <a
+              href="https://docs.warnly.io"
+              target="_blank"
+              rel="noreferrer">documentation</a
+            > — it has answers to most questions!
+          </p>
         </div>
       </section>
       <section class="login-intro">
         <div>
-          <div class="login-brand"><Logo /><span>Warnly</span></div>
-          <div class="login-feature"><h3>Self-Hosted Simplicity</h3><p>Take control with self-hosted monitoring that eliminates enterprise complexity and puts you in charge.</p></div>
-          <div class="login-feature"><h3>Open-Source Excellence</h3><p>Categorize errors into issues, assign to team members, and keep your apps running smoothly.</p></div>
-          <div class="login-feature"><h3>Single Binary Deployment</h3><p>Enjoy essential monitoring features without the overhead.</p></div>
-          <div class="login-callout">{#if result.IsDemo}<p>This demo is graciously sponsored by VPSDime ❤️</p><a href="https://vpsdime.com/">Visit VPSDime</a>{:else}<p>Warnly is a MIT-licensed project in alpha stage. If you find it useful, consider contributing to the project.</p><a href="https://github.com/vk-rv/warnly">Contribute to the project</a>{/if}</div>
+          <div class="login-brand"><span>Warnly</span></div>
+          <div class="login-feature">
+            <h3>Self-Hosted Simplicity</h3>
+            <p>
+              Take control with self-hosted monitoring that eliminates enterprise complexity and
+              puts you in charge.
+            </p>
+          </div>
+          <div class="login-feature">
+            <h3>Open-Source Excellence</h3>
+            <p>
+              Categorize errors into issues, assign to team members, and keep your apps running
+              smoothly.
+            </p>
+          </div>
+          <div class="login-feature">
+            <h3>Single Binary Deployment</h3>
+            <p>Enjoy essential monitoring features without the overhead.</p>
+          </div>
+          <div class="login-callout">
+            {#if result.IsDemo}<p>This demo is graciously sponsored by VPSDime ❤️</p>
+              <a href="https://vpsdime.com/">Visit VPSDime</a>{:else}<p>
+                Warnly is a MIT-licensed project in alpha stage. If you find it useful, consider
+                contributing to the project.
+              </p>
+              <a href="https://github.com/vk-rv/warnly">Contribute to the project</a>{/if}
+          </div>
         </div>
       </section>
     </div>
@@ -352,24 +408,15 @@
     </nav>
     {#if parts.length === 4}<IssueOverview {issue} {issuePath} {mutate} {busy} />
     {:else if parts[4] === 'discussions'}
-      {#each result.Messages || [] as message}<article class="panel">
-          <strong>{message.username}</strong>
-          <small>{new Date(message.created_at).toLocaleString()}</small>
-          <p>{message.content}</p>
-          {#if message.user_id === data.user?.ID}<button
-              disabled={busy}
-              onclick={() => remove(`${issuePath}/discussions/${message.id}`)}>Delete</button
-            >{/if}
-        </article>{:else}<p>No comments yet.</p>{/each}
-      <form class="form" onsubmit={submit}>
-        <label>Comment<textarea name="content" required></textarea></label><label
-          >Mention teammates<select name="mentioned_users" multiple
-            >{#each result.Teammates || [] as user}<option value={user.ID}
-                >{user.Username || user.Email}</option
-              >{/each}</select
-          ></label
-        ><button disabled={busy}>Post comment</button>
-      </form>
+      <Discussion
+        {result}
+        user={data.user}
+        {issuePath}
+        {mutate}
+        {remove}
+        {busy}
+        error={actionError}
+      />
     {:else if parts[4] === 'fields'}<SystemTable rows={result.FieldValueNum || []} />
     {:else if parts[4] === 'events'}
       <form class="filters" onsubmit={query}>
@@ -471,12 +518,7 @@
         /></label
       ><button class="primary" disabled={busy}>Save webhook</button>
     </form>
-  {:else if parts[0] === 'system'}<nav class="tabs">
-      <a href="/system">Slow queries</a><a href="/system/schema">Storage schema</a><a
-        href="/system/errors">Store errors</a
-      >
-    </nav>
-    <SystemTable rows={result} />
+  {:else if parts[0] === 'system'}<SystemView rows={result} {path} {notify} />
   {/if}
 {:else if !data.error}
   <section class="panel">

@@ -151,5 +151,141 @@ test('project issues retain their project in links', async ({ page }) => {
     'href',
     '/projects/7/issues/3?source=issue'
   );
-  await expect(page.getByRole('button', { name: 'Period: Last 24 hours', exact: true })).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Period: Last 24 hours', exact: true })
+  ).toBeVisible();
+});
+
+test('login errors stay inside the form and retain credentials', async ({ page }) => {
+  await page.route('**/api/login', (route) =>
+    route.fulfill(
+      route.request().method() === 'GET'
+        ? { json: {} }
+        : { status: 401, json: { error: 'Invalid login credentials.' } }
+    )
+  );
+  await page.goto('/login');
+  await page.getByLabel('Email or username').fill('wrong-user');
+  await page.getByLabel('Password', { exact: true }).fill('wrong-password');
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+  await expect(page.getByRole('alert')).toHaveCount(1);
+  await expect(page.locator('.login-fields [role=alert]')).toHaveText('Invalid login credentials.');
+  await expect(page.getByLabel('Email or username')).toHaveValue('wrong-user');
+  await expect(page.getByLabel('Password', { exact: true })).toHaveAttribute(
+    'aria-invalid',
+    'true'
+  );
+  await page.screenshot({ path: 'test-results/login-desktop.png', fullPage: true });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.locator('.login-intro')).toBeHidden();
+  await expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeVisible();
+  await page.screenshot({ path: 'test-results/login-mobile.png', fullPage: true });
+});
+
+test('OIDC login offers only the configured provider', async ({ page }) => {
+  await page.route('**/api/login', (route) =>
+    route.fulfill({ json: { AuthURL: '/oidc/start', ProviderName: 'Keycloak' } })
+  );
+  await page.goto('/login');
+  await expect(page.getByLabel('Password', { exact: true })).toHaveCount(0);
+  await expect(page.getByRole('link', { name: 'Sign in with Keycloak' })).toHaveAttribute(
+    'href',
+    '/oidc/start'
+  );
+});
+
+test('discussion preview, mentions and failed submission preserve the draft', async ({ page }) => {
+  await page.route('**/api/projects/1/issues/2', (route) =>
+    route.fulfill({ json: { ErrorType: 'Error', IssueID: 2 } })
+  );
+  let posted;
+  await page.route('**/api/projects/1/issues/2/discussions', (route) => {
+    if (route.request().method() === 'POST') {
+      posted = new URLSearchParams(route.request().postData());
+      return route.fulfill({ status: 500, json: { error: 'Unable to post comment' } });
+    }
+    return route.fulfill({
+      json: {
+        Teammates: [{ ID: 1, Username: 'admin' }],
+        Messages: [
+          {
+            id: 1,
+            user_id: 1,
+            username: 'admin',
+            content: 'Investigating\n@admin',
+            created_at: new Date().toISOString()
+          }
+        ]
+      }
+    });
+  });
+  await page.goto('/projects/1/issues/2/discussions');
+  await page.getByLabel('Comment', { exact: true }).fill('Hello @ad');
+  await page.locator('.mention-menu').getByRole('button', { name: 'admin', exact: true }).click();
+  await page.getByRole('tab', { name: 'Preview' }).click();
+  await expect(page.getByRole('tabpanel').locator('strong')).toHaveText('@admin');
+  await page.getByRole('button', { name: 'Post comment' }).click();
+  await expect(page.getByRole('alert')).toHaveText('Unable to post comment');
+  expect(posted.getAll('mentioned_users')).toEqual(['1']);
+  await page.getByRole('tab', { name: 'Write' }).click();
+  await expect(page.getByLabel('Comment', { exact: true })).toHaveValue('Hello @admin ');
+  await page.screenshot({ path: 'test-results/discussion-desktop.png', fullPage: true });
+});
+
+test('system restores sorting, query details and schema columns', async ({ page }) => {
+  await page.route('**/api/system', (route) =>
+    route.fulfill({
+      json: [
+        {
+          normalized_query: 'SELECT fast FROM events',
+          avg_duration: 1,
+          total_calls: 3,
+          total_read_bytes: '1 KiB',
+          percent: 10
+        },
+        {
+          normalized_query: 'SELECT slow FROM events',
+          avg_duration: 100,
+          total_calls: 12,
+          total_read_bytes: '9 KiB',
+          percent: 90
+        }
+      ]
+    })
+  );
+  await page.route('**/api/system/schema', (route) =>
+    route.fulfill({
+      json: [
+        {
+          name: 'events',
+          readable_bytes: '10 MiB',
+          total_rows: 1200,
+          engine: 'MergeTree',
+          partition_key: 'toDate(timestamp)',
+          total_bytes: 10485760
+        }
+      ]
+    })
+  );
+  await page.goto('/system');
+  await expect(page.locator('tbody tr').first()).toContainText('SELECT slow');
+  await page.getByRole('button', { name: /Avg duration/ }).click();
+  await expect(page.locator('tbody tr').first()).toContainText('SELECT fast');
+  await page.locator('.query-detail summary').first().click();
+  await expect(page.getByRole('button', { name: 'Copy SQL' })).toBeVisible();
+  await page.screenshot({ path: 'test-results/system-desktop.png', fullPage: true });
+  await page.getByRole('link', { name: 'Schema', exact: true }).click();
+  await expect(page.getByRole('columnheader')).toHaveCount(5);
+  await expect(page.getByRole('cell', { name: '1,200', exact: true })).toBeVisible();
+});
+
+test('saved notification matches original dark toast and disappears', async ({ page }) => {
+  await page.route('**/api/settings', (route) => route.fulfill({ json: { Webhook: {} } }));
+  await page.route('**/api/settings/webhook', (route) => route.fulfill({ status: 204 }));
+  await page.goto('/settings');
+  await page.getByRole('button', { name: 'Save webhook' }).click();
+  const toast = page.getByRole('status');
+  await expect(toast).toHaveText('Saved');
+  await expect(toast).toHaveCSS('background-color', 'rgba(35, 39, 47, 0.92)');
+  await expect(toast).toBeHidden({ timeout: 5000 });
 });
