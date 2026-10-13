@@ -431,9 +431,10 @@
       <div class="table-wrap">
         <table>
           <thead><tr><th>Event</th><th>Time</th><th>Environment</th><th>User</th></tr></thead><tbody
+            class="event-rows"
             >{#each result.Events || [] as event}<tr
                 ><td
-                  ><a href={`${issuePath}?event_id=${event.EventID}`}
+                  ><a class="event-row-link" href={`${issuePath}?event_id=${event.EventID}`}
                     >{event.Title || event.EventID}</a
                   >
                   <p>{event.Message}</p></td

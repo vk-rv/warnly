@@ -25,6 +25,16 @@
 
 <div class="table-wrap issue-table" class:project-issue-table={!!project}>
   <table>
+    {#if !project}
+      <colgroup>
+        <col class="issues-col-description" />
+        <col class="issues-col-project" />
+        <col class="issues-col-count" />
+        <col class="issues-col-count" />
+        <col class="issues-col-time" />
+        <col class="issues-col-time" />
+      </colgroup>
+    {/if}
     <thead
       ><tr
         ><th>Issue</th>{#if !project}<th>Project</th>{/if}<th>{project ? 'Errors' : 'Events'}</th
@@ -49,7 +59,7 @@
           {#if !project}<td>{projectName(issue)}</td>{/if}<td class="metric-number"
             >{number(issue.TimesSeen)}</td
           ><td>{number(issue.UserCount)}</td>
-          {#if project}<td
+          {#if project}<td class="issue-responsible"
               ><select
                 class="assignment-select"
                 aria-label={`Responsible for ${issue.Type}`}

@@ -5,6 +5,27 @@
   let expanded = $state(false);
   let copied = $state(false);
   let event = $derived(issue.LastEvent);
+  let fields = $derived(
+    (issue.TagCount || []).map(({ Tag }) => {
+      const index = event?.TagsKey?.indexOf(Tag) ?? -1;
+      const current = index < 0 ? '' : event.TagsValue?.[index] || '';
+      const values = (issue.TagValueNum || []).filter((value) => value.Tag === Tag);
+      const percent = values.find((value) => value.Value === current)?.PercentsOfTotal;
+      const width =
+        percent == null
+          ? 0
+          : percent >= 100
+            ? 100
+            : percent >= 75
+              ? 75
+              : percent >= 50
+                ? 50
+                : percent >= 25
+                  ? 25
+                  : 20;
+      return { tag: Tag, current, values, width };
+    })
+  );
   let contexts = $derived.by(() => {
     const groups = {};
     for (const [i, key] of (event?.ContextsKey || []).entries()) {
@@ -131,8 +152,28 @@
         <span title={issue.LastSeen}>{timeAgo(issue.LastSeen)} ago</span>
       </div>
     </div>
-    {#if event?.Release}<h3>Release</h3>
-      <code>{event.Release}</code>{/if}{#if event?.Env}<h3>Environment</h3>
-      <span class="badge">{event.Env}</span>{/if}
+    <section class="summary-fields" aria-label="Field distributions">
+      <h2>Fields</h2>
+      {#each fields as field}
+        <details class="summary-field">
+          <summary
+            ><span class="field-name">{field.tag}</span><span
+              class="field-current"
+              title={field.current}>{field.current}</span
+            ><Icon name="chevron" /></summary
+          >
+          <div class="field-distribution-bar" aria-hidden="true">
+            <span style:width={`${field.width}%`}></span>
+          </div>
+          {#each field.values as value}
+            <div class="field-distribution-value">
+              <span class="field-dot"></span><span class="field-value" title={value.Value}
+                >{value.Value}</span
+              ><span class="field-percent">{Math.floor(value.PercentsOfTotal)}%</span>
+            </div>
+          {/each}
+        </details>
+      {/each}
+    </section>
   </section>
 </div>

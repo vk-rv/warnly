@@ -289,3 +289,142 @@ test('saved notification matches original dark toast and disappears', async ({ p
   await expect(toast).toHaveCSS('background-color', 'rgba(35, 39, 47, 0.92)');
   await expect(toast).toBeHidden({ timeout: 5000 });
 });
+
+test('project row opens issue from whitespace, errors and users but not responsible', async ({
+  page
+}) => {
+  let assigned = false;
+  await page.route('**/api/projects/2?period=90d', (route) =>
+    route.fulfill({
+      json: {
+        Project: {
+          ID: 2,
+          Name: 'Service',
+          AllLength: 1,
+          ResultIssueList: [
+            { ID: 3, ProjectID: 2, Type: 'Failure', Message: 'Error', TimesSeen: 42, UserCount: 7 }
+          ]
+        },
+        Period: '90d',
+        Issues: 'all',
+        Teammates: [{ ID: 1, Username: 'admin' }]
+      }
+    })
+  );
+  await page.route('**/api/projects/2/issues/3?source=issue', (route) =>
+    route.fulfill({ json: { IssueID: 3, ErrorType: 'Failure' } })
+  );
+  await page.route('**/api/projects/2/issues/3/assignments', (route) => {
+    assigned = true;
+    return route.fulfill({ status: 204 });
+  });
+  for (const column of [0, 1, 2]) {
+    await page.goto('/projects/2?period=90d');
+    const cell = page.locator('.project-issue-table tbody tr').first().locator('td').nth(column);
+    const box = await cell.boundingBox();
+    await page.mouse.click(box.x + box.width - 5, box.y + box.height / 2);
+    await expect(page).toHaveURL(/\/projects\/2\/issues\/3\?source=issue$/);
+  }
+  await page.goto('/projects/2?period=90d');
+  const responsible = page.locator('.issue-responsible');
+  const box = await responsible.boundingBox();
+  await page.mouse.click(box.x + 3, box.y + 3);
+  await expect(page).toHaveURL(/\/projects\/2\?period=90d$/);
+  await page.getByLabel('Responsible for Failure').selectOption('1');
+  await expect.poll(() => assigned).toBe(true);
+  await expect(page).toHaveURL(/\/projects\/2\?period=90d$/);
+});
+
+test('event opens from every column and row whitespace', async ({ page }) => {
+  await page.route('**/api/projects/2/issues/8*', (route) =>
+    route.fulfill({ json: { IssueID: 8, ErrorType: 'Failure' } })
+  );
+  await page.route('**/api/projects/2/issues/8/events', (route) =>
+    route.fulfill({
+      json: {
+        Events: [
+          {
+            EventID: 'event-1',
+            Title: 'Failure',
+            Message: 'Details',
+            CreatedAt: '2026-10-14T12:00:00Z',
+            Env: 'production',
+            UserEmail: 'user@example.com'
+          }
+        ],
+        TotalEvents: 1
+      }
+    })
+  );
+  for (const column of [0, 1, 2, 3]) {
+    await page.goto('/projects/2/issues/8/events');
+    const cell = page.locator('.event-rows tr').first().locator('td').nth(column);
+    const box = await cell.boundingBox();
+    await page.mouse.click(box.x + box.width - 5, box.y + box.height - 5);
+    await expect(page).toHaveURL(/\/projects\/2\/issues\/8\?event_id=event-1$/);
+  }
+});
+
+test('home issue opens from every column including whitespace', async ({ page }) => {
+  await page.route('**/api/issues', (route) =>
+    route.fulfill({
+      json: {
+        Projects: [{ ID: 2, Name: 'Service' }],
+        Issues: [
+          {
+            ID: 8,
+            ProjectID: 2,
+            Type: 'Failure',
+            Message: 'Details',
+            TimesSeen: 42,
+            UserCount: 7,
+            FirstSeen: '2026-10-14T12:00:00Z',
+            LastSeen: '2026-10-14T13:00:00Z'
+          }
+        ],
+        TotalIssues: 1
+      }
+    })
+  );
+  await page.route('**/api/projects/2/issues/8?source=issue', (route) =>
+    route.fulfill({ json: { IssueID: 8, ErrorType: 'Failure' } })
+  );
+  for (const column of [0, 1, 2, 3, 4, 5]) {
+    await page.goto('/');
+    const cell = page.locator('.issue-table tbody tr').first().locator('td').nth(column);
+    const box = await cell.boundingBox();
+    await page.mouse.click(box.x + box.width - 5, box.y + box.height - 5);
+    await expect(page).toHaveURL(/\/projects\/2\/issues\/8\?source=issue$/);
+  }
+});
+
+test('issue sidebar restores expandable field percentages from API', async ({ page }) => {
+  await page.route('**/api/projects/2/issues/10?source=issue', (route) =>
+    route.fulfill({
+      json: {
+        IssueID: 10,
+        ErrorType: 'Failure',
+        LastEvent: { TagsKey: ['environment', 'release'], TagsValue: ['production', 'v2'] },
+        TagCount: [{ Tag: 'environment' }, { Tag: 'release' }],
+        TagValueNum: [
+          { Tag: 'environment', Value: 'production', PercentsOfTotal: 76.9 },
+          { Tag: 'environment', Value: 'staging', PercentsOfTotal: 23.1 },
+          { Tag: 'release', Value: 'v2', PercentsOfTotal: 100 }
+        ]
+      }
+    })
+  );
+  await page.goto('/projects/2/issues/10?source=issue');
+  const fields = page.getByRole('region', { name: 'Field distributions' });
+  const environment = fields.locator('details').first();
+  await expect(environment.locator('.field-current')).toHaveText('production');
+  await expect(environment.locator('.field-percent').first()).toBeHidden();
+  await environment.locator('summary').click();
+  await expect(environment.locator('.field-percent')).toHaveText(['76%', '23%']);
+  await expect(environment.locator('.field-distribution-bar > span')).toHaveAttribute(
+    'style',
+    /width: 75%/
+  );
+  await fields.locator('details').nth(1).locator('summary').click();
+  await expect(fields.locator('details').nth(1).locator('.field-percent')).toHaveText('100%');
+});
