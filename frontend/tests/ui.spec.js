@@ -113,15 +113,37 @@ test('alert creation sends the rule fields', async ({ page }) => {
   expect(body.get('high_priority')).toBe('true');
 });
 
-test('expired sessions redirect to login', async ({ page }) => {
-  await page.route('**/api/session', (route) =>
-    route.fulfill({ status: 401, json: { error: 'Authentication required' } })
-  );
-  await page.route('**/api/login', (route) => route.fulfill({ json: {} }));
-  await page.goto('/projects');
-  await expect(page).toHaveURL('/login');
-  await expect(page.getByLabel('Email or username')).toBeVisible();
-});
+for (const path of ['/', '/projects']) {
+  for (const unauthorizedEndpoint of ['/session', path === '/' ? '/issues' : path]) {
+    test(`${path} redirects before rendering when ${unauthorizedEndpoint} returns 401`, async ({
+      page
+    }) => {
+      const documents = [];
+      page.on('request', (request) => {
+        if (request.isNavigationRequest()) documents.push(request.url());
+      });
+      await page.addInitScript(() => {
+        window.protectedContentRendered = false;
+        new MutationObserver(() => {
+          if (
+            document.querySelector('.sidebar, .page-heading') ||
+            document.body?.textContent.includes('Authentication required')
+          )
+            window.protectedContentRendered = true;
+        }).observe(document, { childList: true, subtree: true });
+      });
+      await page.route(`**/api${unauthorizedEndpoint}`, (route) =>
+        route.fulfill({ status: 401, json: { error: 'Authentication required' } })
+      );
+      await page.route('**/api/login', (route) => route.fulfill({ json: {} }));
+      await page.goto(path);
+      await expect(page).toHaveURL('/login');
+      await expect(page.getByLabel('Email or username')).toBeVisible();
+      expect(documents).toHaveLength(1);
+      expect(await page.evaluate(() => window.protectedContentRendered)).toBe(false);
+    });
+  }
+}
 
 test('project issues retain their project in links', async ({ page }) => {
   await page.route('**/api/projects/7', (route) =>

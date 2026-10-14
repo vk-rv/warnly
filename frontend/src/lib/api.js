@@ -1,5 +1,6 @@
 export async function api(path, options = {}) {
-  const response = await fetch(`/api${path}`, { credentials: 'same-origin', ...options });
+  const { redirectOnUnauthorized = true, ...fetchOptions } = options;
+  const response = await fetch(`/api${path}`, { credentials: 'same-origin', ...fetchOptions });
   const text = await response.text();
   let data;
   try {
@@ -8,8 +9,11 @@ export async function api(path, options = {}) {
     throw new Error('Invalid server response');
   }
   if (!response.ok) {
-    if (response.status === 401 && path !== '/login') window.location.assign('/login');
-    throw new Error(data?.error || `Request failed (${response.status})`);
+    if (redirectOnUnauthorized && response.status === 401 && path !== '/login')
+      window.location.assign('/login');
+    throw Object.assign(new Error(data?.error || `Request failed (${response.status})`), {
+      status: response.status
+    });
   }
   return data;
 }
