@@ -23,11 +23,11 @@ Enterprise-focused solutions tend to prioritize complex features that create unn
 
 For more details, see [About Warnly](https://docs.warnly.io/).
 
-I build this for myself, but since AI came along, I've lost interest in projects like this—no promises or guarantees.
+I build this for myself, but since AI came along, I've lost interest in projects like this, so no promises or guarantees.
 
 ## Demo
 
-Try the demo application at [https://demo.warnly.io](https://demo.warnly.io). Use username `admin` and password `admin` to sign in. The infrastructure is graciously provided by [VPSDime](https://vpsdime.com/): **1 vCPU, 4 GB memory**.
+Try the demo application at [https://demo.warnly.io](https://demo.warnly.io). Use username `admin` and password `admin` to sign in. The infrastructure is graciously provided by [VPSDime](https://vpsdime.com/): 1 vCPU, 4 GB memory.
 
 ## Documentation
 
