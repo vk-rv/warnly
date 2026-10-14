@@ -97,6 +97,7 @@ func (rec *statusRecorder) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 
 type emailMatcherMW struct {
 	*BaseHandler
+
 	logger     *slog.Logger
 	rgxsEmails []*regexp.Regexp
 }

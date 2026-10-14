@@ -21,6 +21,7 @@ const userContextKey contextKey = "user"
 // authMw is a middleware for authentication.
 type authMw struct {
 	*BaseHandler
+
 	cookieStore *session.CookieStore
 	logger      *slog.Logger
 }

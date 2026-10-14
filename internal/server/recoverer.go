@@ -14,6 +14,7 @@ import (
 // recoverMw is a middleware for recovering from golang panics in HTTP handlers.
 type recoverMw struct {
 	*BaseHandler
+
 	metrics *recoverMetrics
 	logger  *slog.Logger
 }

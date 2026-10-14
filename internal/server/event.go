@@ -99,6 +99,7 @@ func (e *IngestError) Response() ingestResponseError {
 // EventHandler ingests events via API.
 type EventHandler struct {
 	*BaseHandler
+
 	svc    warnly.EventService
 	logger *slog.Logger
 }
