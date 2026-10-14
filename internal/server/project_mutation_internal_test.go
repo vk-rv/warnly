@@ -14,6 +14,7 @@ import (
 
 type mutationProjectService struct {
 	warnly.ProjectService
+
 	err   error
 	calls int
 }
@@ -39,9 +40,13 @@ func (s *mutationProjectService) DeleteMessage(context.Context, *warnly.DeleteMe
 }
 
 func TestProjectMutationsDoNotReloadData(t *testing.T) {
+	t.Parallel()
+
 	for _, action := range []string{"assign", "unassign", "post", "delete"} {
 		for _, fail := range []bool{false, true} {
 			t.Run(action+map[bool]string{false: "/success", true: "/failure"}[fail], func(t *testing.T) {
+				t.Parallel()
+
 				svc := &mutationProjectService{}
 				if fail {
 					svc.err = errors.New("write failed")
@@ -59,12 +64,12 @@ func TestProjectMutationsDoNotReloadData(t *testing.T) {
 					handler = h.DeleteMessage
 					method = http.MethodDelete
 				}
-				r := httptest.NewRequest(method, "/?issues=all&period=14d&page=2", strings.NewReader("user_id=7&content=hello"))
+				ctx := context.WithValue(t.Context(), userContextKey, warnly.User{ID: 7})
+				r := httptest.NewRequestWithContext(ctx, method, "/?issues=all&period=14d&page=2", strings.NewReader("user_id=7&content=hello"))
 				r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 				r.SetPathValue("project_id", "1")
 				r.SetPathValue("issue_id", "2")
 				r.SetPathValue("message_id", "3")
-				r = r.WithContext(context.WithValue(r.Context(), userContextKey, warnly.User{ID: 7}))
 				w := httptest.NewRecorder()
 				// Any read method on the embedded nil service panics.
 				handler(w, r)
