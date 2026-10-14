@@ -124,7 +124,7 @@ func (mw *emailMatcherMW) emailMatch(handler http.HandlerFunc) http.HandlerFunc 
 				slog.String(httpMethodLabel, r.Method),
 				slog.String("url", r.URL.String()))
 			if strings.HasPrefix(r.URL.Path, "/api/") {
-				writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "Authentication required"})
+				writeJSON(w, http.StatusUnauthorized, errorResponse{Error: "Authentication required"})
 			} else {
 				http.Redirect(w, r, "/login", http.StatusSeeOther)
 			}

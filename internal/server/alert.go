@@ -77,7 +77,7 @@ func (h *AlertsHandler) CreateAlertGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, http.StatusOK, map[string]any{"Projects": res.Projects})
+	writeJSON(w, http.StatusOK, alertFormResponse{Projects: res.Projects})
 }
 
 // CreateAlert is a handler for POST /alerts.
@@ -129,7 +129,7 @@ func (h *AlertsHandler) EditAlertGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, http.StatusOK, map[string]any{"Alert": alert, "Projects": res.Projects})
+	writeJSON(w, http.StatusOK, alertFormResponse{Alert: alert, Projects: res.Projects})
 }
 
 // UpdateAlert is a handler for PUT /alerts/{id}.

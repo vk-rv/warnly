@@ -33,12 +33,12 @@ var ErrNotFound = errors.New("entity was not found in database")
 
 // User represents a user in the system.
 type User struct {
-	Email      string     `cbor:"email"`
-	Name       string     `cbor:"name"`
-	Surname    string     `cbor:"surname"`
-	Username   string     `cbor:"username"`
-	AuthMethod AuthMethod `cbor:"auth_method"`
-	ID         int64      `cbor:"id"`
+	Email      string     `json:"email" cbor:"email"`
+	Name       string     `json:"name" cbor:"name"`
+	Surname    string     `json:"surname" cbor:"surname"`
+	Username   string     `json:"username" cbor:"username"`
+	AuthMethod AuthMethod `json:"auth_method" cbor:"auth_method"`
+	ID         int64      `json:"id" cbor:"id"`
 }
 
 type OIDCState struct {

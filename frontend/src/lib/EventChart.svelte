@@ -21,8 +21,8 @@
       count: 0
     }));
     for (const event of events || []) {
-      const i = Math.floor((new Date(event.TS).getTime() - from) / interval);
-      if (i >= 0 && i < buckets.length) buckets[i].count += event.Count;
+      const i = Math.floor((new Date(event.ts).getTime() - from) / interval);
+      if (i >= 0 && i < buckets.length) buckets[i].count += event.count;
     }
     return { buckets, max: Math.max(1, ...buckets.map((b) => b.count)), span };
   });
@@ -43,7 +43,7 @@
 
 <div class="event-chart" bind:clientWidth={width}>
   <svg viewBox={`0 0 ${Math.max(width, 240)} 188`} role="img" aria-label={label}>
-    <title>{label}: {(events || []).reduce((sum, e) => sum + e.Count, 0)} total events</title>
+    <title>{label}: {(events || []).reduce((sum, e) => sum + e.count, 0)} total events</title>
     {#each [0, 0.5, 1] as fraction}<text
         x="36"
         y={145 - fraction * 124}

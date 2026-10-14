@@ -120,9 +120,10 @@
               }}><span>{value.value}</span><small>{value.count}</small></button
             >{:else}<p>Type a value and press Enter.</p>{/each}{/if}
       {:else}<p class="suggestion-heading">Tags</p>
-        {#each tags.filter((t) => !draft || t.Tag.toLowerCase().includes(draft.toLowerCase())) as tag}<button
-            onclick={() => chooseTag(tag.Tag)}
-            ><span>{tag.Tag}</span><Icon name="right" size={14} /></button
+        {#each tags.filter((t) => !draft || t.tag
+              .toLowerCase()
+              .includes(draft.toLowerCase())) as tag}<button onclick={() => chooseTag(tag.tag)}
+            ><span>{tag.tag}</span><Icon name="right" size={14} /></button
           >{/each}{/if}
     </div>{/if}
 </div>

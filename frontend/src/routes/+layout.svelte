@@ -11,10 +11,10 @@
   let menuOpen = $state(false);
   let user = $derived(page.data.user);
   let fullName = $derived(
-    [user?.Name, user?.Surname].filter(Boolean).join(' ') || user?.Username || 'Account'
+    [user?.name, user?.surname].filter(Boolean).join(' ') || user?.username || 'Account'
   );
   let initials = $derived(
-    (user?.Name?.[0] || user?.Username?.[0] || '') + (user?.Surname?.[0] || '')
+    (user?.name?.[0] || user?.username?.[0] || '') + (user?.surname?.[0] || '')
   );
   let login = $derived(page.url.pathname === '/login');
   afterNavigate(() => {
@@ -84,7 +84,7 @@
     <div class="sidebar-profile">
       <span class="avatar">{initials.toUpperCase()}</span>
       <div class="profile-name">
-        <strong>{fullName}</strong><small>{user?.Username || ''}</small>
+        <strong>{fullName}</strong><small>{user?.username || ''}</small>
       </div>
       <button class="icon-button" aria-label="Sign out" title="Sign out" onclick={logout}
         ><Icon name="logout" /></button

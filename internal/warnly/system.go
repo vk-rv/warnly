@@ -17,9 +17,9 @@ type SystemService interface {
 
 // AnalyticsStoreErr represents an error entry in the analytics store.
 type AnalyticsStoreErr struct {
-	MaxLastErrorTime time.Time
-	Name             string
-	Count            uint64
+	MaxLastErrorTime time.Time `json:"max_last_error_time"`
+	Name             string    `json:"name"`
+	Count            uint64    `json:"count"`
 }
 
 // Schema represents a database schema.

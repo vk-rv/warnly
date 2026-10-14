@@ -25,34 +25,34 @@ var ErrProjectNotFound = errors.New("project not found")
 
 // Project is a representation of a project in the system.
 type Project struct {
-	CreatedAt       time.Time
-	Name            string
-	Key             string
-	Events          EventsList
-	GroupMetrics    []GroupMetrics
-	IssueList       []IssueEntry
-	NewIssueList    []IssueEntry
-	ResultIssueList []IssueEntry
-	ID              int
-	UserID          int
-	TeamID          int
-	AllLength       int
-	NewLength       int
-	Platform        Platform
+	CreatedAt       time.Time      `json:"created_at"`
+	Name            string         `json:"name"`
+	Key             string         `json:"key"`
+	Events          EventsList     `json:"events"`
+	GroupMetrics    []GroupMetrics `json:"group_metrics"`
+	IssueList       []IssueEntry   `json:"issue_list"`
+	NewIssueList    []IssueEntry   `json:"new_issue_list"`
+	ResultIssueList []IssueEntry   `json:"result_issue_list"`
+	ID              int            `json:"id"`
+	UserID          int            `json:"user_id"`
+	TeamID          int            `json:"team_id"`
+	AllLength       int            `json:"all_length"`
+	NewLength       int            `json:"new_length"`
+	Platform        Platform       `json:"platform"`
 }
 
 // IssueEntry is how we represent an issue in the system.
 type IssueEntry struct {
-	LastSeen      time.Time
-	FirstSeen     time.Time
-	Type          string
-	View          string
-	Message       string
-	ID            int64
-	TimesSeen     uint64
-	UserCount     uint64
-	ProjectID     int
-	MessagesCount int
+	LastSeen      time.Time `json:"last_seen"`
+	FirstSeen     time.Time `json:"first_seen"`
+	Type          string    `json:"type"`
+	View          string    `json:"view"`
+	Message       string    `json:"message"`
+	ID            int64     `json:"id"`
+	TimesSeen     uint64    `json:"times_seen"`
+	UserCount     uint64    `json:"user_count"`
+	ProjectID     int       `json:"project_id"`
+	MessagesCount int       `json:"messages_count"`
 }
 
 // TimeAgo returns a human-readable string representing the time since the issue was last seen.
@@ -95,9 +95,9 @@ func formatTime(value int, narrowUnit, fullUnit string, narrow bool) string {
 type EventsList []EventsPerHour
 
 type ListProjectsResult struct {
-	Criteria *ListProjectsCriteria
-	Projects []Project
-	Teams    []Team
+	Criteria *ListProjectsCriteria `json:"criteria"`
+	Projects []Project             `json:"projects"`
+	Teams    []Team                `json:"teams"`
 }
 
 // ProjectStore encapsulates the project storage.
@@ -207,11 +207,11 @@ type ListTeammatesRequest struct {
 
 // Teammate is a user while listing teammates.
 type Teammate struct {
-	Name     string
-	Surname  string
-	Email    string
-	Username string
-	ID       int64
+	Name     string `json:"name"`
+	Surname  string `json:"surname"`
+	Email    string `json:"email"`
+	Username string `json:"username"`
+	ID       int64  `json:"id"`
 }
 
 // AvatarInitials returns the initials of the teammate in uppercase.
@@ -231,25 +231,25 @@ type TeammateAssign struct {
 }
 
 type ListIssuesRequest struct {
-	User        *User
-	Period      string
-	Start       string
-	End         string
-	Query       string
-	ProjectName string
-	ProjectIDs  []int
-	Offset      int
-	Limit       int
+	User        *User  `json:"user"`
+	Period      string `json:"period"`
+	Start       string `json:"start"`
+	End         string `json:"end"`
+	Query       string `json:"query"`
+	ProjectName string `json:"project_name"`
+	ProjectIDs  []int  `json:"project_i_ds"`
+	Offset      int    `json:"offset"`
+	Limit       int    `json:"limit"`
 }
 
 type ListIssuesResult struct {
-	RequestedProject string
-	Request          *ListIssuesRequest
-	LastProject      *Project
-	Issues           []IssueEntry
-	Projects         []Project
-	PopularTags      []TagCount
-	TotalIssues      int
+	RequestedProject string             `json:"requested_project"`
+	Request          *ListIssuesRequest `json:"request"`
+	LastProject      *Project           `json:"last_project"`
+	Issues           []IssueEntry       `json:"issues"`
+	Projects         []Project          `json:"projects"`
+	PopularTags      []TagCount         `json:"popular_tags"`
+	TotalIssues      int                `json:"total_issues"`
 }
 
 type GetAssignedFiltersCriteria struct {
@@ -370,24 +370,24 @@ func (l *ListIssuesResult) NoIssues() bool {
 
 // ListEventsRequest is a request structure for listing all events per issue.
 type ListEventsRequest struct {
-	User      *User
-	Period    string
-	Start     string
-	End       string
-	Query     string
-	ProjectID int
-	IssueID   int
-	Offset    int
+	User      *User  `json:"user"`
+	Period    string `json:"period"`
+	Start     string `json:"start"`
+	End       string `json:"end"`
+	Query     string `json:"query"`
+	ProjectID int    `json:"project_id"`
+	IssueID   int    `json:"issue_id"`
+	Offset    int    `json:"offset"`
 }
 
 type ListEventsResult struct {
-	Request     *ListEventsRequest
-	Events      []EventEntry
-	PopularTags []TagCount
-	ProjectID   int
-	IssueID     int
-	TotalEvents uint64
-	Offset      int
+	Request     *ListEventsRequest `json:"request"`
+	Events      []EventEntry       `json:"events"`
+	PopularTags []TagCount         `json:"popular_tags"`
+	ProjectID   int                `json:"project_id"`
+	IssueID     int                `json:"issue_id"`
+	TotalEvents uint64             `json:"total_events"`
+	Offset      int                `json:"offset"`
 }
 
 type ListFieldsRequest struct {
@@ -397,9 +397,9 @@ type ListFieldsRequest struct {
 }
 
 type ListFieldsResult struct {
-	ProjectName   string
-	TagCount      []TagCount
-	FieldValueNum []FieldValueNum
+	ProjectName   string          `json:"project_name"`
+	TagCount      []TagCount      `json:"tag_count"`
+	FieldValueNum []FieldValueNum `json:"field_value_num"`
 }
 
 type Field struct{}
@@ -419,15 +419,15 @@ type CreateMessageRequest struct {
 }
 
 type Discussion struct {
-	Info      DiscussionInfo
-	Teammates []Teammate
-	Messages  []IssueMessage
+	Info      DiscussionInfo `json:"info"`
+	Teammates []Teammate     `json:"teammates"`
+	Messages  []IssueMessage `json:"messages"`
 }
 
 type DiscussionInfo struct {
-	IssueFirstSeen time.Time
-	ProjectID      int
-	IssueID        int
+	IssueFirstSeen time.Time `json:"issue_first_seen"`
+	ProjectID      int       `json:"project_id"`
+	IssueID        int       `json:"issue_id"`
 }
 
 type GetIssueRequestSource string
@@ -437,64 +437,64 @@ const (
 )
 
 type GetIssueRequest struct {
-	User      *User
-	Period    string
-	EventID   string
-	Source    GetIssueRequestSource
-	ProjectID int
-	IssueID   int
+	User      *User                 `json:"user"`
+	Period    string                `json:"period"`
+	EventID   string                `json:"event_id"`
+	Source    GetIssueRequestSource `json:"source"`
+	ProjectID int                   `json:"project_id"`
+	IssueID   int                   `json:"issue_id"`
 }
 
 type IssueEvent struct {
-	UserID                  string
-	UserEmail               string
-	UserName                string
-	UserUsername            string
-	EventID                 string
-	CreatedAt               time.Time
-	Env                     string
-	Release                 string
-	TagsKey                 []string
-	TagsValue               []string
-	ContextsKey             []string
-	ContextsValue           []string
-	Message                 string
-	ExceptionFramesAbsPath  []string
-	ExceptionFramesColno    []int
-	ExceptionFramesFunction []string
-	ExceptionFramesLineno   []int
-	ExceptionFramesInApp    []int
+	UserID                  string    `json:"user_id"`
+	UserEmail               string    `json:"user_email"`
+	UserName                string    `json:"user_name"`
+	UserUsername            string    `json:"user_username"`
+	EventID                 string    `json:"event_id"`
+	CreatedAt               time.Time `json:"created_at"`
+	Env                     string    `json:"env"`
+	Release                 string    `json:"release"`
+	TagsKey                 []string  `json:"tags_key"`
+	TagsValue               []string  `json:"tags_value"`
+	ContextsKey             []string  `json:"contexts_key"`
+	ContextsValue           []string  `json:"contexts_value"`
+	Message                 string    `json:"message"`
+	ExceptionFramesAbsPath  []string  `json:"exception_frames_abs_path"`
+	ExceptionFramesColno    []int     `json:"exception_frames_colno"`
+	ExceptionFramesFunction []string  `json:"exception_frames_function"`
+	ExceptionFramesLineno   []int     `json:"exception_frames_lineno"`
+	ExceptionFramesInApp    []int     `json:"exception_frames_in_app"`
 }
 
 type IssueDetails struct {
-	LastSeen      time.Time
-	FirstSeen     time.Time
-	LastEvent     *IssueEvent
-	Assignments   *Assignments
-	Request       *GetIssueRequest
-	NextEventID   *string
-	PrevEventID   *string
-	FirstEventID  *string
-	LastEventID   *string
-	View          string
-	ErrorValue    string
-	Message       string
-	ErrorType     string
-	ProjectName   string
-	TagCount      []TagCount
-	TagValueNum   []FieldValueNum
-	Teammates     []Teammate
-	StackDetails  []StackDetail
-	ProjectID     int
-	Total24Hours  uint64
-	Priority      IssuePriority
-	Total30Days   uint64
-	IssueID       int64
-	MessagesCount int
-	TimesSeen     uint64
-	UserCount     uint64
-	IsNew         bool
-	Platform      Platform
+	LastSeen      time.Time        `json:"last_seen"`
+	FirstSeen     time.Time        `json:"first_seen"`
+	LastEvent     *IssueEvent      `json:"last_event"`
+	Assignments   *Assignments     `json:"assignments"`
+	Request       *GetIssueRequest `json:"request"`
+	NextEventID   *string          `json:"next_event_id"`
+	PrevEventID   *string          `json:"prev_event_id"`
+	FirstEventID  *string          `json:"first_event_id"`
+	LastEventID   *string          `json:"last_event_id"`
+	View          string           `json:"view"`
+	ErrorValue    string           `json:"error_value"`
+	Message       string           `json:"message"`
+	ErrorType     string           `json:"error_type"`
+	ProjectName   string           `json:"project_name"`
+	TagCount      []TagCount       `json:"tag_count"`
+	TagValueNum   []FieldValueNum  `json:"tag_value_num"`
+	Teammates     []Teammate       `json:"teammates"`
+	StackDetails  []StackDetail    `json:"stack_details"`
+	ProjectID     int              `json:"project_id"`
+	Total24Hours  uint64           `json:"total24_hours"`
+	Priority      IssuePriority    `json:"priority"`
+	Total30Days   uint64           `json:"total30_days"`
+	IssueID       int64            `json:"issue_id"`
+	MessagesCount int              `json:"messages_count"`
+	TimesSeen     uint64           `json:"times_seen"`
+	UserCount     uint64           `json:"user_count"`
+	IsNew         bool             `json:"is_new"`
+	Platform      Platform         `json:"platform"`
 }
 
 func (id *IssueDetails) GetPlatform() string {
@@ -581,10 +581,10 @@ func (id *IssueDetails) EventID() string {
 }
 
 type StackDetail struct {
-	Filepath     string
-	FunctionName string
-	LineNo       int
-	InApp        bool
+	Filepath     string `json:"filepath"`
+	FunctionName string `json:"function_name"`
+	LineNo       int    `json:"line_no"`
+	InApp        bool   `json:"in_app"`
 }
 
 func (sd *StackDetail) InAppStr() string {
@@ -678,12 +678,12 @@ const (
 var AllowedIssuesTypes = [...]IssuesType{IssuesTypeAll, IssuesTypeNew}
 
 type ProjectDetails struct {
-	Project     *Project
-	Assignments *Assignments
-	Period      string
-	Issues      IssuesType
-	Teammates   []Teammate
-	Page        int
+	Project     *Project     `json:"project"`
+	Assignments *Assignments `json:"assignments"`
+	Period      string       `json:"period"`
+	Issues      IssuesType   `json:"issues"`
+	Teammates   []Teammate   `json:"teammates"`
+	Page        int          `json:"page"`
 }
 
 func (pd *ProjectDetails) AllLength() string {
@@ -702,8 +702,8 @@ func (pd *ProjectDetails) NewLength() string {
 
 // ListProjectsCriteria is a criteria to list projects.
 type ListProjectsCriteria struct {
-	Name   string `schema:"name"`
-	TeamID int    `schema:"team"`
+	Name   string `json:"name" schema:"name"`
+	TeamID int    `json:"team_id" schema:"team"`
 }
 
 // IsEmpty returns true if the criteria is empty.
@@ -725,18 +725,18 @@ type CreateProjectRequest struct {
 
 // ProjectInfo is a representation of a project.
 type ProjectInfo struct {
-	Name     string
-	DSN      string
-	Platform string
-	ID       int
+	Name     string `json:"name"`
+	DSN      string `json:"dsn"`
+	Platform string `json:"platform"`
+	ID       int    `json:"id"`
 }
 
 // Team is a representation of a team in the system.
 type Team struct {
-	CreatedAt time.Time
-	Name      string
-	ID        int
-	OwnerID   int
+	CreatedAt time.Time `json:"created_at"`
+	Name      string    `json:"name"`
+	ID        int       `json:"id"`
+	OwnerID   int       `json:"owner_id"`
 }
 
 // TeamStore encapsulates the team storage.

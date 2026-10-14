@@ -124,8 +124,8 @@ type NotificationService interface {
 
 // WebhookConfigWithSecret holds webhook config with decrypted secret.
 type WebhookConfigWithSecret struct {
-	URL    string
-	Secret string
+	URL    string `json:"url"`
+	Secret string `json:"secret"`
 }
 
 // SaveWebhookConfigRequest is a request to save or update webhook configuration.

@@ -36,10 +36,7 @@ func (h *settingsHandler) listSettings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := map[string]any{
-		"User":    &user,
-		"Webhook": webhook,
-	}
+	data := settingsResponse{User: &user, Webhook: webhook}
 
 	writeJSON(w, http.StatusOK, data)
 }

@@ -24,9 +24,9 @@
         ]
       : path === '/system/errors'
         ? [
-            ['Name', 'Errors'],
-            ['MaxLastErrorTime', 'Most recent (UTC)'],
-            ['Count', 'Count']
+            ['name', 'Errors'],
+            ['max_last_error_time', 'Most recent (UTC)'],
+            ['count', 'Count']
           ]
         : queryColumns
   );
@@ -44,7 +44,7 @@
   }
   function display(row, key) {
     if (key === 'total_read_bytes_numeric') return row.total_read_bytes;
-    if (key === 'MaxLastErrorTime')
+    if (key === 'max_last_error_time')
       return new Date(row[key]).toLocaleString('en-US', {
         timeZone: 'UTC',
         month: 'long',

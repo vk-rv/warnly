@@ -97,17 +97,17 @@ type ListErrorsCriteria struct {
 
 // EventEntry represents an event entry in the analytics store.
 type EventEntry struct {
-	CreatedAt    time.Time
-	EventID      string
-	Title        string
-	Message      string
-	Release      string
-	Env          string
-	UserEmail    string
-	UserUsername string
-	User         string
-	UserName     string
-	OS           string
+	CreatedAt    time.Time `json:"created_at"`
+	EventID      string    `json:"event_id"`
+	Title        string    `json:"title"`
+	Message      string    `json:"message"`
+	Release      string    `json:"release"`
+	Env          string    `json:"env"`
+	UserEmail    string    `json:"user_email"`
+	UserUsername string    `json:"user_username"`
+	User         string    `json:"user"`
+	UserName     string    `json:"user_name"`
+	OS           string    `json:"os"`
 }
 
 // DisplayUser returns a string representation of the user associated with the event.
@@ -157,9 +157,9 @@ type QueryValue struct {
 
 // EventsPerHour represents the number of events per hour.
 type EventsPerHour struct {
-	TS        time.Time
-	ProjectID int
-	Count     int
+	TS        time.Time `json:"ts"`
+	ProjectID int       `json:"project_id"`
+	Count     int       `json:"count"`
 }
 
 // EventPerDay represents the number of events per day.
@@ -171,25 +171,25 @@ type EventPerDay struct {
 
 // TagCount represents a tag and its count.
 type TagCount struct {
-	Tag   string
-	Count uint64
+	Tag   string `json:"tag"`
+	Count uint64 `json:"count"`
 }
 
 // FieldValueNum represents a tag value and its associated metrics.
 type FieldValueNum struct {
-	FirstSeen       time.Time
-	LastSeen        time.Time
-	Tag             string
-	Value           string
-	Count           uint64
-	PercentsOfTotal float64
+	FirstSeen       time.Time `json:"first_seen"`
+	LastSeen        time.Time `json:"last_seen"`
+	Tag             string    `json:"tag"`
+	Value           string    `json:"value"`
+	Count           uint64    `json:"count"`
+	PercentsOfTotal float64   `json:"percents_of_total"`
 }
 
 // GroupMetrics represents the metrics of the group.
 type GroupMetrics struct {
-	FirstSeen time.Time
-	LastSeen  time.Time
-	GID       int
-	TimesSeen int
-	Users     int
+	FirstSeen time.Time `json:"first_seen"`
+	LastSeen  time.Time `json:"last_seen"`
+	GID       int       `json:"gid"`
+	TimesSeen int       `json:"times_seen"`
+	Users     int       `json:"users"`
 }

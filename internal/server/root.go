@@ -377,7 +377,7 @@ func (h *rootHandler) login(w http.ResponseWriter, r *http.Request) {
 		authURL = url
 	}
 
-	writeJSON(w, http.StatusOK, map[string]any{"AuthURL": authURL, "ProviderName": h.oidc.ProviderName, "IsDemo": h.isDemo})
+	writeJSON(w, http.StatusOK, loginResponse{AuthURL: authURL, ProviderName: h.oidc.ProviderName, IsDemo: h.isDemo})
 }
 
 // create handles the HTTP request to create a new session.
@@ -401,7 +401,7 @@ func (h *rootHandler) create(w http.ResponseWriter, r *http.Request) {
 			code, message = http.StatusUnauthorized, msgInvalidAuthMethod
 		}
 		h.logger.Error("sign in", slog.Any("error", err))
-		writeJSON(w, code, map[string]string{"error": message})
+		writeJSON(w, code, errorResponse{Error: message})
 		return
 	}
 	if err := saveCookie(w, r, h.cookieStore, *result.User, credentials.RememberMe, h.rememberDays); err != nil {

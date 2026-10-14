@@ -1,17 +1,17 @@
 <script>
   let { result, submit, busy } = $props();
-  let alert = $derived(result.Alert || {});
+  let alert = $derived(result.alert || {});
 </script>
 
 <form class="form panel" onsubmit={submit}>
-  <label>Rule name<input name="rule_name" value={alert.RuleName || ''} required /></label>
-  {#if !alert.ID}<label
+  <label>Rule name<input name="rule_name" value={alert.rule_name || ''} required /></label>
+  {#if !alert.id}<label
       >Project<select name="project_id" required
-        >{#each result.Projects || [] as p}<option value={p.ID}>{p.Name}</option>{/each}</select
+        >{#each result.projects || [] as p}<option value={p.id}>{p.name}</option>{/each}</select
       ></label
     >{/if}
   <label
-    >Trigger when<select name="condition" value={alert.Condition || 1}
+    >Trigger when<select name="condition" value={alert.condition || 1}
       ><option value="1">Number of occurrences</option><option value="2"
         >Number of affected users</option
       ></select
@@ -22,12 +22,12 @@
       name="threshold"
       type="number"
       min="1"
-      value={alert.Threshold || 1}
+      value={alert.threshold || 1}
       required
     /></label
   >
   <label
-    >Time window<select name="timeframe" value={alert.Timeframe || 4}
+    >Time window<select name="timeframe" value={alert.timeframe || 4}
       >{#each ['1 minute', '5 minutes', '15 minutes', '1 hour', '1 day', '1 week', '30 days'] as name, i}<option
           value={i + 1}>{name}</option
         >{/each}</select
@@ -38,11 +38,11 @@
       type="checkbox"
       name="high_priority"
       value="true"
-      checked={alert.HighPriority || false}
+      checked={alert.high_priority || false}
     /> High priority</label
   >
-  {#if alert.ID}<label
-      >Status<select name="status" value={alert.Status}
+  {#if alert.id}<label
+      >Status<select name="status" value={alert.status}
         ><option>Active</option><option>Inactive</option><option>Triggered</option></select
       ></label
     >{/if}

@@ -57,7 +57,7 @@ func (mw *recoverMw) recover(handler http.HandlerFunc) http.HandlerFunc {
 				mw.logger.Error(err.Error(), "event", "panic", "stack", "...\n"+string(buf))
 
 				if r.Header.Get("Connection") != "Upgrade" {
-					writeJSON(w, http.StatusInternalServerError, map[string]string{"error": http.StatusText(http.StatusInternalServerError)})
+					writeJSON(w, http.StatusInternalServerError, errorResponse{Error: http.StatusText(http.StatusInternalServerError)})
 				}
 				return
 			}

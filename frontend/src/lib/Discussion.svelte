@@ -7,22 +7,22 @@
   let mention = $derived(/@([\w.-]*)$/.exec(comment));
   let suggestions = $derived(
     mention
-      ? (result.Teammates || []).filter((u) =>
-          u.Username.toLowerCase().includes(mention[1].toLowerCase())
+      ? (result.teammates || []).filter((u) =>
+          u.username.toLowerCase().includes(mention[1].toLowerCase())
         )
       : []
   );
   function addMention(user) {
-    comment = comment.slice(0, mention.index) + '@' + user.Username + ' ';
+    comment = comment.slice(0, mention.index) + '@' + user.username + ' ';
     editor?.focus();
   }
   async function post(event) {
     event.preventDefault();
     if (!comment.trim() || busy) return;
     const body = new URLSearchParams({ content: comment });
-    for (const teammate of result.Teammates || []) {
-      if (comment.split(/\s+/).includes('@' + teammate.Username))
-        body.append('mentioned_users', teammate.ID);
+    for (const teammate of result.teammates || []) {
+      if (comment.split(/\s+/).includes('@' + teammate.username))
+        body.append('mentioned_users', teammate.id);
     }
     await mutate(`${issuePath}/discussions`, 'POST', body);
     if (!error) {
@@ -60,25 +60,25 @@
         {#if suggestions.length}<div class="mention-menu" aria-label="Mention teammates">
             {#each suggestions as teammate}<button
                 type="button"
-                onclick={() => addMention(teammate)}>{teammate.Username}</button
+                onclick={() => addMention(teammate)}>{teammate.username}</button
               >{/each}
           </div>{/if}
       {/if}
     </div>
     <footer>
       <span
-        >{#if result.Info?.IssueFirstSeen}First Noticed {timeAgo(result.Info.IssueFirstSeen)} ago{/if}</span
+        >{#if result.info?.issue_first_seen}First Noticed {timeAgo(result.info.issue_first_seen)} ago{/if}</span
       ><button aria-label="Post comment" disabled={busy || !comment.trim()}
         >{busy ? 'Posting…' : 'Post'}</button
       >
     </footer>
   </form>
-  {#each result.Messages || [] as message}<article class="discussion-message">
+  {#each result.messages || [] as message}<article class="discussion-message">
       <header>
         <span class="comment-avatar">{message.username?.[0]?.toUpperCase()}</span><strong
           >{message.username}</strong
         ><time datetime={message.created_at}>{timeAgo(message.created_at)} ago</time>
-        {#if message.user_id === user?.ID}<details class="comment-actions">
+        {#if message.user_id === user?.id}<details class="comment-actions">
             <summary aria-label="Comment actions">•••</summary><button
               disabled={busy}
               onclick={() => remove(`${issuePath}/discussions/${message.id}`)}>Delete</button

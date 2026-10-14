@@ -1,13 +1,13 @@
 import { test, expect } from '@playwright/test';
 
-const user = { ID: 1, Username: 'admin', Email: 'admin@example.com' };
+const user = { id: 1, username: 'admin', email: 'admin@example.com' };
 test.beforeEach(async ({ page }) => {
   await page.route('**/api/session', (route) => route.fulfill({ json: user }));
 });
 
 test('login failure and successful session', async ({ page }) => {
   await page.route('**/api/login', async (route) => {
-    if (route.request().method() === 'GET') return route.fulfill({ json: { IsDemo: true } });
+    if (route.request().method() === 'GET') return route.fulfill({ json: { is_demo: true } });
     const body = new URLSearchParams(route.request().postData());
     return route.fulfill(
       body.get('password') === 'correct'
@@ -16,7 +16,7 @@ test('login failure and successful session', async ({ page }) => {
     );
   });
   await page.route('**/api/issues', (route) =>
-    route.fulfill({ json: { Issues: [], Projects: [], TotalIssues: 0 } })
+    route.fulfill({ json: { issues: [], projects: [], total_issues: 0 } })
   );
   await page.goto('/login');
   await page.getByLabel('Email or username').fill('admin');
@@ -30,12 +30,12 @@ test('login failure and successful session', async ({ page }) => {
 
 test('create a project and show its DSN', async ({ page }) => {
   await page.route('**/api/projects/new', (route) =>
-    route.fulfill({ json: [{ ID: 1, Name: 'Core' }] })
+    route.fulfill({ json: [{ id: 1, name: 'Core' }] })
   );
   await page.route('**/api/projects', async (route) => {
     expect(new URLSearchParams(route.request().postData()).get('platform')).toBe('rust');
     return route.fulfill({
-      json: { ID: 7, Name: 'Service', DSN: 'http://key@localhost/ingest/7', Platform: 'rust' }
+      json: { id: 7, name: 'Service', dsn: 'http://key@localhost/ingest/7', platform: 'rust' }
     });
   });
   await page.goto('/projects/new');
@@ -50,14 +50,14 @@ test('deep issue link, escaped content, assignment and discussion', async ({ pag
   await page.route('**/api/projects/1/issues/2', (route) =>
     route.fulfill({
       json: {
-        IssueID: 2,
-        ErrorType: '<script>alert(1)</script>',
-        Message: 'Failure',
-        TimesSeen: 4,
-        UserCount: 1,
-        Teammates: [{ ID: 1, Username: 'admin' }],
-        Assignments: { IssueToAssigned: {} },
-        StackDetails: []
+        issue_id: 2,
+        error_type: '<script>alert(1)</script>',
+        message: 'Failure',
+        times_seen: 4,
+        user_count: 1,
+        teammates: [{ id: 1, username: 'admin' }],
+        assignments: { issue_to_assigned: {} },
+        stack_details: []
       }
     })
   );
@@ -77,7 +77,7 @@ test('deep issue link, escaped content, assignment and discussion', async ({ pag
           content: new URLSearchParams(route.request().postData()).get('content')
         }
       ];
-    return route.fulfill({ json: { Messages: messages, Teammates: [] } });
+    return route.fulfill({ json: { messages: messages, teammates: [] } });
   });
   await page.goto('/projects/1/issues/2');
   await expect(page.getByRole('heading', { name: '<script>alert(1)</script>' })).toBeVisible();
@@ -92,7 +92,7 @@ test('deep issue link, escaped content, assignment and discussion', async ({ pag
 
 test('alert creation sends the rule fields', async ({ page }) => {
   await page.route('**/api/alerts/new', (route) =>
-    route.fulfill({ json: { Projects: [{ ID: 7, Name: 'Service' }] } })
+    route.fulfill({ json: { projects: [{ id: 7, name: 'Service' }] } })
   );
   let body;
   await page.route('**/api/alerts', (route) => {
@@ -100,7 +100,7 @@ test('alert creation sends the rule fields', async ({ page }) => {
       body = new URLSearchParams(route.request().postData());
       return route.fulfill({ status: 204 });
     }
-    return route.fulfill({ json: { Alerts: [], Projects: [], TotalAlerts: 0 } });
+    return route.fulfill({ json: { alerts: [], projects: [], total_alerts: 0 } });
   });
   await page.goto('/alerts/new');
   await page.getByLabel('Rule name').fill('Error spike');
@@ -127,22 +127,22 @@ test('project issues retain their project in links', async ({ page }) => {
   await page.route('**/api/projects/7', (route) =>
     route.fulfill({
       json: {
-        Project: {
-          ID: 7,
-          Name: 'Service',
-          AllLength: 1,
-          ResultIssueList: [
+        project: {
+          id: 7,
+          name: 'Service',
+          all_length: 1,
+          result_issue_list: [
             {
-              ID: 3,
-              ProjectID: 0,
-              Type: 'Failure',
-              Message: 'Error',
-              LastSeen: '2026-01-01T00:00:00Z'
+              id: 3,
+              project_id: 0,
+              type: 'Failure',
+              message: 'Error',
+              last_seen: '2026-01-01T00:00:00Z'
             }
           ]
         },
-        Period: '24h',
-        Issues: 'all'
+        period: '24h',
+        issues: 'all'
       }
     })
   );
@@ -152,7 +152,7 @@ test('project issues retain their project in links', async ({ page }) => {
     '/projects/7/issues/3?source=issue'
   );
   await expect(
-    page.getByRole('button', { name: 'Period: Last 24 hours', exact: true })
+    page.getByRole('button', { name: 'period: Last 24 hours', exact: true })
   ).toBeVisible();
 });
 
@@ -184,7 +184,7 @@ test('login errors stay inside the form and retain credentials', async ({ page }
 
 test('OIDC login offers only the configured provider', async ({ page }) => {
   await page.route('**/api/login', (route) =>
-    route.fulfill({ json: { AuthURL: '/oidc/start', ProviderName: 'Keycloak' } })
+    route.fulfill({ json: { auth_url: '/oidc/start', provider_name: 'Keycloak' } })
   );
   await page.goto('/login');
   await expect(page.getByLabel('Password', { exact: true })).toHaveCount(0);
@@ -196,7 +196,7 @@ test('OIDC login offers only the configured provider', async ({ page }) => {
 
 test('discussion preview, mentions and failed submission preserve the draft', async ({ page }) => {
   await page.route('**/api/projects/1/issues/2', (route) =>
-    route.fulfill({ json: { ErrorType: 'Error', IssueID: 2 } })
+    route.fulfill({ json: { error_type: 'Error', issue_id: 2 } })
   );
   let posted;
   await page.route('**/api/projects/1/issues/2/discussions', (route) => {
@@ -206,8 +206,8 @@ test('discussion preview, mentions and failed submission preserve the draft', as
     }
     return route.fulfill({
       json: {
-        Teammates: [{ ID: 1, Username: 'admin' }],
-        Messages: [
+        teammates: [{ id: 1, username: 'admin' }],
+        messages: [
           {
             id: 1,
             user_id: 1,
@@ -280,7 +280,7 @@ test('system restores sorting, query details and schema columns', async ({ page 
 });
 
 test('saved notification matches original dark toast and disappears', async ({ page }) => {
-  await page.route('**/api/settings', (route) => route.fulfill({ json: { Webhook: {} } }));
+  await page.route('**/api/settings', (route) => route.fulfill({ json: { webhook: {} } }));
   await page.route('**/api/settings/webhook', (route) => route.fulfill({ status: 204 }));
   await page.goto('/settings');
   await page.getByRole('button', { name: 'Save webhook' }).click();
@@ -297,22 +297,29 @@ test('project row opens issue from whitespace, errors and users but not responsi
   await page.route('**/api/projects/2?period=90d', (route) =>
     route.fulfill({
       json: {
-        Project: {
-          ID: 2,
-          Name: 'Service',
-          AllLength: 1,
-          ResultIssueList: [
-            { ID: 3, ProjectID: 2, Type: 'Failure', Message: 'Error', TimesSeen: 42, UserCount: 7 }
+        project: {
+          id: 2,
+          name: 'Service',
+          all_length: 1,
+          result_issue_list: [
+            {
+              id: 3,
+              project_id: 2,
+              type: 'Failure',
+              message: 'Error',
+              times_seen: 42,
+              user_count: 7
+            }
           ]
         },
-        Period: '90d',
-        Issues: 'all',
-        Teammates: [{ ID: 1, Username: 'admin' }]
+        period: '90d',
+        issues: 'all',
+        teammates: [{ id: 1, username: 'admin' }]
       }
     })
   );
   await page.route('**/api/projects/2/issues/3?source=issue', (route) =>
-    route.fulfill({ json: { IssueID: 3, ErrorType: 'Failure' } })
+    route.fulfill({ json: { issue_id: 3, error_type: 'Failure' } })
   );
   await page.route('**/api/projects/2/issues/3/assignments', (route) => {
     assigned = true;
@@ -337,22 +344,22 @@ test('project row opens issue from whitespace, errors and users but not responsi
 
 test('event opens from every column and row whitespace', async ({ page }) => {
   await page.route('**/api/projects/2/issues/8*', (route) =>
-    route.fulfill({ json: { IssueID: 8, ErrorType: 'Failure' } })
+    route.fulfill({ json: { issue_id: 8, error_type: 'Failure' } })
   );
   await page.route('**/api/projects/2/issues/8/events', (route) =>
     route.fulfill({
       json: {
-        Events: [
+        events: [
           {
-            EventID: 'event-1',
-            Title: 'Failure',
-            Message: 'Details',
-            CreatedAt: '2026-10-14T12:00:00Z',
-            Env: 'production',
-            UserEmail: 'user@example.com'
+            event_id: 'event-1',
+            title: 'Failure',
+            message: 'Details',
+            created_at: '2026-10-14T12:00:00Z',
+            env: 'production',
+            user_email: 'user@example.com'
           }
         ],
-        TotalEvents: 1
+        total_events: 1
       }
     })
   );
@@ -369,25 +376,25 @@ test('home issue opens from every column including whitespace', async ({ page })
   await page.route('**/api/issues', (route) =>
     route.fulfill({
       json: {
-        Projects: [{ ID: 2, Name: 'Service' }],
-        Issues: [
+        projects: [{ id: 2, name: 'Service' }],
+        issues: [
           {
-            ID: 8,
-            ProjectID: 2,
-            Type: 'Failure',
-            Message: 'Details',
-            TimesSeen: 42,
-            UserCount: 7,
-            FirstSeen: '2026-10-14T12:00:00Z',
-            LastSeen: '2026-10-14T13:00:00Z'
+            id: 8,
+            project_id: 2,
+            type: 'Failure',
+            message: 'Details',
+            times_seen: 42,
+            user_count: 7,
+            first_seen: '2026-10-14T12:00:00Z',
+            last_seen: '2026-10-14T13:00:00Z'
           }
         ],
-        TotalIssues: 1
+        total_issues: 1
       }
     })
   );
   await page.route('**/api/projects/2/issues/8?source=issue', (route) =>
-    route.fulfill({ json: { IssueID: 8, ErrorType: 'Failure' } })
+    route.fulfill({ json: { issue_id: 8, error_type: 'Failure' } })
   );
   for (const column of [0, 1, 2, 3, 4, 5]) {
     await page.goto('/');
@@ -402,14 +409,14 @@ test('issue sidebar restores expandable field percentages from API', async ({ pa
   await page.route('**/api/projects/2/issues/10?source=issue', (route) =>
     route.fulfill({
       json: {
-        IssueID: 10,
-        ErrorType: 'Failure',
-        LastEvent: { TagsKey: ['environment', 'release'], TagsValue: ['production', 'v2'] },
-        TagCount: [{ Tag: 'environment' }, { Tag: 'release' }],
-        TagValueNum: [
-          { Tag: 'environment', Value: 'production', PercentsOfTotal: 76.9 },
-          { Tag: 'environment', Value: 'staging', PercentsOfTotal: 23.1 },
-          { Tag: 'release', Value: 'v2', PercentsOfTotal: 100 }
+        issue_id: 10,
+        error_type: 'Failure',
+        last_event: { tags_key: ['environment', 'release'], tags_value: ['production', 'v2'] },
+        tag_count: [{ tag: 'environment' }, { tag: 'release' }],
+        tag_value_num: [
+          { tag: 'environment', value: 'production', percents_of_total: 76.9 },
+          { tag: 'environment', value: 'staging', percents_of_total: 23.1 },
+          { tag: 'release', value: 'v2', percents_of_total: 100 }
         ]
       }
     })
@@ -431,16 +438,16 @@ test('issue sidebar restores expandable field percentages from API', async ({ pa
 
 test('fields render grouped cards with issue filter links', async ({ page }) => {
   await page.route('**/api/projects/2/issues/10', (route) =>
-    route.fulfill({ json: { IssueID: 10, ErrorType: 'Failure' } })
+    route.fulfill({ json: { issue_id: 10, error_type: 'Failure' } })
   );
   await page.route('**/api/projects/2/issues/10/fields', (route) =>
     route.fulfill({
       json: {
-        ProjectName: 'Order API',
-        TagCount: [{ Tag: 'environment' }, { Tag: 'release' }],
-        FieldValueNum: [
-          { Tag: 'environment', Value: 'production eu', Count: 12 },
-          { Tag: 'release', Value: 'v2', Count: 5 }
+        project_name: 'Order API',
+        tag_count: [{ tag: 'environment' }, { tag: 'release' }],
+        field_value_num: [
+          { tag: 'environment', value: 'production eu', count: 12 },
+          { tag: 'release', value: 'v2', count: 5 }
         ]
       }
     })
@@ -469,9 +476,9 @@ test('delete dialog handles cancel, failure and retry with favicon present', asy
   await page.route('**/api/alerts', (route) =>
     route.fulfill({
       json: {
-        Alerts: [{ ID: 1, RuleName: 'Production errors', Status: 'Active' }],
-        Projects: [],
-        TotalAlerts: 1
+        alerts: [{ id: 1, rule_name: 'Production errors', status: 'Active' }],
+        projects: [],
+        total_alerts: 1
       }
     })
   );

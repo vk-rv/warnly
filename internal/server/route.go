@@ -160,7 +160,7 @@ func NewHandler(b *Backend) (*Handler, error) {
 		writeJSON(w, http.StatusOK, getUser(r.Context()))
 	}))
 	mux.HandleFunc("GET /api/", func(w http.ResponseWriter, r *http.Request) {
-		writeJSON(w, http.StatusNotFound, map[string]string{"error": "Not found"})
+		writeJSON(w, http.StatusNotFound, errorResponse{Error: "Not found"})
 	})
 	frontend, err := newFrontendHandler()
 	if err != nil {

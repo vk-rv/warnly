@@ -65,7 +65,7 @@
 <div class="range-picker" bind:this={root}>
   <button
     class="filter-button"
-    aria-label={`Period: ${rangeLabel}`}
+    aria-label={`period: ${rangeLabel}`}
     aria-expanded={open}
     onclick={() => (open = !open)}>{rangeLabel}<Icon name="chevron" /></button
   >
