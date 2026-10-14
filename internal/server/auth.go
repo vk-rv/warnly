@@ -20,6 +20,8 @@ const userContextKey contextKey = "user"
 
 // authMw is a middleware for authentication.
 type authMw struct {
+	*BaseHandler
+
 	cookieStore *session.CookieStore
 	logger      *slog.Logger
 }
@@ -27,6 +29,7 @@ type authMw struct {
 // newAuthMW is a constructor of authMw.
 func newAuthMW(cookieStore *session.CookieStore, logger *slog.Logger) *authMw {
 	return &authMw{
+		BaseHandler: NewBaseHandler(logger),
 		cookieStore: cookieStore,
 		logger:      logger,
 	}
@@ -43,7 +46,7 @@ func (mw *authMw) authenticate(handler http.HandlerFunc) http.HandlerFunc {
 				slog.String("method", r.Method),
 				slog.String("url", r.URL.String()))
 			if strings.HasPrefix(r.URL.Path, "/api/") {
-				writeJSON(w, http.StatusUnauthorized, errorResponse{Error: "Authentication required"})
+				mw.writeJSON(w, http.StatusUnauthorized, errorResponse{Error: "Authentication required"})
 			} else {
 				http.Redirect(w, r, "/login", http.StatusSeeOther)
 			}

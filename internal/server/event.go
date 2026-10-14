@@ -2,7 +2,7 @@ package server
 
 import (
 	"encoding/hex"
-	"encoding/json"
+	"encoding/json/v2"
 	"errors"
 	"fmt"
 	"io"
@@ -98,13 +98,15 @@ func (e *IngestError) Response() ingestResponseError {
 
 // EventHandler ingests events via API.
 type EventHandler struct {
+	*BaseHandler
+
 	svc    warnly.EventService
 	logger *slog.Logger
 }
 
 // NewEventAPIHandler is a constructor of ventHandler.
 func NewEventAPIHandler(svc warnly.EventService, logger *slog.Logger) *EventHandler {
-	return &EventHandler{svc: svc, logger: logger}
+	return &EventHandler{BaseHandler: NewBaseHandler(logger), svc: svc, logger: logger}
 }
 
 // IngestEvent ingests new event.
@@ -114,33 +116,18 @@ func (h *EventHandler) IngestEvent(w http.ResponseWriter, r *http.Request) {
 		if clientErr, ok := errors.AsType[ClientError](err); ok {
 			h.logger.Error("ingest client error", slog.Any("error", clientErr), slog.Int("status", clientErr.HTTPStatus()))
 
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(clientErr.HTTPStatus())
-
-			if err := json.NewEncoder(w).Encode(clientErr.Response()); err != nil {
-				h.logger.Error("encode client error response", slog.Any("error", err), slog.Int("status", clientErr.HTTPStatus()))
-			}
+			h.writeJSON(w, clientErr.HTTPStatus(), clientErr.Response())
 			return
 		}
 		id := warnly.MustNanoID()
 		h.logger.Error("ingest new event", slog.Any("error", err), slog.String("errorId", id))
-		w.WriteHeader(http.StatusInternalServerError)
-		if err := json.NewEncoder(w).Encode(ingestResponseError{
+		h.writeJSON(w, http.StatusInternalServerError, ingestResponseError{
 			Detail:  internalErrorDetail,
 			ErrorID: id,
-		}); err != nil {
-			h.logger.Error("encode error response", slog.Any("error", err))
-		}
+		})
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(ingestResponseSuccess{
-		ID: res.EventID,
-	}); err != nil {
-		h.logger.Error("encode success response", slog.Any("error", err))
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+	h.writeJSON(w, http.StatusOK, ingestResponseSuccess{ID: res.EventID})
 }
 
 // handleIngestEvent handles the actual logic of ingesting an event.

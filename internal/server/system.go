@@ -37,7 +37,7 @@ func (h *systemHandler) listSlowQueries(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	writeJSON(w, http.StatusOK, result)
+	h.writeJSON(w, http.StatusOK, result)
 }
 
 // listSchemas lists olap database schemas from largest to smallest.
@@ -50,7 +50,7 @@ func (h *systemHandler) listSchemas(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, http.StatusOK, result)
+	h.writeJSON(w, http.StatusOK, result)
 }
 
 // listErrors lists recent errors from olap system for the last 24 hours.
@@ -63,5 +63,5 @@ func (h *systemHandler) listErrors(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, http.StatusOK, result)
+	h.writeJSON(w, http.StatusOK, result)
 }

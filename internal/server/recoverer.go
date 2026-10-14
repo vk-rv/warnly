@@ -13,6 +13,8 @@ import (
 
 // recoverMw is a middleware for recovering from golang panics in HTTP handlers.
 type recoverMw struct {
+	*BaseHandler
+
 	metrics *recoverMetrics
 	logger  *slog.Logger
 }
@@ -25,7 +27,8 @@ type recoverMetrics struct {
 // newRecoverMw is a constructor of recoverMw.
 func newRecoverMw(r prometheus.Registerer, logger *slog.Logger) *recoverMw {
 	return &recoverMw{
-		logger: logger,
+		BaseHandler: NewBaseHandler(logger),
+		logger:      logger,
 		metrics: &recoverMetrics{
 			panicRecoversTotal: promauto.With(r).NewCounterVec(prometheus.CounterOpts{
 				Name: "http_panic_recovers_total",
@@ -57,7 +60,7 @@ func (mw *recoverMw) recover(handler http.HandlerFunc) http.HandlerFunc {
 				mw.logger.Error(err.Error(), "event", "panic", "stack", "...\n"+string(buf))
 
 				if r.Header.Get("Connection") != "Upgrade" {
-					writeJSON(w, http.StatusInternalServerError, errorResponse{Error: http.StatusText(http.StatusInternalServerError)})
+					mw.writeJSON(w, http.StatusInternalServerError, errorResponse{Error: http.StatusText(http.StatusInternalServerError)})
 				}
 				return
 			}
