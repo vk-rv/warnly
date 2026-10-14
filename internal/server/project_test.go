@@ -1,7 +1,7 @@
 package server_test
 
 import (
-	"encoding/json"
+	"encoding/json/v2"
 	"fmt"
 	"net/http"
 	"strings"
@@ -135,7 +135,7 @@ func TestServer_ListProjects(t *testing.T) {
 		assert.Equal(t, http.StatusOK, w.Code)
 
 		var result warnly.ListProjectsResult
-		require.NoError(t, json.NewDecoder(w.Body).Decode(&result))
+		require.NoError(t, json.UnmarshalRead(w.Body, &result))
 
 		projectCards := result.Projects
 		assert.Len(t, projectCards, 3, "should have exactly 3 projects")
@@ -207,7 +207,7 @@ func TestServer_ListProjects(t *testing.T) {
 		assert.Equal(t, http.StatusOK, w.Code)
 
 		var result warnly.ListProjectsResult
-		require.NoError(t, json.NewDecoder(w.Body).Decode(&result))
+		require.NoError(t, json.UnmarshalRead(w.Body, &result))
 
 		projectCards := result.Projects
 		assert.Len(t, projectCards, 1, "should have exactly 1 project filtered by team")
@@ -267,7 +267,7 @@ func TestServer_ListProjects(t *testing.T) {
 		assert.Equal(t, http.StatusOK, w.Code)
 
 		var result warnly.ListProjectsResult
-		require.NoError(t, json.NewDecoder(w.Body).Decode(&result))
+		require.NoError(t, json.UnmarshalRead(w.Body, &result))
 
 		projectCards := result.Projects
 		assert.Len(t, projectCards, 1, "should have exactly 1 project filtered by name")
@@ -319,7 +319,7 @@ func TestServer_ListProjects(t *testing.T) {
 		assert.Equal(t, http.StatusOK, w.Code)
 
 		var result warnly.ListProjectsResult
-		require.NoError(t, json.NewDecoder(w.Body).Decode(&result))
+		require.NoError(t, json.UnmarshalRead(w.Body, &result))
 
 		projectCards := result.Projects
 		assert.Len(t, projectCards, 1, "should have exactly 1 project with both filters")
@@ -362,7 +362,7 @@ func TestServer_ListProjects(t *testing.T) {
 		assert.Equal(t, http.StatusOK, w.Code)
 
 		var result warnly.ListProjectsResult
-		require.NoError(t, json.NewDecoder(w.Body).Decode(&result))
+		require.NoError(t, json.UnmarshalRead(w.Body, &result))
 
 		projectCards := result.Projects
 		assert.Empty(t, projectCards, "should have no projects for nonexistent search")
@@ -437,7 +437,7 @@ func TestServer_ListProjects(t *testing.T) {
 		assert.Equal(t, http.StatusOK, w.Code)
 
 		var result warnly.ListProjectsResult
-		require.NoError(t, json.NewDecoder(w.Body).Decode(&result))
+		require.NoError(t, json.UnmarshalRead(w.Body, &result))
 
 		errorCount := result.Projects[0].Events.TotalErrors()
 		assert.Equal(t, "3", errorCount)
@@ -490,7 +490,7 @@ func TestServer_DeleteProject(t *testing.T) {
 		assert.Equal(t, http.StatusOK, w.Code)
 
 		var result warnly.ListProjectsResult
-		require.NoError(t, json.NewDecoder(w.Body).Decode(&result))
+		require.NoError(t, json.UnmarshalRead(w.Body, &result))
 
 		projectCards := result.Projects
 		assert.Len(t, projectCards, 1, "should have exactly 1 project after creation")
@@ -503,7 +503,7 @@ func TestServer_DeleteProject(t *testing.T) {
 		assert.Equal(t, http.StatusOK, wList.Code)
 
 		var after warnly.ListProjectsResult
-		require.NoError(t, json.NewDecoder(wList.Body).Decode(&after))
+		require.NoError(t, json.UnmarshalRead(wList.Body, &after))
 
 		projectCardsAfter := after.Projects
 		assert.Empty(t, projectCardsAfter, "should have 0 projects after deletion")
@@ -611,7 +611,7 @@ func TestServer_HandleProjectDetails(t *testing.T) {
 			assert.Equal(t, http.StatusOK, wrDetails.Code)
 
 			var result warnly.ProjectDetails
-			require.NoError(t, json.NewDecoder(wrDetails.Body).Decode(&result))
+			require.NoError(t, json.UnmarshalRead(wrDetails.Body, &result))
 			require.NotEmpty(t, result.Project.ResultIssueList)
 
 			issueType := result.Project.ResultIssueList[0].Type

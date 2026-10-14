@@ -4,7 +4,8 @@ package event
 
 import (
 	"context"
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"errors"
 	"fmt"
 	"net"
@@ -262,7 +263,7 @@ func makeContexts(event *warnly.EventBody) (kv, error) {
 		if str, ok := v.(string); ok {
 			contextsValues = append(contextsValues, str)
 		} else {
-			jsonBytes, err := json.MarshalIndent(v, "", "  ")
+			jsonBytes, err := json.Marshal(v, jsontext.WithIndent("  "))
 			if err != nil {
 				return kv{}, fmt.Errorf("makeContexts: json marshal indent: %w", err)
 			}

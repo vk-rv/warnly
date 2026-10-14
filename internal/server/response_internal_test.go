@@ -1,6 +1,7 @@
 package server
 
 import (
+	"log/slog"
 	"net/http/httptest"
 	"reflect"
 	"regexp"
@@ -86,14 +87,22 @@ func TestAPIResponseEnvelopes(t *testing.T) {
 		{name: "login", value: loginResponse{AuthURL: "/oidc", ProviderName: "keycloak", IsDemo: true}, status: 200, json: `{"auth_url":"/oidc","provider_name":"keycloak","is_demo":true}`},
 		{name: "error", value: errorResponse{Error: "Not found"}, status: 404, json: `{"error":"Not found"}`},
 		{name: "new alert", value: alertFormResponse{Projects: []warnly.Project{}}, status: 200, json: `{"projects":[]}`},
+		{name: "nil slice", value: []string(nil), status: 200, json: `[]`},
+		{name: "nil map", value: map[string]string(nil), status: 200, json: `{}`},
+		{name: "invalid UTF-8", value: string([]byte{0xff}), status: 500, json: `{"error":"Internal Server Error"}`},
 		{name: "encoding failure", value: make(chan int), status: 500, json: `{"error":"Internal Server Error"}`},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			w := httptest.NewRecorder()
-			writeJSON(w, tc.status, tc.value)
+			status := tc.status
+			if status == 500 {
+				status = 200
+			}
+			NewBaseHandler(slog.Default()).writeJSON(w, status, tc.value)
 			require.Equal(t, tc.status, w.Code)
 			require.JSONEq(t, tc.json, w.Body.String())
+			require.Equal(t, "no-store", w.Header().Get("Cache-Control"))
 			require.Contains(t, w.Header().Get("Content-Type"), "application/json")
 		})
 	}

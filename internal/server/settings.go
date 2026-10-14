@@ -38,5 +38,5 @@ func (h *settingsHandler) listSettings(w http.ResponseWriter, r *http.Request) {
 
 	data := settingsResponse{User: &user, Webhook: webhook}
 
-	writeJSON(w, http.StatusOK, data)
+	h.writeJSON(w, http.StatusOK, data)
 }

@@ -96,14 +96,16 @@ func (rec *statusRecorder) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 }
 
 type emailMatcherMW struct {
+	*BaseHandler
 	logger     *slog.Logger
 	rgxsEmails []*regexp.Regexp
 }
 
 func newEmailMatcherMW(rgxsEmails []*regexp.Regexp, logger *slog.Logger) *emailMatcherMW {
 	return &emailMatcherMW{
-		rgxsEmails: rgxsEmails,
-		logger:     logger,
+		BaseHandler: NewBaseHandler(logger),
+		rgxsEmails:  rgxsEmails,
+		logger:      logger,
 	}
 }
 
@@ -124,7 +126,7 @@ func (mw *emailMatcherMW) emailMatch(handler http.HandlerFunc) http.HandlerFunc 
 				slog.String(httpMethodLabel, r.Method),
 				slog.String("url", r.URL.String()))
 			if strings.HasPrefix(r.URL.Path, "/api/") {
-				writeJSON(w, http.StatusUnauthorized, errorResponse{Error: "Authentication required"})
+				mw.writeJSON(w, http.StatusUnauthorized, errorResponse{Error: "Authentication required"})
 			} else {
 				http.Redirect(w, r, "/login", http.StatusSeeOther)
 			}

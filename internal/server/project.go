@@ -70,7 +70,7 @@ func (h *ProjectHandler) DeleteAssignment(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	writeJSON(w, http.StatusOK, details)
+	h.writeJSON(w, http.StatusOK, details)
 }
 
 // AssignIssue assigns an issue to a user.
@@ -124,7 +124,7 @@ func (h *ProjectHandler) AssignIssue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, http.StatusOK, details)
+	h.writeJSON(w, http.StatusOK, details)
 }
 
 // ListEvents lists all events per specified issue.
@@ -167,7 +167,7 @@ func (h *ProjectHandler) ListEvents(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, http.StatusOK, res)
+	h.writeJSON(w, http.StatusOK, res)
 }
 
 // ListFields returns list of fields related to an issue with some statistics,
@@ -195,7 +195,7 @@ func (h *ProjectHandler) ListFields(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, http.StatusOK, fields)
+	h.writeJSON(w, http.StatusOK, fields)
 }
 
 // DeleteMessage deletes a message (user comment for issue) by identifier in issue discussion.
@@ -227,7 +227,7 @@ func (h *ProjectHandler) DeleteMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, http.StatusOK, discussion)
+	h.writeJSON(w, http.StatusOK, discussion)
 }
 
 // PostMessage creates a new message (user comment) in issue discussion.
@@ -254,7 +254,7 @@ func (h *ProjectHandler) PostMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, http.StatusOK, discussion)
+	h.writeJSON(w, http.StatusOK, discussion)
 }
 
 // newMessageRequest creates a new message request from the HTTP request.
@@ -307,7 +307,7 @@ func (h *ProjectHandler) GetDiscussions(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	writeJSON(w, http.StatusOK, discussion)
+	h.writeJSON(w, http.StatusOK, discussion)
 }
 
 // GetIssue returns issue page.
@@ -337,7 +337,7 @@ func (h *ProjectHandler) GetIssue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, http.StatusOK, issue)
+	h.writeJSON(w, http.StatusOK, issue)
 }
 
 // SearchProjectByName is a method that searches projects by name.
@@ -392,7 +392,7 @@ func (h *ProjectHandler) ProjectDetails(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	writeJSON(w, http.StatusOK, details)
+	h.writeJSON(w, http.StatusOK, details)
 }
 
 // ListProjects returns a list of projects among with errors for last 24 hours.
@@ -423,7 +423,7 @@ func (h *ProjectHandler) ListProjects(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, http.StatusOK, res)
+	h.writeJSON(w, http.StatusOK, res)
 }
 
 // DeleteProject is a method that deletes a project.
@@ -471,7 +471,7 @@ func (h *ProjectHandler) ProjectSettings(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	writeJSON(w, http.StatusOK, project)
+	h.writeJSON(w, http.StatusOK, project)
 }
 
 // CreateProject creates a new project.
@@ -492,7 +492,7 @@ func (h *ProjectHandler) CreateProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, http.StatusOK, res)
+	h.writeJSON(w, http.StatusOK, res)
 }
 
 // GetPlatforms returns possible project platforms.
@@ -507,7 +507,7 @@ func (h *ProjectHandler) GetPlatforms(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, http.StatusOK, teams)
+	h.writeJSON(w, http.StatusOK, teams)
 }
 
 // GettingStarted returns getting started page.

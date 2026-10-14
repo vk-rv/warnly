@@ -3,7 +3,7 @@ package warnly
 import (
 	"crypto/md5" //nolint:gosec // Non-crypto use
 	"encoding/hex"
-	"encoding/json"
+	"encoding/json/v2"
 	"fmt"
 	"math"
 	"slices"

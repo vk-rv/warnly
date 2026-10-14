@@ -1,7 +1,6 @@
 package server
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -279,7 +278,7 @@ func (h *rootHandler) index(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, http.StatusOK, result)
+	h.writeJSON(w, http.StatusOK, result)
 }
 
 // listTagValues handles the request to list values for a tag.
@@ -317,12 +316,7 @@ func (h *rootHandler) listTagValues(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-
-	if err := json.NewEncoder(w).Encode(values); err != nil {
-		h.writeError(ctx, w, http.StatusInternalServerError, "list tag values: encode", err)
-		return
-	}
+	h.writeJSON(w, http.StatusOK, values)
 }
 
 // destroy handles the HTTP request to destroy the current session (log out).
@@ -377,7 +371,7 @@ func (h *rootHandler) login(w http.ResponseWriter, r *http.Request) {
 		authURL = url
 	}
 
-	writeJSON(w, http.StatusOK, loginResponse{AuthURL: authURL, ProviderName: h.oidc.ProviderName, IsDemo: h.isDemo})
+	h.writeJSON(w, http.StatusOK, loginResponse{AuthURL: authURL, ProviderName: h.oidc.ProviderName, IsDemo: h.isDemo})
 }
 
 // create handles the HTTP request to create a new session.
@@ -401,14 +395,14 @@ func (h *rootHandler) create(w http.ResponseWriter, r *http.Request) {
 			code, message = http.StatusUnauthorized, msgInvalidAuthMethod
 		}
 		h.logger.Error("sign in", slog.Any("error", err))
-		writeJSON(w, code, errorResponse{Error: message})
+		h.writeJSON(w, code, errorResponse{Error: message})
 		return
 	}
 	if err := saveCookie(w, r, h.cookieStore, *result.User, credentials.RememberMe, h.rememberDays); err != nil {
 		h.writeError(ctx, w, http.StatusInternalServerError, "save session", err)
 		return
 	}
-	writeJSON(w, http.StatusOK, result.User)
+	h.writeJSON(w, http.StatusOK, result.User)
 }
 
 // saveCookie saves the user information in a session cookie.

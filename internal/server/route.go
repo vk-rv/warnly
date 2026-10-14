@@ -45,11 +45,13 @@ type OIDC struct {
 // Handler is a collection of all the service handlers.
 type Handler struct {
 	*http.ServeMux
+	*BaseHandler
 }
 
 // NewHandler initialize dependencies and returns router with attached routes.
 func NewHandler(b *Backend) (*Handler, error) {
 	mux := http.NewServeMux()
+	h := &Handler{ServeMux: mux, BaseHandler: NewBaseHandler(b.Logger)}
 	b.CookieStore.Options.HTTPOnly = true
 	b.CookieStore.Options.Secure = b.IsHTTPS
 	b.CookieStore.Options.SameSite = http.SameSiteLaxMode
@@ -158,15 +160,15 @@ func NewHandler(b *Backend) (*Handler, error) {
 	mux.HandleFunc("POST /ingest/api/{project_id}/envelope/", chainWithoutAuth(eventAPIHandler.IngestEvent))
 
 	mux.HandleFunc("GET /api/session", chain(func(w http.ResponseWriter, r *http.Request) {
-		writeJSON(w, http.StatusOK, getUser(r.Context()))
+		h.writeJSON(w, http.StatusOK, getUser(r.Context()))
 	}))
 	mux.HandleFunc("GET /api/", func(w http.ResponseWriter, r *http.Request) {
-		writeJSON(w, http.StatusNotFound, errorResponse{Error: "Not found"})
+		h.writeJSON(w, http.StatusNotFound, errorResponse{Error: "Not found"})
 	})
 	frontend, err := newFrontendHandler()
 	if err != nil {
 		return nil, err
 	}
 	mux.Handle("GET /", frontend)
-	return &Handler{ServeMux: mux}, nil
+	return h, nil
 }
