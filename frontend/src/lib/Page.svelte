@@ -1,5 +1,5 @@
 <script>
-  import { goto, invalidateAll } from '$app/navigation';
+  import { goto, invalidate } from '$app/navigation';
   import { page } from '$app/state';
   import { api, formBody } from '$lib/api';
   import IssueTable from '$lib/IssueTable.svelte';
@@ -82,9 +82,9 @@
     saved = '';
     try {
       const response = await api(endpoint, { method, ...(body ? { body } : {}) });
-      if (destination) await goto(destination, { invalidateAll: true });
+      if (destination) await goto(destination, { invalidate: ['app:page'] });
       else {
-        await invalidateAll();
+        await invalidate('app:page');
         if (!endpoint.includes('/discussions')) notify('Saved');
       }
       return response;
@@ -121,8 +121,8 @@
   async function confirmDeletion() {
     const target = deletion;
     await api(target.endpoint, { method: 'DELETE' });
-    if (target.destination) await goto(target.destination, { invalidateAll: true });
-    else await invalidateAll();
+    if (target.destination) await goto(target.destination, { invalidate: ['app:page'] });
+    else await invalidate('app:page');
     notify('Deleted');
   }
   function query(event) {

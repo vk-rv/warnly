@@ -6,6 +6,11 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('login failure and successful session', async ({ page }) => {
+  let sessionRequests = 0;
+  await page.route('**/api/session', (route) => {
+    sessionRequests++;
+    return route.fulfill({ json: user });
+  });
   await page.route('**/api/login', async (route) => {
     if (route.request().method() === 'GET') return route.fulfill({ json: { is_demo: true } });
     const body = new URLSearchParams(route.request().postData());
@@ -23,9 +28,52 @@ test('login failure and successful session', async ({ page }) => {
   await page.getByLabel('Password', { exact: true }).fill('wrong');
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await expect(page.getByRole('alert')).toHaveText('Invalid login credentials.');
+  expect(sessionRequests).toBe(0);
   await page.getByLabel('Password', { exact: true }).fill('correct');
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Issues', exact: true })).toBeVisible();
+  expect(sessionRequests).toBe(1);
+});
+
+test('session is reused across navigation, query changes and mutations', async ({ page }) => {
+  let sessionRequests = 0;
+  let settingsRequests = 0;
+  await page.route('**/api/session', (route) => {
+    sessionRequests++;
+    return route.fulfill({ json: user });
+  });
+  await page.route('**/api/settings*', (route) => {
+    settingsRequests++;
+    return route.fulfill({ json: { webhook: {} } });
+  });
+  await page.route('**/api/settings/webhook', (route) => route.fulfill({ status: 204 }));
+  await page.route('**/api/system', (route) => route.fulfill({ json: [] }));
+  await page.goto('/settings');
+  await page.getByRole('button', { name: 'Save webhook' }).click();
+  await expect(page.getByRole('status')).toHaveText('Saved');
+  expect(settingsRequests).toBe(2);
+  expect(sessionRequests).toBe(1);
+  await page.getByRole('link', { name: 'System', exact: true }).click();
+  await expect(page).toHaveURL('/system');
+  await page.getByRole('link', { name: 'Settings', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Save webhook' })).toBeVisible();
+  // Exercise a client-side query navigation without reloading the document.
+  await page.getByRole('link', { name: 'Settings', exact: true }).evaluate((link) => {
+    link.href = '/settings?test=1';
+    link.click();
+  });
+  await expect(page).toHaveURL('/settings?test=1');
+  expect(settingsRequests).toBe(4);
+  expect(sessionRequests).toBe(1);
+
+  await page.route('**/api/system', (route) =>
+    route.fulfill({ status: 401, json: { error: 'Authentication required' } })
+  );
+  await page.route('**/api/login', (route) => route.fulfill({ json: {} }));
+  await page.getByRole('link', { name: 'System', exact: true }).click();
+  await expect(page.getByLabel('Email or username')).toBeVisible();
+  await expect(page).toHaveURL('/login');
+  expect(sessionRequests).toBe(1);
 });
 
 test('create a project and show its DSN', async ({ page }) => {
