@@ -1,6 +1,6 @@
 module github.com/vk-rv/warnly
 
-go 1.27.1
+go 1.27.2
 
 require (
 	github.com/ClickHouse/clickhouse-go/v2 v2.48.0
@@ -93,7 +93,7 @@ require (
 	go.opentelemetry.io/otel/metric v1.47.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.11.1 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
-	golang.org/x/net v0.59.0 // indirect
+	golang.org/x/net v0.60.0 // indirect
 	golang.org/x/oauth2 v0.37.0 // indirect
 	golang.org/x/sys v0.48.0 // indirect
 	golang.org/x/text v0.42.0 // indirect
