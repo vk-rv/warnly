@@ -118,7 +118,9 @@ not modify shell startup files. Make targets automatically use these local tools
 `make setup` is an alias; pre-commit installation is available as `make hooks`.
 
 The result is `bin/warnly`, which includes the static UI. `make run` builds and
-starts it, reading `.env` (environment variables take precedence). For native
+starts it using the process environment. The Go binary does not read or require
+a `.env` file; configure environment variables in your shell or cloud platform.
+Docker Compose continues to use `.env` for its configuration. For native
 execution, set database DSNs to reachable addresses: Compose exposes MySQL at
 `localhost:3326` and ClickHouse at `localhost:9030`. The sample DSNs use Docker
 service names and are intended for `make dev`.

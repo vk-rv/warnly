@@ -8,7 +8,7 @@ help:
 	@echo 'make dev            Build and run Go + Svelte + databases with Docker Compose'
 	@echo 'make dev-down       Stop the development stack (keep data)'
 	@echo 'make build          Build bin/warnly with embedded static frontend'
-	@echo 'make run            Build and run locally using .env (databases must be available)'
+	@echo 'make run            Build and run locally using process environment'
 	@echo 'make frontend-dev   Vite hot reload; proxy API to WARNLY_API_URL or localhost:8080'
 	@echo 'make frontend-check / test-unit / test  Run frontend checks / unit / integration tests'
 
@@ -40,7 +40,6 @@ build: frontend-build
 	go build -o bin/warnly ./cmd/warnly
 
 run: build
-	@test -f .env || cp .env.sample .env
 	./bin/warnly
 
 dev:
