@@ -17,12 +17,26 @@ import (
 func TestAPIResponseFieldNames(t *testing.T) {
 	t.Parallel()
 	responses := []any{
-		errorResponse{}, loginResponse{}, alertFormResponse{}, settingsResponse{},
-		warnly.User{}, warnly.ListProjectsResult{}, warnly.ListIssuesResult{},
-		warnly.ProjectDetails{}, warnly.IssueDetails{}, warnly.ListEventsResult{},
-		warnly.ListFieldsResult{}, warnly.Discussion{}, warnly.ListAlertsResult{},
-		warnly.AnalyticsStoreErr{}, warnly.Schema{}, warnly.SQLQuery{},
-		warnly.ProjectInfo{}, warnly.Team{}, warnly.TagCount{}, warnly.TagValueCount{},
+		errorResponse{},
+		loginResponse{},
+		alertFormResponse{},
+		settingsResponse{},
+		warnly.User{},
+		warnly.ListProjectsResult{},
+		warnly.ListIssuesResult{},
+		warnly.ProjectDetails{},
+		warnly.IssueDetails{},
+		warnly.ListEventsResult{},
+		warnly.ListFieldsResult{},
+		warnly.Discussion{},
+		warnly.ListAlertsResult{},
+		warnly.AnalyticsStoreErr{},
+		warnly.Schema{},
+		warnly.SQLQuery{},
+		warnly.ProjectInfo{},
+		warnly.Team{},
+		warnly.TagCount{},
+		warnly.TagValueCount{},
 	}
 	valid := regexp.MustCompile(`^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$`)
 	seen := make(map[reflect.Type]bool)
@@ -33,15 +47,19 @@ func TestAPIResponseFieldNames(t *testing.T) {
 		}
 		seen[typ] = true
 		switch typ.Kind() {
+		case reflect.Invalid, reflect.Bool, reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+			reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr,
+			reflect.Float32, reflect.Float64, reflect.Complex64, reflect.Complex128, reflect.Chan,
+			reflect.Func, reflect.Interface, reflect.String, reflect.UnsafePointer:
+			return
 		case reflect.Pointer, reflect.Slice, reflect.Array, reflect.Map:
 			check(typ.Elem())
 		case reflect.Struct:
-			for i := 0; i < typ.NumField(); i++ {
-				field := typ.Field(i)
+			for field := range typ.Fields() {
 				if !field.IsExported() {
 					continue
 				}
-				name := strings.Split(field.Tag.Get("json"), ",")[0]
+				name, _, _ := strings.Cut(field.Tag.Get("json"), ",")
 				if name == "-" {
 					continue
 				}
@@ -60,17 +78,18 @@ func TestAPIResponseFieldNames(t *testing.T) {
 func TestAPIResponseEnvelopes(t *testing.T) {
 	t.Parallel()
 	for _, tc := range []struct {
-		name   string
 		value  any
-		status int
+		name   string
 		json   string
+		status int
 	}{
-		{"login", loginResponse{AuthURL: "/oidc", ProviderName: "keycloak", IsDemo: true}, 200, `{"auth_url":"/oidc","provider_name":"keycloak","is_demo":true}`},
-		{"error", errorResponse{Error: "Not found"}, 404, `{"error":"Not found"}`},
-		{"new alert", alertFormResponse{Projects: []warnly.Project{}}, 200, `{"projects":[]}`},
-		{"encoding failure", make(chan int), 500, `{"error":"Internal Server Error"}`},
+		{name: "login", value: loginResponse{AuthURL: "/oidc", ProviderName: "keycloak", IsDemo: true}, status: 200, json: `{"auth_url":"/oidc","provider_name":"keycloak","is_demo":true}`},
+		{name: "error", value: errorResponse{Error: "Not found"}, status: 404, json: `{"error":"Not found"}`},
+		{name: "new alert", value: alertFormResponse{Projects: []warnly.Project{}}, status: 200, json: `{"projects":[]}`},
+		{name: "encoding failure", value: make(chan int), status: 500, json: `{"error":"Internal Server Error"}`},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
 			w := httptest.NewRecorder()
 			writeJSON(w, tc.status, tc.value)
 			require.Equal(t, tc.status, w.Code)

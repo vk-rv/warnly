@@ -702,7 +702,7 @@ func (pd *ProjectDetails) NewLength() string {
 
 // ListProjectsCriteria is a criteria to list projects.
 type ListProjectsCriteria struct {
-	Name   string `json:"name" schema:"name"`
+	Name   string `json:"name"    schema:"name"`
 	TeamID int    `json:"team_id" schema:"team"`
 }
 

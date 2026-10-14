@@ -14,10 +14,10 @@ func TestProjectTimeRange(t *testing.T) {
 	now := time.Date(2026, time.October, 6, 18, 50, 0, 0, time.UTC)
 	svc := &ProjectService{now: func() time.Time { return now }}
 	tests := []struct {
-		name    string
-		req     warnly.ProjectDetailsRequest
 		from    time.Time
 		to      time.Time
+		name    string
+		req     warnly.ProjectDetailsRequest
 		wantErr bool
 	}{
 		{name: "direct project link defaults to 24 hours", from: now.Add(-24 * time.Hour), to: now},

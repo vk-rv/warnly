@@ -27,24 +27,24 @@ func TestFrontendDeepLinksAndAssets(t *testing.T) {
 	})
 	for _, path := range []string{"/", "/login", "/projects/123", "/projects/123/issues/456", "/projects/123/issues/456/events", "/alerts/3/edit", "/settings/projects/3", "/system/schema"} {
 		w := httptest.NewRecorder()
-		handler.ServeHTTP(w, httptest.NewRequest(http.MethodGet, path, nil))
+		handler.ServeHTTP(w, httptest.NewRequestWithContext(t.Context(), http.MethodGet, path, http.NoBody))
 		require.Equal(t, http.StatusOK, w.Code, path)
 		require.Contains(t, w.Body.String(), "<!doctype html>")
 		require.Equal(t, "no-cache", w.Header().Get("Cache-Control"))
 	}
 	for _, path := range []string{"/missing", "/api/missing", "/_app/missing.js", "/_app/", "/README.txt"} {
 		w := httptest.NewRecorder()
-		handler.ServeHTTP(w, httptest.NewRequest(http.MethodGet, path, nil))
+		handler.ServeHTTP(w, httptest.NewRequestWithContext(t.Context(), http.MethodGet, path, http.NoBody))
 		require.Equal(t, http.StatusNotFound, w.Code, path)
 	}
 	w := httptest.NewRecorder()
-	handler.ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/_app/immutable/app.js", nil))
+	handler.ServeHTTP(w, httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/_app/immutable/app.js", http.NoBody))
 	require.Equal(t, http.StatusOK, w.Code)
 	require.Contains(t, w.Header().Get("Content-Type"), "javascript")
 	require.Contains(t, w.Header().Get("Cache-Control"), "immutable")
 	require.Equal(t, "console.log('app')", w.Body.String())
 	w = httptest.NewRecorder()
-	handler.ServeHTTP(w, httptest.NewRequest(http.MethodHead, "/projects/123", nil))
+	handler.ServeHTTP(w, httptest.NewRequestWithContext(t.Context(), http.MethodHead, "/projects/123", http.NoBody))
 	require.Equal(t, http.StatusOK, w.Code)
 	require.Empty(t, w.Body.String())
 }
@@ -52,18 +52,23 @@ func TestFrontendDeepLinksAndAssets(t *testing.T) {
 func TestFrontendMissingBuild(t *testing.T) {
 	t.Parallel()
 	w := httptest.NewRecorder()
-	serveFrontend(fstest.MapFS{}).ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/", nil))
+	serveFrontend(fstest.MapFS{}).ServeHTTP(w, httptest.NewRequestWithContext(t.Context(), http.MethodGet, "/", http.NoBody))
 	require.Equal(t, http.StatusServiceUnavailable, w.Code)
 	require.Contains(t, w.Body.String(), "make frontend-build")
 }
 
+const (
+	uiTestUsername = "admin"
+	uiTestPassword = "password"
+)
+
 type uiSessionService struct{ warnly.SessionService }
 
 func (uiSessionService) SignIn(_ context.Context, credentials *warnly.Credentials) (*warnly.Session, error) {
-	if credentials.Identifier != "admin" || credentials.Password != "password" {
+	if credentials.Identifier != uiTestUsername || credentials.Password != uiTestPassword {
 		return nil, warnly.ErrInvalidLoginCredentials
 	}
-	return &warnly.Session{User: &warnly.User{ID: 1, Email: "admin@example.com", Username: "admin"}}, nil
+	return &warnly.Session{User: &warnly.User{ID: 1, Email: "admin@example.com", Username: uiTestUsername}}, nil
 }
 
 type uiProjectService struct{ warnly.ProjectService }
@@ -77,7 +82,8 @@ func (uiProjectService) ListProjects(_ context.Context, criteria *warnly.ListPro
 
 func TestUISessionAndAPI(t *testing.T) {
 	t.Parallel()
-	b := &Backend{Now: time.Now, Logger: slog.New(slog.DiscardHandler), Reg: prometheus.NewRegistry(),
+	b := &Backend{
+		Now: time.Now, Logger: slog.New(slog.DiscardHandler), Reg: prometheus.NewRegistry(),
 		CookieStore:    session.NewCookieStore(time.Now, []byte("01234567890123456789012345678901")),
 		OIDC:           &OIDC{EmailMatches: []*regexp.Regexp{regexp.MustCompile(`@example\.com$`)}},
 		SessionService: uiSessionService{}, ProjectService: uiProjectService{}, RememberSessionDays: 30,
@@ -85,7 +91,7 @@ func TestUISessionAndAPI(t *testing.T) {
 	handler, err := NewHandler(b)
 	require.NoError(t, err)
 	request := func(method, path, body string, cookie *http.Cookie) *httptest.ResponseRecorder {
-		req := httptest.NewRequest(method, path, strings.NewReader(body))
+		req := httptest.NewRequestWithContext(t.Context(), method, path, strings.NewReader(body))
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 		if cookie != nil {
 			req.AddCookie(cookie)
@@ -100,7 +106,7 @@ func TestUISessionAndAPI(t *testing.T) {
 	w = request("POST", "/api/login", "identifier=admin&password=wrong", nil)
 	require.Equal(t, http.StatusUnauthorized, w.Code)
 	require.Empty(t, w.Result().Cookies())
-	w = request("POST", "/api/login", url.Values{"identifier": {"admin"}, "password": {"password"}, "remember-me": {"on"}}.Encode(), nil)
+	w = request("POST", "/api/login", url.Values{"identifier": {uiTestUsername}, "password": {uiTestPassword}, "remember-me": {"on"}}.Encode(), nil)
 	require.Equal(t, http.StatusOK, w.Code)
 	require.NotEmpty(t, w.Result().Cookies())
 	cookie := w.Result().Cookies()[0]
@@ -115,7 +121,7 @@ func TestUISessionAndAPI(t *testing.T) {
 	w = request("GET", "/api/missing", "", cookie)
 	require.Equal(t, http.StatusNotFound, w.Code)
 	require.Contains(t, w.Header().Get("Content-Type"), "application/json")
-	req := httptest.NewRequest("POST", "/api/projects", strings.NewReader("projectName=bad"))
+	req := httptest.NewRequestWithContext(t.Context(), "POST", "/api/projects", strings.NewReader("projectName=bad"))
 	req.AddCookie(cookie)
 	req.Header.Set("Origin", "https://untrusted.example")
 	req.Header.Set("Sec-Fetch-Site", "cross-site")
@@ -124,5 +130,5 @@ func TestUISessionAndAPI(t *testing.T) {
 	require.Equal(t, http.StatusForbidden, w.Code)
 	w = request("DELETE", "/api/session", "", cookie)
 	require.Equal(t, http.StatusNoContent, w.Code)
-	require.Less(t, w.Result().Cookies()[0].MaxAge, 0)
+	require.Negative(t, w.Result().Cookies()[0].MaxAge)
 }

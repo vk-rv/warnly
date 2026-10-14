@@ -132,7 +132,8 @@ func NewHandler(b *Backend) (*Handler, error) {
 	mux.HandleFunc("GET /api/projects/{project_id}/issues/{issue_id}", chain(projectHandler.GetIssue))
 	mux.HandleFunc("GET /api/projects/{project_id}/issues/{issue_id}/discussions", chain(projectHandler.GetDiscussions))
 	mux.HandleFunc("POST /api/projects/{project_id}/issues/{issue_id}/discussions", chain(projectHandler.PostMessage))
-	mux.HandleFunc("DELETE /api/projects/{project_id}/issues/{issue_id}/discussions/{message_id}", chain(projectHandler.DeleteMessage))
+	mux.HandleFunc("DELETE /api/projects/{project_id}/issues/{issue_id}/discussions/{message_id}",
+		chain(projectHandler.DeleteMessage))
 	mux.HandleFunc("GET /api/projects/{project_id}/issues/{issue_id}/fields", chain(projectHandler.ListFields))
 	mux.HandleFunc("GET /api/projects/{project_id}/issues/{issue_id}/events", chain(projectHandler.ListEvents))
 	mux.HandleFunc("POST /api/projects/{project_id}/issues/{issue_id}/assignments", chain(projectHandler.AssignIssue))

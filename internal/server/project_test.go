@@ -1,12 +1,12 @@
 package server_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
 	"testing"
 
-	"encoding/json"
 	"github.com/google/uuid"
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/stretchr/testify/assert"
@@ -138,7 +138,7 @@ func TestServer_ListProjects(t *testing.T) {
 		require.NoError(t, json.NewDecoder(w.Body).Decode(&result))
 
 		projectCards := result.Projects
-		assert.Equal(t, 3, len(projectCards), "should have exactly 3 projects")
+		assert.Len(t, projectCards, 3, "should have exactly 3 projects")
 	})
 
 	t.Run("list projects filtered by team", func(t *testing.T) {
@@ -210,7 +210,7 @@ func TestServer_ListProjects(t *testing.T) {
 		require.NoError(t, json.NewDecoder(w.Body).Decode(&result))
 
 		projectCards := result.Projects
-		assert.Equal(t, 1, len(projectCards), "should have exactly 1 project filtered by team")
+		assert.Len(t, projectCards, 1, "should have exactly 1 project filtered by team")
 	})
 
 	t.Run("list projects filtered by name", func(t *testing.T) {
@@ -270,7 +270,7 @@ func TestServer_ListProjects(t *testing.T) {
 		require.NoError(t, json.NewDecoder(w.Body).Decode(&result))
 
 		projectCards := result.Projects
-		assert.Equal(t, 1, len(projectCards), "should have exactly 1 project filtered by name")
+		assert.Len(t, projectCards, 1, "should have exactly 1 project filtered by name")
 	})
 
 	t.Run("list projects with both team and name filters", func(t *testing.T) {
@@ -322,7 +322,7 @@ func TestServer_ListProjects(t *testing.T) {
 		require.NoError(t, json.NewDecoder(w.Body).Decode(&result))
 
 		projectCards := result.Projects
-		assert.Equal(t, 1, len(projectCards), "should have exactly 1 project with both filters")
+		assert.Len(t, projectCards, 1, "should have exactly 1 project with both filters")
 	})
 
 	t.Run("list projects with empty result", func(t *testing.T) {
@@ -365,7 +365,7 @@ func TestServer_ListProjects(t *testing.T) {
 		require.NoError(t, json.NewDecoder(w.Body).Decode(&result))
 
 		projectCards := result.Projects
-		assert.Equal(t, 0, len(projectCards), "should have no projects for nonexistent search")
+		assert.Empty(t, projectCards, "should have no projects for nonexistent search")
 	})
 
 	t.Run("list projects with event ingestion and event count verification", func(t *testing.T) {
@@ -443,7 +443,7 @@ func TestServer_ListProjects(t *testing.T) {
 		assert.Equal(t, "3", errorCount)
 
 		projectCards := result.Projects
-		assert.Equal(t, 1, len(projectCards), "should have exactly 1 project")
+		assert.Len(t, projectCards, 1, "should have exactly 1 project")
 	})
 }
 
@@ -493,7 +493,7 @@ func TestServer_DeleteProject(t *testing.T) {
 		require.NoError(t, json.NewDecoder(w.Body).Decode(&result))
 
 		projectCards := result.Projects
-		assert.Equal(t, 1, len(projectCards), "should have exactly 1 project after creation")
+		assert.Len(t, projectCards, 1, "should have exactly 1 project after creation")
 
 		wDelete, rDelete := getDeleteProjectRequest(ctx, 1)
 		projectHandler.DeleteProject(wDelete, rDelete)
@@ -506,7 +506,7 @@ func TestServer_DeleteProject(t *testing.T) {
 		require.NoError(t, json.NewDecoder(wList.Body).Decode(&after))
 
 		projectCardsAfter := after.Projects
-		assert.Equal(t, 0, len(projectCardsAfter), "should have 0 projects after deletion")
+		assert.Empty(t, projectCardsAfter, "should have 0 projects after deletion")
 	})
 }
 
