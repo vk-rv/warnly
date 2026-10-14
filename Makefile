@@ -2,7 +2,7 @@
 export PATH := $(CURDIR)/.tools/node/bin:$(CURDIR)/.tools/go/bin:$(PATH)
 COMPOSE ?= docker compose
 
-.PHONY: help install setup frontend-install frontend-build frontend-check frontend-test frontend-dev build run dev dev-down hooks align lint fmt test test-unit test-duckdb bench
+.PHONY: help install setup frontend-install frontend-build frontend-check frontend-test frontend-dev build run dev dev-down hooks align lint fmt test test-unit test-duckdb bench ingest-demo
 help:
 	@echo 'make install        Install Go/Node locally if needed and fetch dependencies (Linux/macOS)'
 	@echo 'make dev            Build and run Go + Svelte + databases with Docker Compose'
@@ -10,6 +10,7 @@ help:
 	@echo 'make build          Build bin/warnly with embedded static frontend'
 	@echo 'make run            Build and run locally using process environment'
 	@echo 'make frontend-dev   Vite hot reload; proxy API to WARNLY_API_URL or localhost:8080'
+	@echo 'make ingest-demo    Send sample trace-rich Sentry events to the demo project'
 	@echo 'make frontend-check / test-unit / test  Run frontend checks / unit / integration tests'
 
 install:
@@ -73,3 +74,7 @@ test-duckdb:
 
 bench:
 	drill --benchmark benchmark.yml
+
+INGEST_ARGS ?=
+ingest-demo:
+	python3 scripts/ingest-sentry-demo.py $(INGEST_ARGS)

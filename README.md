@@ -41,6 +41,6 @@ The high-level plan for `warnly`, in order:
 | :-: | --------------------------------------------------------- | :----: |
 |  1  | Backend exception monitoring                              |   ⚠️   |
 |  2  | Mobile and frontend exception monitoring                  |   ❌   |
-|  3  | Swappable storage                                         |   ❌   |
+|  3  | Swappable storage                                         |   ✅   |
 |  4  | SLO and flexible alerting rules                           |   ❌   |
 |  N  | Fancy features (to be expanded upon later)                |   ❌   |
