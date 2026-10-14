@@ -156,10 +156,10 @@ type ProjectService interface {
 	ListTeammates(ctx context.Context, req *ListTeammatesRequest) ([]Teammate, error)
 
 	// CreateMessage creates a new message in the discussion.
-	CreateMessage(ctx context.Context, req *CreateMessageRequest) (*Discussion, error)
+	CreateMessage(ctx context.Context, req *CreateMessageRequest) error
 
 	// DeleteMessage deletes a message in the discussion.
-	DeleteMessage(ctx context.Context, req *DeleteMessageRequest) (*Discussion, error)
+	DeleteMessage(ctx context.Context, req *DeleteMessageRequest) error
 
 	// AssignIssue assigns an issue to a user.
 	AssignIssue(ctx context.Context, req *AssignIssueRequest) error

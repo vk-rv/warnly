@@ -50,27 +50,7 @@ func (h *ProjectHandler) DeleteAssignment(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	issues := h.getFormOrQuery(r, "issues")
-	period := h.getFormOrQuery(r, "period")
-	if issues == "" && period == "" {
-		w.WriteHeader(http.StatusNoContent)
-		return
-	}
-
-	details, err := h.svc.GetProjectDetails(ctx, &warnly.ProjectDetailsRequest{
-		ProjectID: projectID,
-		Issues:    warnly.IssuesType(issues),
-		Period:    period,
-		Start:     h.getFormOrQuery(r, "start"),
-		End:       h.getFormOrQuery(r, "end"),
-		Page:      h.getPage(h.getFormOrQuery(r, "page")),
-	}, &user)
-	if err != nil {
-		h.writeError(ctx, w, http.StatusInternalServerError, "delete assignment: get project details", err)
-		return
-	}
-
-	h.writeJSON(w, http.StatusOK, details)
+	w.WriteHeader(http.StatusNoContent)
 }
 
 // AssignIssue assigns an issue to a user.
@@ -104,27 +84,7 @@ func (h *ProjectHandler) AssignIssue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	issues := h.getFormOrQuery(r, "issues")
-	period := h.getFormOrQuery(r, "period")
-	if issues == "" && period == "" {
-		w.WriteHeader(http.StatusNoContent)
-		return
-	}
-
-	details, err := h.svc.GetProjectDetails(ctx, &warnly.ProjectDetailsRequest{
-		ProjectID: projectID,
-		Issues:    warnly.IssuesType(issues),
-		Period:    period,
-		Start:     h.getFormOrQuery(r, "start"),
-		End:       h.getFormOrQuery(r, "end"),
-		Page:      h.getPage(h.getFormOrQuery(r, "page")),
-	}, &user)
-	if err != nil {
-		h.writeError(ctx, w, http.StatusInternalServerError, "assign issue: get project details", err)
-		return
-	}
-
-	h.writeJSON(w, http.StatusOK, details)
+	w.WriteHeader(http.StatusNoContent)
 }
 
 // ListEvents lists all events per specified issue.
@@ -216,7 +176,7 @@ func (h *ProjectHandler) DeleteMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	discussion, err := h.svc.DeleteMessage(ctx, &warnly.DeleteMessageRequest{
+	err = h.svc.DeleteMessage(ctx, &warnly.DeleteMessageRequest{
 		MessageID: messageID,
 		ProjectID: projectID,
 		IssueID:   issueID,
@@ -227,7 +187,7 @@ func (h *ProjectHandler) DeleteMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.writeJSON(w, http.StatusOK, discussion)
+	w.WriteHeader(http.StatusNoContent)
 }
 
 // PostMessage creates a new message (user comment) in issue discussion.
@@ -248,13 +208,13 @@ func (h *ProjectHandler) PostMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	discussion, err := h.svc.CreateMessage(ctx, req)
+	err = h.svc.CreateMessage(ctx, req)
 	if err != nil {
 		h.writeError(ctx, w, http.StatusInternalServerError, "post discussion: create discussion", err)
 		return
 	}
 
-	h.writeJSON(w, http.StatusOK, discussion)
+	w.WriteHeader(http.StatusNoContent)
 }
 
 // newMessageRequest creates a new message request from the HTTP request.
@@ -542,14 +502,6 @@ func (h *ProjectHandler) getPage(page string) int {
 		return defaultPage
 	}
 	return p
-}
-
-// getFormOrQuery returns the value from form data first, falling back to query parameters.
-func (h *ProjectHandler) getFormOrQuery(r *http.Request, key string) string {
-	if val := r.FormValue(key); val != "" {
-		return val
-	}
-	return r.URL.Query().Get(key)
 }
 
 // getPage parses the page number from string to int.
