@@ -22,7 +22,7 @@ type AssignedUser struct {
 }
 
 type Assignments struct {
-	IssueToAssigned map[int64]*Teammate
+	IssueToAssigned map[int64]*Teammate `json:"issue_to_assigned"`
 }
 
 // AssignedUser returns the assigned user for the given issue.

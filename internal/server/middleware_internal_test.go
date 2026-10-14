@@ -248,7 +248,7 @@ func TestEmailMatcherMiddleware_DeniedEmail_WithoutHTMX(t *testing.T) {
 	assert.Equal(t, "/login", w.Header().Get("Location"))
 }
 
-func TestEmailMatcherMiddleware_DeniedEmail_WithHTMX(t *testing.T) {
+func TestEmailMatcherMiddleware_DeniedEmail_API(t *testing.T) {
 	t.Parallel()
 
 	logger := slog.New(slog.DiscardHandler)
@@ -266,13 +266,14 @@ func TestEmailMatcherMiddleware_DeniedEmail_WithHTMX(t *testing.T) {
 	ctx := NewContextWithUser(context.Background(), user)
 
 	req := httptest.NewRequestWithContext(ctx, http.MethodGet, testPattern, http.NoBody)
-	req.Header.Set(htmxHeader, "true")
+	req.URL.Path = "/api/test"
 	w := httptest.NewRecorder()
 
 	wrapped(w, req)
 
 	assert.False(t, handlerCalled, "handler should not be called for denied email")
-	assert.Equal(t, "/login", w.Header().Get("Hx-Redirect"))
+	assert.Equal(t, http.StatusUnauthorized, w.Code)
+	assert.JSONEq(t, `{"error":"Authentication required"}`, w.Body.String())
 }
 
 func TestEmailMatcherMiddleware_MultiplePatterns(t *testing.T) {

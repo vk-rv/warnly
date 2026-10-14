@@ -1364,13 +1364,8 @@ func (s *ProjectService) buildTeammateAssigns(
 
 // getTimeRange is a helper that returns the time range based on the request.
 func (s *ProjectService) getTimeRange(req *warnly.ProjectDetailsRequest) (from, to time.Time, err error) {
-	if req.Period != "" {
-		dur, err := warnly.ParseDuration(req.Period)
-		if err != nil {
-			return time.Time{}, time.Time{}, err
-		}
-		now := s.now().UTC()
-		return now.Add(-dur), now, nil
+	if req.Period != "" || (req.Start == "" && req.End == "") {
+		return s.getTimeRangeFromPeriod(req.Period)
 	}
 
 	return warnly.ParseTimeRange(req.Start, req.End)

@@ -72,9 +72,20 @@ internal/
     svcotel/          # OpenTelemetry convenience wrapper
     uow/              # Unit of work DB transactions abstraction
     warnly/           # Root package (models, interfaces)
-    web/              # HTML templates rendered by templ library
+
+frontend/src/         # SvelteKit pages and components (adapter-static)
 ```
 
 ## Architecture Overview
 
 <img src="../.github/images/arch.png" alt="Warnly Architecture" width="400"/>
+
+### Web API JSON contract
+
+The `/api/*` handlers return typed Go structs with explicit `json` tags.
+Response fields use lower-case `snake_case`, including nested objects
+(e.g. `project_id`, `stack_details`, `auth_url`). Dynamic dictionaries such as
+`issue_to_assigned` retain their IDs as keys. Error responses use
+`{"error":"message"}`. The Svelte frontend consumes these names directly.
+Changes to this contract require rebuilding and deploying the backend and
+frontend together. Sentry ingestion keeps its existing wire format.

@@ -76,21 +76,21 @@ const (
 
 // Alert represents an alert rule.
 type Alert struct {
-	CreatedAt          time.Time
-	UpdatedAt          time.Time
-	LastTriggeredAt    *time.Time
-	ResolvedAt         *time.Time
-	NotificationSentAt *time.Time
-	RuleName           string
-	Description        string
-	Status             AlertStatus
-	ID                 int
-	ProjectID          int
-	TeamID             int
-	Threshold          int
-	Condition          AlertCondition // 1 = occurrences, 2 = users affected
-	Timeframe          AlertTimeframe // 1=1min, 2=5min, 3=15min, 4=1h, 5=1d, 6=1w, 7=30d
-	HighPriority       bool
+	CreatedAt          time.Time      `json:"created_at"`
+	UpdatedAt          time.Time      `json:"updated_at"`
+	LastTriggeredAt    *time.Time     `json:"last_triggered_at"`
+	ResolvedAt         *time.Time     `json:"resolved_at"`
+	NotificationSentAt *time.Time     `json:"notification_sent_at"`
+	RuleName           string         `json:"rule_name"`
+	Description        string         `json:"description"`
+	Status             AlertStatus    `json:"status"`
+	ID                 int            `json:"id"`
+	ProjectID          int            `json:"project_id"`
+	TeamID             int            `json:"team_id"`
+	Threshold          int            `json:"threshold"`
+	Condition          AlertCondition `json:"condition"` // 1 = occurrences, 2 = users affected
+	Timeframe          AlertTimeframe `json:"timeframe"` // 1=1min, 2=5min, 3=15min, 4=1h, 5=1d, 6=1w, 7=30d
+	HighPriority       bool           `json:"high_priority"`
 }
 
 // GetTimeframeDuration returns the duration for the timeframe.
@@ -117,20 +117,20 @@ func (a *Alert) GetTimeframeDuration() time.Duration {
 
 // ListAlertsRequest is used to specify criteria for listing alerts.
 type ListAlertsRequest struct {
-	User        *User
-	TeamName    string
-	ProjectName string
-	Offset      int
-	Limit       int
+	User        *User  `json:"user"`
+	TeamName    string `json:"team_name"`
+	ProjectName string `json:"project_name"`
+	Offset      int    `json:"offset"`
+	Limit       int    `json:"limit"`
 }
 
 // ListAlertsResult contains the result of listing alerts.
 type ListAlertsResult struct {
-	Request     *ListAlertsRequest
-	Alerts      []Alert
-	Projects    []Project
-	Teams       []Team
-	TotalAlerts int
+	Request     *ListAlertsRequest `json:"request"`
+	Alerts      []Alert            `json:"alerts"`
+	Projects    []Project          `json:"projects"`
+	Teams       []Team             `json:"teams"`
+	TotalAlerts int                `json:"total_alerts"`
 }
 
 // CreateAlertRequest is a request to create a new alert.
