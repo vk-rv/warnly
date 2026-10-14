@@ -818,18 +818,10 @@ func (s *ProjectService) ListTeammates(
 func (s *ProjectService) DeleteMessage(
 	ctx context.Context,
 	req *warnly.DeleteMessageRequest,
-) (*warnly.Discussion, error) {
-	project, err := s.GetProject(ctx, req.ProjectID, req.User)
+) error {
+	_, err := s.GetProject(ctx, req.ProjectID, req.User)
 	if err != nil {
-		return nil, err
-	}
-
-	teammates, err := s.ListTeammates(ctx, &warnly.ListTeammatesRequest{
-		User:      req.User,
-		ProjectID: project.ID,
-	})
-	if err != nil {
-		return nil, err
+		return err
 	}
 
 	err = s.uow(ctx, uow.Write, func(ctx context.Context, uw uow.UnitOfWork) error {
@@ -839,40 +831,20 @@ func (s *ProjectService) DeleteMessage(
 		return uw.Mentions().DeleteMentions(ctx, req.MessageID)
 	}, s.messageStore, s.mentionStore)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	messages, err := s.messageStore.ListIssueMessages(ctx, int64(req.IssueID))
-	if err != nil {
-		return nil, err
-	}
-
-	return &warnly.Discussion{
-		Teammates: teammates,
-		Messages:  messages,
-		Info: warnly.DiscussionInfo{
-			ProjectID: project.ID,
-			IssueID:   req.IssueID,
-		},
-	}, nil
+	return nil
 }
 
 // CreateMessage creates a new message in the issue discussion.
 func (s *ProjectService) CreateMessage(
 	ctx context.Context,
 	req *warnly.CreateMessageRequest,
-) (*warnly.Discussion, error) {
-	project, err := s.GetProject(ctx, req.ProjectID, req.User)
+) error {
+	_, err := s.GetProject(ctx, req.ProjectID, req.User)
 	if err != nil {
-		return nil, err
-	}
-
-	teammates, err := s.ListTeammates(ctx, &warnly.ListTeammatesRequest{
-		User:      req.User,
-		ProjectID: project.ID,
-	})
-	if err != nil {
-		return nil, err
+		return err
 	}
 
 	slices.Sort(req.MentionedUsers)
@@ -884,18 +856,7 @@ func (s *ProjectService) CreateMessage(
 			slog.String("content", req.Content),
 			slog.Int64("user_id", req.User.ID),
 			slog.String("user", req.User.Name))
-		messages, err := s.messageStore.ListIssueMessages(ctx, int64(req.IssueID))
-		if err != nil {
-			return nil, err
-		}
-		return &warnly.Discussion{
-			Teammates: teammates,
-			Messages:  messages,
-			Info: warnly.DiscussionInfo{
-				ProjectID: project.ID,
-				IssueID:   req.IssueID,
-			},
-		}, nil
+		return nil
 	}
 	req.Content = content
 
@@ -927,22 +888,10 @@ func (s *ProjectService) CreateMessage(
 		return s.mentionStore.CreateMentions(ctx, mentions)
 	}, s.messageStore, s.mentionStore)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	messages, err := s.messageStore.ListIssueMessages(ctx, int64(req.IssueID))
-	if err != nil {
-		return nil, err
-	}
-
-	return &warnly.Discussion{
-		Teammates: teammates,
-		Messages:  messages,
-		Info: warnly.DiscussionInfo{
-			ProjectID: project.ID,
-			IssueID:   req.IssueID,
-		},
-	}, nil
+	return nil
 }
 
 // DeleteAssignment unassigns an issue from a user.

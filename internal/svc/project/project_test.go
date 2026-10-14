@@ -1543,10 +1543,8 @@ func TestDeleteMessageSuccess(t *testing.T) {
 			}, nil
 		},
 		ListTeammatesFn: func(_ context.Context, _ []int) ([]warnly.Teammate, error) {
-			return []warnly.Teammate{
-				{ID: 1, Name: fixtureJohnDoe, Email: fixtureJohnExampleCom},
-				{ID: 2, Name: fixtureJaneSmith, Email: fixtureJaneExampleCom},
-			}, nil
+			t.Fatal("mutation must not load teammates for rendering")
+			return nil, nil
 		},
 	}
 
@@ -1565,22 +1563,8 @@ func TestDeleteMessageSuccess(t *testing.T) {
 			return nil
 		},
 		ListIssueMessagesFn: func(_ context.Context, _ int64) ([]warnly.IssueMessage, error) {
-			return []warnly.IssueMessage{
-				{
-					ID:        1,
-					UserID:    2,
-					Username:  fixtureJaneSmith,
-					Content:   "First message",
-					CreatedAt: customTime.Add(-2 * time.Hour),
-				},
-				{
-					ID:        2,
-					UserID:    1,
-					Username:  fixtureJohnDoe,
-					Content:   "Second message",
-					CreatedAt: customTime.Add(-1 * time.Hour),
-				},
-			}, nil
+			t.Fatal("mutation must not reload discussion")
+			return nil, nil
 		},
 	}
 
@@ -1615,14 +1599,9 @@ func TestDeleteMessageSuccess(t *testing.T) {
 		MessageID: messageID,
 	}
 
-	result, err := svc.DeleteMessage(ctx, req)
+	err := svc.DeleteMessage(ctx, req)
 
 	require.NoError(t, err)
-	assert.NotNil(t, result)
-	assert.Equal(t, projectID, result.Info.ProjectID)
-	assert.Equal(t, issueID, result.Info.IssueID)
-	assert.Len(t, result.Teammates, 2)
-	assert.Len(t, result.Messages, 2)
 }
 
 func TestCreateMessageSuccess(t *testing.T) {
@@ -1642,10 +1621,8 @@ func TestCreateMessageSuccess(t *testing.T) {
 			}, nil
 		},
 		ListTeammatesFn: func(_ context.Context, _ []int) ([]warnly.Teammate, error) {
-			return []warnly.Teammate{
-				{ID: 1, Name: fixtureJohnDoe, Email: fixtureJohnExampleCom},
-				{ID: 2, Name: fixtureJaneSmith, Email: fixtureJaneExampleCom},
-			}, nil
+			t.Fatal("mutation must not load teammates for rendering")
+			return nil, nil
 		},
 	}
 
@@ -1661,15 +1638,8 @@ func TestCreateMessageSuccess(t *testing.T) {
 
 	messageStore := &mock.MessageStore{
 		ListIssueMessagesFn: func(_ context.Context, _ int64) ([]warnly.IssueMessage, error) {
-			return []warnly.IssueMessage{
-				{
-					ID:        1,
-					UserID:    1,
-					Username:  fixtureJohnDoe,
-					Content:   "Test message",
-					CreatedAt: customTime,
-				},
-			}, nil
+			t.Fatal("mutation must not reload discussion")
+			return nil, nil
 		},
 	}
 
@@ -1699,14 +1669,9 @@ func TestCreateMessageSuccess(t *testing.T) {
 		IssueID:        issueID,
 	}
 
-	result, err := svc.CreateMessage(ctx, req)
+	err := svc.CreateMessage(ctx, req)
 
 	require.NoError(t, err)
-	assert.NotNil(t, result)
-	assert.Equal(t, projectID, result.Info.ProjectID)
-	assert.Equal(t, issueID, result.Info.IssueID)
-	assert.Len(t, result.Teammates, 2)
-	assert.Len(t, result.Messages, 1)
 }
 
 func TestCreateMessageWithMentions(t *testing.T) {
@@ -1726,11 +1691,8 @@ func TestCreateMessageWithMentions(t *testing.T) {
 			}, nil
 		},
 		ListTeammatesFn: func(_ context.Context, _ []int) ([]warnly.Teammate, error) {
-			return []warnly.Teammate{
-				{ID: 1, Name: fixtureJohnDoe, Email: fixtureJohnExampleCom},
-				{ID: 2, Name: fixtureJaneSmith, Email: fixtureJaneExampleCom},
-				{ID: 3, Name: "Bob Johnson", Email: "bob@example.com"},
-			}, nil
+			t.Fatal("mutation must not load teammates for rendering")
+			return nil, nil
 		},
 	}
 
@@ -1746,15 +1708,8 @@ func TestCreateMessageWithMentions(t *testing.T) {
 
 	messageStore := &mock.MessageStore{
 		ListIssueMessagesFn: func(_ context.Context, _ int64) ([]warnly.IssueMessage, error) {
-			return []warnly.IssueMessage{
-				{
-					ID:        1,
-					UserID:    1,
-					Username:  fixtureJohnDoe,
-					Content:   "Mentioning @Jane Smith and @Bob Johnson",
-					CreatedAt: customTime,
-				},
-			}, nil
+			t.Fatal("mutation must not reload discussion")
+			return nil, nil
 		},
 	}
 
@@ -1790,14 +1745,9 @@ func TestCreateMessageWithMentions(t *testing.T) {
 		IssueID:        issueID,
 	}
 
-	result, err := svc.CreateMessage(ctx, req)
+	err := svc.CreateMessage(ctx, req)
 
 	require.NoError(t, err)
-	assert.NotNil(t, result)
-	assert.Equal(t, projectID, result.Info.ProjectID)
-	assert.Equal(t, issueID, result.Info.IssueID)
-	assert.Len(t, result.Teammates, 3)
-	assert.Len(t, result.Messages, 1)
 }
 
 func TestListTagValuesSuccess(t *testing.T) {
